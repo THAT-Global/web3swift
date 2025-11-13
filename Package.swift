@@ -13,7 +13,7 @@ let package = Package(
     ],
     dependencies: [
         // pin secp256k1 (used by web3swift & solana-swift)
-        .package(url: "https://github.com/21-DOT-DEV/swift-secp256k1.git", from: "0.10.0"),
+        .package(url: "https://github.com/21-DOT-DEV/swift-secp256k1.git", exact: "0.10.0"),
         .package(url: "https://github.com/attaswift/BigInt.git", .upToNextMinor(from: "5.4.0")),
         .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.5.1"),
     ],
