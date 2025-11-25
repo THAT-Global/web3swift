@@ -9,7 +9,7 @@ import Foundation
 import BigInt
 
 public struct Utilities {
-
+    
     /// Convert a public key to the corresponding ``EthereumAddress``. Accepts public keys in compressed (33 bytes), uncompressed (65 bytes)
     /// or uncompressed without prefix (64 bytes) format.
     ///
@@ -26,7 +26,7 @@ public struct Utilities {
             }
             publicKey = decompressedKey
         }
-
+        
         if publicKey.count == 65 {
             guard publicKey[0] == 4 else {
                 return nil
@@ -39,7 +39,7 @@ public struct Utilities {
         let addressData = sha3[12...31]
         return addressData
     }
-
+    
     /// Convert a public key to the corresponding ``EthereumAddress``. Accepts public keys in compressed (33 bytes), uncompressed (65 bytes)
     /// or uncompressed without prefix (64 bytes) format.
     ///
@@ -50,13 +50,13 @@ public struct Utilities {
         let address = addressData.toHexString().addHexPrefix().lowercased()
         return EthereumAddress(address)
     }
-
+    
     /// Convert the private key (32 bytes of Data) to compressed (33 bytes) or non-compressed (65 bytes) public key.
     public static func privateToPublic(_ privateKey: Data, compressed: Bool = false) -> Data? {
         guard let publicKey = SECP256K1.privateToPublic(privateKey: privateKey, compressed: compressed) else { return nil }
         return publicKey
     }
-
+    
     /// Convert a public key to the corresponding ``EthereumAddress``. Accepts public keys in compressed (33 bytes), uncompressed (65 bytes)
     /// or uncompressed without prefix (64 bytes) format.
     ///
@@ -67,13 +67,13 @@ public struct Utilities {
         let address = addressData.toHexString().addHexPrefix().lowercased()
         return address
     }
-
+    
     /// Converts address data (20 bytes) to the 0x prefixed hex string. Does not perform checksumming.
     static func addressDataToString(_ addressData: Data) -> String? {
         guard addressData.count == 20 else { return nil }
         return addressData.toHexString().addHexPrefix().lowercased()
     }
-
+    
     /// Hashes a personal message by first padding it with the "\u{19}Ethereum Signed Message:\n" string and message length string.
     /// Should be used if some arbitrary information should be hashed and signed to prevent signing an Ethereum transaction
     /// by accident.
@@ -91,7 +91,7 @@ public struct Utilities {
         let hash = data.sha3(.keccak256)
         return hash
     }
-
+    
     /// Parse a user-supplied string using the number of decimals for particular Ethereum unit.
     /// If input is non-numeric or precision is not sufficient - returns nil.
     /// Allowed decimal separators are ".", ",".
@@ -99,9 +99,9 @@ public struct Utilities {
         let unitDecimals = units.decimals
         return parseToBigUInt(amount, decimals: unitDecimals)
     }
-
+    
     /// Parse a string using the number of decimals.
-    /// If input is non-numeric or precision is not sufficient - returns nil.
+    /// Extra decimal digits are truncated, not rounded, and non-numeric input returns nil.
     /// Allowed decimal separators are ".", ",".
     public static func parseToBigUInt(_ amount: String, decimals: Int = 18) -> BigUInt? {
         let separators = CharacterSet(charactersIn: ".,")
@@ -111,15 +111,18 @@ public struct Utilities {
         guard let beforeDecPoint = BigUInt(components[0], radix: 10) else { return nil }
         var mainPart = beforeDecPoint * BigUInt(10).power(unitDecimals)
         if components.count == 2 {
-            let numDigits = components[1].count
-            guard numDigits <= unitDecimals else { return nil }
-            guard let afterDecPoint = BigUInt(components[1], radix: 10) else { return nil }
+            let truncated = String(components[1].prefix(unitDecimals))
+            let numDigits = truncated.count
+            guard let afterDecPoint = BigUInt(truncated, radix: 10) else { return nil }
+            // let numDigits = components[1].count
+            // guard numDigits <= unitDecimals else { return nil }
+            // guard let afterDecPoint = BigUInt(components[1], radix: 10) else { return nil }
             let extraPart = afterDecPoint * BigUInt(10).power(unitDecimals-numDigits)
             mainPart += extraPart
         }
         return mainPart
     }
-
+    
     /// Formats a `BigInt` object to `String`. The supplied number is first divided into integer and decimal part based on `units` value,
     /// then limits the decimal part to `formattingDecimals` symbols and uses a `decimalSeparator` as a separator.
     /// Fallbacks to scientific format if higher precision is required.
@@ -135,13 +138,13 @@ public struct Utilities {
         let magnitude = bigNumber.magnitude
         let formatted = formatToPrecision(magnitude, units: units, formattingDecimals: formattingDecimals, decimalSeparator: decimalSeparator, fallbackToScientific: fallbackToScientific)
         switch bigNumber.sign {
-        case .plus:
-            return formatted
-        case .minus:
-            return "-" + formatted
+            case .plus:
+                return formatted
+            case .minus:
+                return "-" + formatted
         }
     }
-
+    
     /// Formats a `BigUInt` object to `String`. The supplied number is first divided into integer and decimal part based on `units` value,
     /// then limits the decimal part to `formattingDecimals` symbols and uses a `decimalSeparator` as a separator.
     /// Fallbacks to scientific format if higher precision is required.
@@ -164,30 +167,30 @@ public struct Utilities {
         }
         let divisor = BigUInt(10).power(unitDecimals)
         let (quotient, remainder) = bigNumber.quotientAndRemainder(dividingBy: divisor)
-
+        
         guard toDecimals != 0 else {
             return "\(quotient)"
         }
-
+        
         let remainderStr = "\(remainder)"
         let fullPaddedRemainder = remainderStr.leftPadding(toLength: unitDecimals, withPad: "0")
         let remainderPadded = fullPaddedRemainder[0..<toDecimals]
-
+        
         guard remainderPadded == String(repeating: "0", count: toDecimals) else {
             return "\(quotient)" + decimalSeparator + remainderPadded
         }
-
+        
         if fallbackToScientific {
             return formatToScientificRepresentation(remainderStr, remainder: fullPaddedRemainder, decimals: formattingDecimals, decimalSeparator: decimalSeparator)
         }
-
+        
         guard quotient == 0 else {
             return "\(quotient)"
         }
-
+        
         return "\(quotient)" + decimalSeparator + remainderPadded
     }
-
+    
     private static func formatToScientificRepresentation(_ remainder: String, remainder fullPaddedRemainder: String, decimals: Int, decimalSeparator: String) -> String {
         var remainder = remainder
         var firstDigit = 0
@@ -217,7 +220,7 @@ public struct Utilities {
         }
         return remainder + "e-" + String(firstDigit)
     }
-
+    
     /// Recover the Ethereum address from recoverable secp256k1 signature. Message is first hashed using the "personal hash" protocol.
     /// BE WARNED - changing a message will result in different Ethereum address, but not in error.
     ///
@@ -227,14 +230,14 @@ public struct Utilities {
         guard let sig = Data.fromHex(signature) else { return nil }
         return Utilities.personalECRecover(data, signature: sig)
     }
-
+    
     /// Recover the Ethereum address from recoverable secp256k1 signature. Message is first hashed using the "personal hash" protocol.
     /// BE WARNED - changing a message will result in different Ethereum address, but not in an error.
     public static func personalECRecover(_ personalMessage: Data, signature: Data) -> EthereumAddress? {
         guard let hash = Utilities.hashPersonalMessage(personalMessage) else { return nil }
         return hashECRecover(hash: hash, signature: signature)
     }
-
+    
     /// Recover the Ethereum address from recoverable secp256k1 signature.
     /// Takes a hash of some message. What message is hashed should be checked by user separately.
     public static func hashECRecover(hash: Data, signature: Data) -> EthereumAddress? {
@@ -253,25 +256,25 @@ public struct Utilities {
         guard let publicKey = SECP256K1.recoverPublicKey(hash: hash, signature: signatureData) else { return nil }
         return Utilities.publicToAddress(publicKey)
     }
-
+    
     /// returns Ethereum variant of sha3 (keccak256) of data. Returns nil is data is empty
     static func keccak256(_ data: Data) -> Data? {
         if data.count == 0 { return nil }
         return data.sha3(.keccak256)
     }
-
+    
     /// returns Ethereum variant of sha3 (keccak256) of data. Returns nil is data is empty
     static func sha3(_ data: Data) -> Data? {
         if data.count == 0 { return nil }
         return data.sha3(.keccak256)
     }
-
+    
     /// returns sha256 of data. Returns nil is data is empty
     static func sha256(_ data: Data) -> Data? {
         if data.count == 0 { return nil }
         return data.sha256()
     }
-
+    
     /// Unmarshals a 65 byte recoverable EC signature into internal structure.
     static func unmarshalSignature(signatureData: Data) -> SECP256K1.UnmarshaledSignature? {
         guard signatureData.count == 65 else { return nil }
@@ -280,7 +283,7 @@ public struct Utilities {
         let v = signatureData[64]
         return SECP256K1.UnmarshaledSignature(v: v, r: Data(rSlice), s: Data(sSlice))
     }
-
+    
     /// Marshals the V, R and S signature parameters into a 65 byte recoverable EC signature.
     static func marshalSignature(v: UInt8, r: [UInt8], s: [UInt8]) -> Data? {
         guard r.count == 32, s.count == 32 else { return nil }
@@ -289,7 +292,7 @@ public struct Utilities {
         completeSignature.append(Data([v]))
         return completeSignature
     }
-
+    
     /// Marshals internal signature structure into a 65 byte recoverable EC signature.
     static func marshalSignature(unmarshalledSignature: SECP256K1.UnmarshaledSignature) -> Data {
         var completeSignature = Data(unmarshalledSignature.r)
@@ -326,33 +329,33 @@ extension Utilities {
         case gether
         case tether
         case custom(Int)
-
+        
         public var decimals: Int {
             switch self {
-            case .wei:
-                return 0
-            case .kwei, .babbage, .femtoether:
-                return 3
-            case .mwei, .lovelace, .picoether:
-                return 6
-            case .gwei, .shannon, .nanoether, .nano:
-                return 9
-            case .microether, .szabo, .micro:
-                return 12
-            case .finney, .milliether, .milli:
-                return 15
-            case .ether:
-                return 18
-            case .kether, .grand:
-                return 21
-            case .mether:
-                return 24
-            case .gether:
-                return 27
-            case .tether:
-                return 30
-            case .custom(let decimals):
-                return max(0, decimals)
+                case .wei:
+                    return 0
+                case .kwei, .babbage, .femtoether:
+                    return 3
+                case .mwei, .lovelace, .picoether:
+                    return 6
+                case .gwei, .shannon, .nanoether, .nano:
+                    return 9
+                case .microether, .szabo, .micro:
+                    return 12
+                case .finney, .milliether, .milli:
+                    return 15
+                case .ether:
+                    return 18
+                case .kether, .grand:
+                    return 21
+                case .mether:
+                    return 24
+                case .gether:
+                    return 27
+                case .tether:
+                    return 30
+                case .custom(let decimals):
+                    return max(0, decimals)
             }
         }
     }

@@ -18,22 +18,22 @@ public enum AbstractKeystoreError: LocalizedError {
     case invalidAccountError(_ additionalDescription: String? = nil)
     case invalidPasswordError
     case encryptionError(_ additionalDescription: String? = nil)
-
+    
     public var errorDescription: String? {
         var errorMessage: [String?]
         switch self {
-        case .noEntropyError(let additionalDescription):
-            errorMessage = ["Entropy error (e.g. failed to generate a random array of bytes).", additionalDescription]
-        case .keyDerivationError(let additionalDescription):
-            errorMessage = ["Key derivation error.", additionalDescription]
-        case .aesError(let additionalDescription):
-            errorMessage = ["AES error.", additionalDescription]
-        case .invalidAccountError(let additionalDescription):
-            errorMessage = ["Invalid account error.", additionalDescription]
-        case .invalidPasswordError:
-            errorMessage = ["Invalid password error."]
-        case .encryptionError(let additionalDescription):
-            errorMessage = ["Encryption error.", additionalDescription]
+            case .noEntropyError(let additionalDescription):
+                errorMessage = ["Entropy error (e.g. failed to generate a random array of bytes).", additionalDescription]
+            case .keyDerivationError(let additionalDescription):
+                errorMessage = ["Key derivation error.", additionalDescription]
+            case .aesError(let additionalDescription):
+                errorMessage = ["AES error.", additionalDescription]
+            case .invalidAccountError(let additionalDescription):
+                errorMessage = ["Invalid account error.", additionalDescription]
+            case .invalidPasswordError:
+                errorMessage = ["Invalid password error."]
+            case .encryptionError(let additionalDescription):
+                errorMessage = ["Encryption error.", additionalDescription]
         }
         return errorMessage.compactMap { $0 }.joined(separator: " ")
     }

@@ -6,7 +6,7 @@
 import Foundation
 
 extension ABI {
-
+    
     public enum ParsingError: LocalizedError {
         case invalidJsonFile
         case elementTypeInvalid(_ desc: String? = nil)
@@ -17,38 +17,38 @@ extension ABI {
         case parameterTypeInvalid
         case parameterTypeNotFound
         case abiInvalid
-
+        
         public var errorDescription: String? {
             var errorMessage: [String?]
             switch self {
-            case .invalidJsonFile:
-                errorMessage = ["invalidJsonFile"]
-            case .elementTypeInvalid(let desc):
-                errorMessage = ["elementTypeInvalid", desc]
-            case .elementNameInvalid:
-                errorMessage = ["elementNameInvalid"]
-            case .functionInputInvalid:
-                errorMessage = ["functionInputInvalid"]
-            case .functionOutputInvalid:
-                errorMessage = ["functionOutputInvalid"]
-            case .eventInputInvalid:
-                errorMessage = ["eventInputInvalid"]
-            case .parameterTypeInvalid:
-                errorMessage = ["parameterTypeInvalid"]
-            case .parameterTypeNotFound:
-                errorMessage = ["parameterTypeNotFound"]
-            case .abiInvalid:
-                errorMessage = ["abiInvalid"]
+                case .invalidJsonFile:
+                    errorMessage = ["invalidJsonFile"]
+                case .elementTypeInvalid(let desc):
+                    errorMessage = ["elementTypeInvalid", desc]
+                case .elementNameInvalid:
+                    errorMessage = ["elementNameInvalid"]
+                case .functionInputInvalid:
+                    errorMessage = ["functionInputInvalid"]
+                case .functionOutputInvalid:
+                    errorMessage = ["functionOutputInvalid"]
+                case .eventInputInvalid:
+                    errorMessage = ["eventInputInvalid"]
+                case .parameterTypeInvalid:
+                    errorMessage = ["parameterTypeInvalid"]
+                case .parameterTypeNotFound:
+                    errorMessage = ["parameterTypeNotFound"]
+                case .abiInvalid:
+                    errorMessage = ["abiInvalid"]
             }
             return errorMessage.compactMap { $0 }.joined(separator: " ")
         }
     }
-
+    
     enum TypeParsingExpressions {
-        static var typeEatingRegex = "^((u?int|bytes)([1-9][0-9]*)|(address|bool|string|tuple|bytes)|(\\[([1-9][0-9]*)\\]))"
-        static var arrayEatingRegex = "^(\\[([1-9][0-9]*)?\\])?.*$"
+        static let typeEatingRegex = "^((u?int|bytes)([1-9][0-9]*)|(address|bool|string|tuple|bytes)|(\\[([1-9][0-9]*)\\]))"
+        static let arrayEatingRegex = "^(\\[([1-9][0-9]*)?\\])?.*$"
     }
-
+    
     fileprivate enum ElementType: String {
         case function
         case constructor
@@ -57,7 +57,7 @@ extension ABI {
         case receive
         case error
     }
-
+    
 }
 
 extension ABI.Record {
@@ -72,26 +72,26 @@ extension ABI.Record {
 
 private func parseToElement(from abiRecord: ABI.Record, type: ABI.ElementType) throws -> ABI.Element {
     switch type {
-    case .function:
-        let function = try parseFunction(abiRecord: abiRecord)
-        return ABI.Element.function(function)
-    case .constructor:
-        let constructor = try parseConstructor(abiRecord: abiRecord)
-        return ABI.Element.constructor(constructor)
-    case .fallback:
-        let fallback = try parseFallback(abiRecord: abiRecord)
-        return ABI.Element.fallback(fallback)
-    case .event:
-        let event = try parseEvent(abiRecord: abiRecord)
-        return ABI.Element.event(event)
-    case .receive:
-        let receive = try parseReceive(abiRecord: abiRecord)
-        return ABI.Element.receive(receive)
-    case .error:
-        let error = try parseError(abiRecord: abiRecord)
-        return ABI.Element.error(error)
+        case .function:
+            let function = try parseFunction(abiRecord: abiRecord)
+            return ABI.Element.function(function)
+        case .constructor:
+            let constructor = try parseConstructor(abiRecord: abiRecord)
+            return ABI.Element.constructor(constructor)
+        case .fallback:
+            let fallback = try parseFallback(abiRecord: abiRecord)
+            return ABI.Element.fallback(fallback)
+        case .event:
+            let event = try parseEvent(abiRecord: abiRecord)
+            return ABI.Element.event(event)
+        case .receive:
+            let receive = try parseReceive(abiRecord: abiRecord)
+            return ABI.Element.receive(receive)
+        case .error:
+            let error = try parseError(abiRecord: abiRecord)
+            return ABI.Element.error(error)
     }
-
+    
 }
 
 private func parseFunction(abiRecord: ABI.Record) throws -> ABI.Element.Function {
@@ -179,7 +179,7 @@ extension ABI.Input {
                 return input.type
             })
             let tupleType = ABI.Element.ParameterType.tuple(types: components!)
-
+            
             let newType: ABI.Element.ParameterType = .array(type: tupleType, length: 0)
             let nativeInput = ABI.Element.InOut(name: name, type: newType)
             return nativeInput
@@ -188,7 +188,7 @@ extension ABI.Input {
             return nativeInput
         }
     }
-
+    
     func parseForEvent() throws -> ABI.Element.Event.Input {
         let name = self.name ?? ""
         let parameterType = try ABITypeParser.parseTypeString(self.type)
@@ -202,32 +202,32 @@ extension ABI.Output {
         let name = self.name != nil ? self.name! : ""
         let parameterType = try ABITypeParser.parseTypeString(self.type)
         switch parameterType {
-        case .tuple(types: _):
-            let components = try self.components?.compactMap({ (inp: ABI.Output) throws -> ABI.Element.ParameterType in
-                let input = try inp.parse()
-                return input.type
-            })
-            let type = ABI.Element.ParameterType.tuple(types: components!)
-            let nativeInput = ABI.Element.InOut(name: name, type: type)
-            return nativeInput
-        case .array(type: let subtype, length: let length):
-            switch subtype {
             case .tuple(types: _):
                 let components = try self.components?.compactMap({ (inp: ABI.Output) throws -> ABI.Element.ParameterType in
                     let input = try inp.parse()
                     return input.type
                 })
-                let nestedSubtype = ABI.Element.ParameterType.tuple(types: components!)
-                let properType = ABI.Element.ParameterType.array(type: nestedSubtype, length: length)
-                let nativeInput = ABI.Element.InOut(name: name, type: properType)
+                let type = ABI.Element.ParameterType.tuple(types: components!)
+                let nativeInput = ABI.Element.InOut(name: name, type: type)
                 return nativeInput
+            case .array(type: let subtype, length: let length):
+                switch subtype {
+                    case .tuple(types: _):
+                        let components = try self.components?.compactMap({ (inp: ABI.Output) throws -> ABI.Element.ParameterType in
+                            let input = try inp.parse()
+                            return input.type
+                        })
+                        let nestedSubtype = ABI.Element.ParameterType.tuple(types: components!)
+                        let properType = ABI.Element.ParameterType.array(type: nestedSubtype, length: length)
+                        let nativeInput = ABI.Element.InOut(name: name, type: properType)
+                        return nativeInput
+                    default:
+                        let nativeInput = ABI.Element.InOut(name: name, type: parameterType)
+                        return nativeInput
+                }
             default:
                 let nativeInput = ABI.Element.InOut(name: name, type: parameterType)
                 return nativeInput
-            }
-        default:
-            let nativeInput = ABI.Element.InOut(name: name, type: parameterType)
-            return nativeInput
         }
     }
 }

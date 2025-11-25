@@ -11,11 +11,11 @@ import Foundation
 struct AnyCodingKey: CodingKey {
     var stringValue: String
     var intValue: Int?
-
+    
     init?(stringValue: String) {
         self.stringValue = stringValue
     }
-
+    
     init?(intValue: Int) {
         self.intValue = intValue
         self.stringValue = String(intValue)
@@ -36,7 +36,7 @@ extension KeyedDecodingContainer {
         guard let value = T(from: hexString) else { throw Web3Error.dataError }
         return value
     }
-
+    
     /// Decodes a value of the given key from Hex to `[DecodableFromHex]`
     ///
     /// Currently this method supports only `Data.Type`, `BigUInt.Type`, `Date.Type`, `UInt.Type`
@@ -50,7 +50,7 @@ extension KeyedDecodingContainer {
         guard let array = try? container.decodeHex(type) else { throw Web3Error.dataError }
         return array
     }
-
+    
     /// Decodes a value of the given key from Hex to `[[DecodableFromHex]]`
     ///
     /// Currently this method supports only `Data.Type`, `BigUInt.Type`, `Date.Type`, `EthereumAddress`, `UInt.Type`
@@ -64,7 +64,7 @@ extension KeyedDecodingContainer {
         guard let array = try? container.decodeHex(type) else { throw Web3Error.dataError }
         return array
     }
-
+    
     /// Decodes a value of the given key from Hex to `DecodableFromHex`
     ///
     /// Currently this method supports only `Data.Type`, `BigUInt.Type`, `Date.Type`, `UInt.Type`
@@ -97,7 +97,7 @@ extension UnkeyedDecodingContainer {
         }
         return array
     }
-
+    
     /// Decodes a unkeyed value from Hex to `DecodableFromHex`
     ///
     /// Currently this method supports only `Data.Type`, `BigUInt.Type`, `Date.Type`, `EthereumAddress`

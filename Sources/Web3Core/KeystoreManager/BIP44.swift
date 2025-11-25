@@ -24,11 +24,11 @@ public protocol BIP44 {
 public enum BIP44Error: LocalizedError, Equatable {
     /// The selected path doesn't fulfill BIP44 standard, you can derive the root key anyway
     case warning
-
+    
     public var errorDescription: String? {
         switch self {
-        case .warning:
-            return "Couldn't derive key as it doesn't have a previous account with at least one transaction"
+            case .warning:
+                return "Couldn't derive key as it doesn't have a previous account with at least one transaction"
         }
     }
 }
@@ -57,8 +57,8 @@ extension HDNode: BIP44 {
                 var hasTransactions = false
                 for searchAddressIndex in 0..<maxUnusedAddressIndexes {
                     if let searchPath = path.newPath(account: searchAccount, addressIndex: searchAddressIndex),
-                    let childNode = derive(path: searchPath, derivePrivateKey: true),
-                    let ethAddress = Utilities.publicToAddress(childNode.publicKey) {
+                       let childNode = derive(path: searchPath, derivePrivateKey: true),
+                       let ethAddress = Utilities.publicToAddress(childNode.publicKey) {
                         hasTransactions = try await transactionChecker.hasTransactions(ethereumAddress: ethAddress)
                         if hasTransactions {
                             break
@@ -86,7 +86,7 @@ extension String {
             return false
         }
     }
-
+    
     /// Returns the account from the path if self contains a well formed BIP44 path
     var accountFromPath: Int? {
         guard isBip44Path else {
@@ -100,7 +100,7 @@ extension String {
         }
         return account
     }
-
+    
     /// Transforms a bip44 path into a new one changing account & index. The resulting one will have the change value equal to `0` to
     /// represent the external chain. The format will be `m/44'/coin_type'/account'/change/address_index`
     /// - Parameter account: the new account to use

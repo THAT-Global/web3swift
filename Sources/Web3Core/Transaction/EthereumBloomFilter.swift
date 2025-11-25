@@ -17,7 +17,7 @@ import CryptoSwift
 /// Bloom filter can be calculated for any set of data. In case of Ethereum blockchain it could be a set of addresses, event topics  etc.
 ///
 /// A definition of [Bloom filter](https://en.wikipedia.org/wiki/Bloom_filter#:~:text=A%20Bloom%20filter%20is%20a,a%20member%20of%20a%20set.).
-public struct EthereumBloomFilter {
+public struct EthereumBloomFilter: Sendable {
     static let mask = BigUInt(2047)
     /// Bloom filter.
     public var bytes = Data(repeatElement(UInt8(0), count: 256))
@@ -36,7 +36,7 @@ public struct EthereumBloomFilter {
 }
 
 extension EthereumBloomFilter {
-
+    
     // MARK: - Bloom filter calculation functions
     /// Calculates Bloom filter from Keccak-256 calculated from given `number`.
     /// - Parameter number: some number to calculate filter from.
@@ -44,7 +44,7 @@ extension EthereumBloomFilter {
     static func bloom9(_ number: BigUInt) -> BigUInt {
         bloom9(number.serialize())
     }
-
+    
     /// Calculates Bloom filter from Keccak-256 calculated from given `data`.
     /// - Parameter data: some data to calculate filter from, e.g. event's topic or address of a smart contract.
     /// - Returns: Bloom filter.
@@ -61,16 +61,16 @@ extension EthereumBloomFilter {
             ((BigUInt(b[5]) + (BigUInt(b[4]) << 8)) & EthereumBloomFilter.mask)
         return result | nextPoint
     }
-
+    
     // MARK: - Bloom filter match functions
     public static func bloomLookup(_ bloom: EthereumBloomFilter, topic: Data) -> Bool {
         bloom.test(topic: topic)
     }
-
+    
     public static func bloomLookup(_ bloom: EthereumBloomFilter, topic: BigUInt) -> Bool {
         EthereumBloomFilter.bloomLookup(bloom, topic: topic.serialize())
     }
-
+    
     /// Check if topic is in the bloom filter.
     /// - Parameter topic: topic of an event as bytes;
     /// - Returns: `true` if topic is possibly in set, `false` if definitely not in set.
@@ -79,18 +79,18 @@ extension EthereumBloomFilter {
         let comparison = EthereumBloomFilter.bloom9(topic)
         return bin & comparison == comparison
     }
-
+    
     /// Check if topic is in the bloom filter.
     /// - Parameter topic: topic of an event in `BigUInt`;
     /// - Returns: `true` if topic is possibly in set, `false` if definitely not in set.
     public func test(topic: BigUInt) -> Bool {
         test(topic: topic.serialize())
     }
-
+    
     public func lookup(_ topic: Data) -> Bool {
         EthereumBloomFilter.bloomLookup(self, topic: topic)
     }
-
+    
     // MARK: - Create Bloom filter from a list of logs
     /// Creates a bloom filter from ``EventLog/address`` and ``EventLog/topics``.
     /// - Parameter logs: event logs to create filter from.
@@ -105,7 +105,7 @@ extension EthereumBloomFilter {
         }
         return bin
     }
-
+    
     /// Creates a bloom filter from arrays of logs from each ``TransactionReceipt``.
     /// ``TransactionReceipt/logs`` from each entry in `receipts` array are combined to create a bloom filter
     /// using ``EthereumBloomFilter/logsToBloom(_:)``.
@@ -118,18 +118,18 @@ extension EthereumBloomFilter {
         }
         return EthereumBloomFilter(bin)!
     }
-
+    
     // MARK: - Mutating functions
     public mutating func add(_ biguint: BigUInt) {
         let newBloomFilter = asBigUInt() | EthereumBloomFilter.bloom9(biguint)
         setBytes(newBloomFilter.serialize())
     }
-
+    
     public mutating func add(_ data: Data) {
         let newBloomFilter = asBigUInt() | EthereumBloomFilter.bloom9(data)
         setBytes(newBloomFilter.serialize())
     }
-
+    
     mutating func setBytes(_ data: Data) {
         if bytes.count < data.count {
             fatalError("bloom bytes are too big")

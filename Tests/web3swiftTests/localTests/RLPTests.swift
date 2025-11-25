@@ -7,7 +7,7 @@ import XCTest
 import BigInt
 import Web3Core
 
-@testable import web3swift
+@testable import Web3Swift
 
 class RLPTests: LocalTestCase {
 

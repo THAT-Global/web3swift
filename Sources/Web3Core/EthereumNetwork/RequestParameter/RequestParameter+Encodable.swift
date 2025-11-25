@@ -8,7 +8,7 @@
 import Foundation
 
 extension RequestParameter: Encodable {
-
+    
     /// This encoder encodes `RequestParameter` associated value ignoring self value
     ///
     /// This is required to encode mixed types array, like
@@ -31,24 +31,24 @@ extension RequestParameter: Encodable {
         /// each `rawValue` forced to casts only in exact case which is runs based on `rawValue` type
         // swiftlint:disable force_cast
         switch type(of: self.rawValue) {
-        case is Int.Type: try enumContainer.encode(rawValue as! Int)
-        case is [Int].Type: try enumContainer.encode(rawValue as! [Int])
-
-        case is UInt.Type: try enumContainer.encode(rawValue as! UInt)
-        case is [UInt].Type: try enumContainer.encode(rawValue as! [UInt])
-
-        case is String.Type: try enumContainer.encode(rawValue as! String)
-        case is [String].Type: try enumContainer.encode(rawValue as! [String])
-
-        case is Double.Type: try enumContainer.encode(rawValue as! Double)
-        case is [Double].Type: try enumContainer.encode(rawValue as! [Double])
-
-        case is Bool.Type: try enumContainer.encode(rawValue as! Bool)
-        case is [Bool].Type: try enumContainer.encode(rawValue as! [Bool])
-
-        case is CodableTransaction.Type: try enumContainer.encode(rawValue as! CodableTransaction)
-        case is EventFilterParameters.Type: try enumContainer.encode(rawValue as! EventFilterParameters)
-        default: break /// can't be executed, coz possible `self.rawValue` types are strictly defined in it's implementation.`
+            case is Int.Type: try enumContainer.encode(rawValue as! Int)
+            case is [Int].Type: try enumContainer.encode(rawValue as! [Int])
+                
+            case is UInt.Type: try enumContainer.encode(rawValue as! UInt)
+            case is [UInt].Type: try enumContainer.encode(rawValue as! [UInt])
+                
+            case is String.Type: try enumContainer.encode(rawValue as! String)
+            case is [String].Type: try enumContainer.encode(rawValue as! [String])
+                
+            case is Double.Type: try enumContainer.encode(rawValue as! Double)
+            case is [Double].Type: try enumContainer.encode(rawValue as! [Double])
+                
+            case is Bool.Type: try enumContainer.encode(rawValue as! Bool)
+            case is [Bool].Type: try enumContainer.encode(rawValue as! [Bool])
+                
+            case is CodableTransaction.Type: try enumContainer.encode(rawValue as! CodableTransaction)
+            case is EventFilterParameters.Type: try enumContainer.encode(rawValue as! EventFilterParameters)
+            default: break /// can't be executed, coz possible `self.rawValue` types are strictly defined in it's implementation.`
         }
         // swiftlint:enable force_cast
     }

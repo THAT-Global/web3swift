@@ -7,10 +7,10 @@ import Foundation
 
 public extension NSRegularExpression {
     typealias GroupNamesSearchResult = (NSTextCheckingResult, NSTextCheckingResult, Int)
-
+    
     private func getNamedCaptureGroups() -> [String: GroupNamesSearchResult] {
         var groupnames = [String: GroupNamesSearchResult]()
-
+        
         guard let greg = try? NSRegularExpression(pattern: "\\(\\?<([\\w\\a_-]*)>$",
                                                   options: .dotMatchesLineSeparators),
               let reg = try? NSRegularExpression(pattern: "\\(.*?>",
@@ -18,7 +18,7 @@ public extension NSRegularExpression {
             // This never happens but the alternative is to make this method throwing
             return groupnames
         }
-
+        
         let m = reg.matches(in: pattern, options: .withTransparentBounds, range: pattern.fullNSRange)
         for (nameIndex, g) in m.enumerated() {
             let r = pattern.range(from: g.range(at: 0))
@@ -28,15 +28,15 @@ public extension NSRegularExpression {
                 let r2 = gstring.range(from: gmatch[0].range(at: 1))!
                 groupnames[String(gstring[r2])] = (g, gmatch[0], nameIndex)
             }
-
+            
         }
         return groupnames
     }
-
+    
     func captureGroups(string: String, options: NSRegularExpression.MatchingOptions = []) -> [String: String] {
         captureGroups(string: string, options: options, range: string.fullNSRange)
     }
-
+    
     func captureGroups(string: String, options: NSRegularExpression.MatchingOptions = [], range: NSRange) -> [String: String] {
         var dict = [String: String]()
         let matchResult = matches(in: string, options: options, range: range)

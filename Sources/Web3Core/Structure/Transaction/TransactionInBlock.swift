@@ -7,11 +7,11 @@
 
 import Foundation
 
-public enum TransactionInBlock: Decodable {
+public enum TransactionInBlock: Decodable, Sendable {
     case hash(Data)
     case transaction(CodableTransaction)
     case null
-
+    
     public init(from decoder: Decoder) throws {
         let value = try decoder.singleValueContainer()
         if let string = try? value.decode(String.self) {

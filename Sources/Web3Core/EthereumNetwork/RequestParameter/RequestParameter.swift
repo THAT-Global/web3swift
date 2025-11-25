@@ -39,19 +39,19 @@ import Foundation
 enum RequestParameter {
     case int(Int)
     case intArray([Int])
-
+    
     case uint(UInt)
     case uintArray([UInt])
-
+    
     case double(Double)
     case doubleArray([Double])
-
+    
     case string(String)
     case stringArray([String])
-
+    
     case bool(Bool)
     case boolArray([Bool])
-
+    
     case transaction(CodableTransaction)
     case eventFilter(EventFilterParameters)
 }

@@ -9,7 +9,7 @@ import Foundation
 import BigInt
 
 public enum BlockNumber: CustomStringConvertible, Sendable {
-
+    
     case pending
     /// Latest block of a chain
     case latest
@@ -17,18 +17,18 @@ public enum BlockNumber: CustomStringConvertible, Sendable {
     case earliest
     /// Exact block number
     case exact(BigUInt)
-
+    
     /// Block number as a hex string
     public var description: String {
         switch self {
-        case .pending:
-            return "pending"
-        case .latest:
-            return "latest"
-        case .earliest:
-            return "earliest"
-        case .exact(let number):
-            return String(number, radix: 16).addHexPrefix()
+            case .pending:
+                return "pending"
+            case .latest:
+                return "latest"
+            case .earliest:
+                return "earliest"
+            case .exact(let number):
+                return String(number, radix: 16).addHexPrefix()
         }
     }
 }

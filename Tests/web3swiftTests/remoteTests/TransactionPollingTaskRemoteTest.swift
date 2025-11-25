@@ -7,7 +7,7 @@
 
 import XCTest
 
-@testable import web3swift
+@testable import Web3Swift
 @testable import Web3Core
 
 final class TransactionPollingTaskRemoteTest: XCTestCase {

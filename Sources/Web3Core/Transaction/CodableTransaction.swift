@@ -4,8 +4,8 @@
 //
 //  Additions for new transaction types by Mark Loit 2022
 
-import Foundation
 import BigInt
+import Foundation
 
 /// Structure capable of carying the parameters for any transaction type.
 /// While most fields in this struct are optional, they are not necessarily
@@ -14,32 +14,32 @@ public struct CodableTransaction: Sendable {
     /// internal access only. The transaction envelope object itself that contains all the transaction data
     /// and type specific implementation
     internal var envelope: AbstractEnvelope
-
+    
     /// storage container for additional metadata returned by the node
     /// when a transaction is decoded form a JSON stream
     public var meta: TransactionMetadata?
-
+    
     // MARK: - Properties that always sends to a Node
-
+    
     /// the address of the sender of the transaction recovered from the signature
     public var sender: EthereumAddress? {
         guard let publicKey = self.recoverPublicKey() else { return nil }
         return Utilities.publicToAddress(publicKey)
     }
-
+    
     public var from: EthereumAddress?
-
+    
     /// the destination, or contract, address for the transaction
     public var to: EthereumAddress {
         get { return envelope.to }
         set { envelope.to = newValue }
     }
-
+    
     /// signifies the transaction type that this payload is for
     /// indicates what fields should be populated.
     /// this should always be set to give an idea of what other fields to expect
     public var type: TransactionType { return envelope.type }
-
+    
     /// the chainId that transaction is targeted for
     /// should be set for all types, except some Legacy transactions (Pre EIP-155)
     /// will not have this set
@@ -47,53 +47,53 @@ public struct CodableTransaction: Sendable {
         get { return envelope.chainID }
         set { envelope.chainID = newValue }
     }
-
+    
     /// the native value of the transaction
     public var value: BigUInt {
         get { return envelope.value }
         set { envelope.value = newValue }
     }
-
+    
     public var data: Data {
         get { return envelope.data }
         set { envelope.data = newValue }
     }
-
+    
     // MARK: - Properties transaction type related either sends to a node if exist
-
+    
     /// the nonce for the transaction
     public var nonce: BigUInt {
         get { return envelope.nonce }
         set { envelope.nonce = newValue }
     }
-
+    
     /// the max number of gas units allowed to process this transaction
     public var gasLimit: BigUInt {
         get { return envelope.gasLimit }
         set { return envelope.gasLimit = newValue }
     }
-
+    
     /// the price per gas unit for the transaction (Legacy and EIP-2930 only)
     public var gasPrice: BigUInt? {
         get { return envelope.gasPrice }
         set { return envelope.gasPrice = newValue }
     }
-
+    
     /// the max base fee per gas unit (EIP-1559 only)
     /// this value must be >= baseFee + maxPriorityFeePerGas
     public var maxFeePerGas: BigUInt? {
         get { return envelope.maxFeePerGas }
         set { return envelope.maxFeePerGas = newValue }
     }
-
+    
     /// the maximum tip to pay the miner (EIP-1559 only)
     public var maxPriorityFeePerGas: BigUInt? {
         get { return envelope.maxPriorityFeePerGas }
         set { return envelope.maxPriorityFeePerGas = newValue }
     }
-
+    
     public var callOnBlock: BlockNumber?
-
+    
     /// access list for contract execution (EIP-2930 and EIP-1559 only)
     public var accessList: [AccessListEntry]? {
         get {
@@ -104,9 +104,9 @@ public struct CodableTransaction: Sendable {
             eip2930Compatible?.accessList = newValue ?? []
         }
     }
-
+    
     // MARK: - Properties to contract encode/sign data only
-
+    
     // signature data is read-only
     /// signature v component (read only)
     public var v: BigUInt { return envelope.v }
@@ -114,37 +114,37 @@ public struct CodableTransaction: Sendable {
     public var r: BigUInt { return envelope.r }
     /// signature s component (read only)
     public var s: BigUInt { return envelope.s }
-
+    
     /// the transaction hash
     public var hash: Data? {
         guard let encoded: Data = self.envelope.encode(for: .transaction) else { return nil }
         let hash = encoded.sha3(.keccak256)
         return hash
     }
-
+    
     private init() { preconditionFailure("Memberwise not supported") } // disable the memberwise initializer
-
+    
     /// - Returns: a hash of the transaction suitable for signing
     public func hashForSignature() -> Data? {
         guard let encoded = self.envelope.encode(for: .signature) else { return nil }
         let hash = encoded.sha3(.keccak256)
         return hash
     }
-
+    
     /// - Returns: the public key decoded from the signature data
     public func recoverPublicKey() -> Data? {
         guard let sigData = envelope.getUnmarshalledSignatureData() else { return nil }
         guard let vData = BigUInt(sigData.v).serialize().setLengthLeft(1) else { return nil }
         let rData = sigData.r
         let sData = sigData.s
-
+        
         guard let signatureData = SECP256K1.marshalSignature(v: vData, r: rData, s: sData) else { return nil }
         guard let hash = hashForSignature() else { return nil }
-
+        
         guard let publicKey = SECP256K1.recoverPublicKey(hash: hash, signature: signatureData) else { return nil }
         return publicKey
     }
-
+    
     /// Signs the transaction
     ///
     /// This method signs transaction itself and not related to contract call data signing.
@@ -158,7 +158,7 @@ public struct CodableTransaction: Sendable {
         }
         throw AbstractKeystoreError.invalidAccountError("Failed to sign transaction with given private key.")
     }
-
+    
     // actual signing algorithm implementation
     private mutating func attemptSignature(privateKey: Data, useExtraEntropy: Bool = false) -> Bool {
         guard let hash = self.hashForSignature() else { return false }
@@ -171,24 +171,31 @@ public struct CodableTransaction: Sendable {
         if !(originalPublicKey.constantTimeComparisonTo(recoveredPublicKey)) { return false }
         return true
     }
-
+    
     /// clears the signature data
     public mutating func unsign() {
         self.envelope.clearSignatureData()
     }
-
+    
     /// Create a new CodableTransaction from a raw stream of bytes from the blockchain
     public init?(rawValue: Data) {
         guard let env = EnvelopeFactory.createEnvelope(rawValue: rawValue) else { return nil }
         self.envelope = env
     }
-
+    
     /// - Returns: a raw bytestream of the transaction, encoded according to the transactionType
     public func encode(for type: EncodeType = .transaction) -> Data? {
         return self.envelope.encode(for: type)
     }
-
-    public static var emptyTransaction = CodableTransaction(to: EthereumAddress.contractDeploymentAddress())
+    
+    public static func emptyEIP1559Transaction(to: EthereumAddress = .contractDeploymentAddress()) -> CodableTransaction {
+        .init(type: .eip1559, to: to)
+    }
+    
+    /// public static var emptyTransaction = CodableTransaction(to: EthereumAddress.contractDeploymentAddress())
+    public static var emptyTransaction: CodableTransaction {
+        .init(to: EthereumAddress.contractDeploymentAddress())
+    }
 }
 
 extension CodableTransaction: Codable {
@@ -206,24 +213,24 @@ extension CodableTransaction: Codable {
         case maxPriorityFeePerGas
         case accessList
     }
-
+    
     /// initializer required to support the Decodable protocol
     /// - Parameter decoder: the decoder stream for the input data
     public init(from decoder: Decoder) throws {
         guard let env = try EnvelopeFactory.createEnvelope(from: decoder) else { throw Web3Error.dataError }
         self.envelope = env
-
+        
         // capture any metadata that might be present
         self.meta = try TransactionMetadata(from: decoder)
     }
-
+    
     public func encode(to encoder: Encoder) throws {
         // FIXME: There's a huge mess here, please take a look here at code review if any.
         var containier = encoder.container(keyedBy: CodingKeys.self)
         try containier.encode(nonce.hexString, forKey: .nonce)
         try containier.encode(data.toHexString().addHexPrefix(), forKey: .data)
         try containier.encode(value.hexString, forKey: .value)
-
+        
         // Encoding only fields with value.
         // TODO: Rewrite me somehow better.
         if type != .legacy {
@@ -232,36 +239,35 @@ extension CodableTransaction: Codable {
                 try containier.encode(chainID.hexString, forKey: .chainID)
             }
         }
-        if let accessList = accessList, !accessList.isEmpty {
+        if let accessList, !accessList.isEmpty {
             try containier.encode(accessList, forKey: .accessList)
         }
-
+        
         if !gasLimit.isZero {
             try containier.encode(gasLimit.hexString, forKey: .gasLimit)
         }
-
-        if let gasPrice = gasPrice, !gasPrice.isZero {
+        
+        if let gasPrice, !gasPrice.isZero {
             try containier.encode(gasPrice.hexString, forKey: .gasPrice)
         }
-
-        if let maxFeePerGas = maxFeePerGas, !maxFeePerGas.isZero {
+        
+        if let maxFeePerGas, !maxFeePerGas.isZero {
             try containier.encode(maxFeePerGas.hexString, forKey: .maxFeePerGas)
         }
-
-        if let maxPriorityFeePerGas = maxPriorityFeePerGas, !maxPriorityFeePerGas.isZero {
+        
+        if let maxPriorityFeePerGas, !maxPriorityFeePerGas.isZero {
             try containier.encode(maxPriorityFeePerGas.hexString, forKey: .maxPriorityFeePerGas)
         }
-
+        
         // Don't encode empty address
         if !to.address.elementsEqual("0x") {
             try containier.encode(to, forKey: .to)
         }
-
-        if let from = from {
+        
+        if let from {
             try containier.encode(from, forKey: .from)
         }
     }
-
 }
 
 extension CodableTransaction: CustomStringConvertible {
@@ -291,13 +297,82 @@ extension CodableTransaction {
     ///   - r: signature r parameter (default 0) - will get set properly once signed
     ///   - s: signature s parameter (default 0) - will get set properly once signed
     ///   - parameters: EthereumParameters object containing additional parameters for the transaction like gas
-    public init(type: TransactionType? = nil, to: EthereumAddress, nonce: BigUInt = 0,
-                chainID: BigUInt = 0, value: BigUInt = 0, data: Data = Data(),
-                gasLimit: BigUInt = 0, maxFeePerGas: BigUInt? = nil, maxPriorityFeePerGas: BigUInt? = nil, gasPrice: BigUInt? = nil,
-                accessList: [AccessListEntry]? = nil, v: BigUInt = 1, r: BigUInt = 0, s: BigUInt = 0) {
-        callOnBlock = .latest
-
-        envelope = EnvelopeFactory.createEnvelope(type: type, to: to, nonce: nonce, chainID: chainID, value: value, data: data, gasLimit: gasLimit, maxFeePerGas: maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas, gasPrice: gasPrice, accessList: accessList, v: v, r: r, s: s)
+    public init(
+        type: TransactionType = .eip1559,
+        to: EthereumAddress,
+        nonce: BigUInt = 0,
+        chainID: BigUInt = 0,
+        value: BigUInt = 0,
+        data: Data = Data(),
+        gasLimit: BigUInt = 0,
+        maxFeePerGas: BigUInt? = nil,
+        maxPriorityFeePerGas: BigUInt? = nil,
+        gasPrice: BigUInt? = nil,
+        accessList: [AccessListEntry]? = nil,
+        v: BigUInt = 1, r: BigUInt = 0, s: BigUInt = 0,
+        callOnBlock: BlockNumber = .latest
+    ) {
+        self.callOnBlock = callOnBlock
+        envelope = EnvelopeFactory.createEnvelope(
+            type: type,
+            to: to,
+            nonce: nonce,
+            chainID: chainID,
+            value: value,
+            data: data,
+            gasLimit: gasLimit,
+            maxFeePerGas: maxFeePerGas,
+            maxPriorityFeePerGas: maxPriorityFeePerGas,
+            gasPrice: gasPrice,
+            accessList: accessList,
+            v: v, r: r, s: s
+        )
+    }
+    
+    /// Convenience initializer for constructing a CodableTransaction with a `from` address.
+    ///
+    /// - Note:
+    ///   The `from` field is optional from a protocol perspective — it is **not signed** or included in the transaction payload sent to the blockchain.
+    ///   Instead, it serves as **optional metadata** primarily used in:
+    ///     - `eth_estimateGas` and similar RPC methods that require a sender
+    ///     - Client-side logic or simulation tools
+    ///
+    ///   When transactions are signed locally (e.g. with a private key or hardware wallet), the `from` address is **recovered from the signature** on-chain.
+    ///   Therefore, this field can be omitted unless you need it for RPC calls that simulate or analyze unsigned transactions.
+    ///
+    ///   You can also use the `sender` property to **derive** the sender from the signature after signing.
+    public init(
+        type: TransactionType = .eip1559,
+        from: EthereumAddress? = nil,
+        to: EthereumAddress,
+        nonce: BigUInt = 0,
+        chainID: BigUInt,
+        value: BigUInt = 0,
+        data: Data = Data(),
+        gasLimit: BigUInt = 0,
+        maxFeePerGas: BigUInt? = nil,
+        maxPriorityFeePerGas: BigUInt? = nil,
+        gasPrice: BigUInt? = nil,
+        accessList: [AccessListEntry]? = nil,
+        v: BigUInt = 1, r: BigUInt = 0, s: BigUInt = 0,
+        callOnBlock: BlockNumber = .latest
+    ) {
+        self.init(
+            type: type,
+            to: to,
+            nonce: nonce,
+            chainID: chainID,
+            value: value,
+            data: data,
+            gasLimit: gasLimit,
+            maxFeePerGas: maxFeePerGas,
+            maxPriorityFeePerGas: maxPriorityFeePerGas,
+            gasPrice: gasPrice,
+            accessList: accessList,
+            v: v, r: r, s: s,
+            callOnBlock: callOnBlock
+        )
+        self.from = from
     }
 }
 

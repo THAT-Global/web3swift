@@ -8,7 +8,7 @@ import XCTest
 import BigInt
 import Web3Core
 
-@testable import web3swift
+@testable import Web3Swift
 
 // MARK: Works only with network connection
 class GasOracleTests: XCTestCase {

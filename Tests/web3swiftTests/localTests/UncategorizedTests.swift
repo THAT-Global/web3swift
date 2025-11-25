@@ -8,7 +8,7 @@ import CryptoSwift
 import BigInt
 
 @testable import Web3Core
-@testable import web3swift
+@testable import Web3Swift
 
 class UncategorizedTests: LocalTestCase {
     func testBitFunctions() throws {

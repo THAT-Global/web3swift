@@ -11,12 +11,12 @@ import BigInt
 public struct TxPoolContent: Decodable {
     public var pending: [EthereumAddress: [TxPoolContentForNonce]]
     public var queued: [EthereumAddress: [TxPoolContentForNonce]]
-
+    
     enum CodingKeys: String, CodingKey {
         case pending
         case queued
     }
-
+    
     fileprivate static func decodePoolContentForKey<T>(container: KeyedDecodingContainer<T>, key: KeyedDecodingContainer<T>.Key) throws -> [EthereumAddress: [TxPoolContentForNonce]] {
         let raw = try container.nestedContainer(keyedBy: AdditionalDataCodingKeys.self, forKey: key)
         var result = [EthereumAddress: [TxPoolContentForNonce]]()
@@ -47,13 +47,13 @@ public struct TxPoolContent: Decodable {
         }
         return result
     }
-
+    
     fileprivate struct AdditionalDataCodingKeys: CodingKey {
         var stringValue: String
         init?(stringValue: String) {
             self.stringValue = stringValue
         }
-
+        
         var intValue: Int?
         init?(intValue: Int) {
             return nil
@@ -71,7 +71,7 @@ extension TxPoolContent {
     }
 }
 
-public struct TxPoolContentForNonce {
+public struct TxPoolContentForNonce: Sendable {
     public var nonce: BigUInt
     public var details: [TransactionDetails]
 }

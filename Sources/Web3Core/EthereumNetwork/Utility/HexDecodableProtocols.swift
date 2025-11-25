@@ -7,7 +7,7 @@
 import BigInt
 import Foundation
 
-public protocol APIResultType: Decodable { }
+public protocol APIResultType: Decodable, Sendable { }
 
 extension Array: APIResultType where Element: APIResultType { }
 

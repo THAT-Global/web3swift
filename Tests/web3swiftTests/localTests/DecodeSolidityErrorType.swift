@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import web3swift
+import Web3Swift
 import Web3Core
 
 /// Since solidity 0.8.4 a new type was introduced called `error`.

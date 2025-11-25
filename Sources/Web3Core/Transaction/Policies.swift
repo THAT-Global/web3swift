@@ -15,20 +15,20 @@ public typealias NoncePolicy = BlockNumber
 /// - gas price
 /// - maximum fee per gas (see [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559))
 /// - maximum priority fee per gas (see [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559))
-public enum ValueResolutionPolicy {
+public enum ValueResolutionPolicy: Sendable {
     /// What ever value will be resolved is the one to be applied
     case automatic
     /// Specific value to be applied
     case manual(BigUInt)
 }
 
-public struct Policies {
+public struct Policies: Sendable {
     public let noncePolicy: NoncePolicy
     public let gasLimitPolicy: ValueResolutionPolicy
     public let gasPricePolicy: ValueResolutionPolicy
     public let maxFeePerGasPolicy: ValueResolutionPolicy
     public let maxPriorityFeePerGasPolicy: ValueResolutionPolicy
-
+    
     public init(
         noncePolicy: NoncePolicy = .latest,
         gasLimitPolicy: ValueResolutionPolicy = .automatic,
@@ -41,6 +41,6 @@ public struct Policies {
             self.maxFeePerGasPolicy = maxFeePerGasPolicy
             self.maxPriorityFeePerGasPolicy = maxPriorityFeePerGasPolicy
         }
-
-    public static let auto = Policies()
+    
+    public static var auto: Policies { Policies() }
 }

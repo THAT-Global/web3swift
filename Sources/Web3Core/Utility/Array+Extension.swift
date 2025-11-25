@@ -27,15 +27,15 @@ extension Array where Element == UInt8 {
             let v: UInt8
             let c: UInt8 = UInt8(char.value)
             switch c {
-            case let c where c <= 57:
-                v = c - 48
-            case let c where c >= 65 && c <= 70:
-                v = c - 55
-            case let c where c >= 97:
-                v = c - 87
-            default:
-                removeAll()
-                return
+                case let c where c <= 57:
+                    v = c - 48
+                case let c where c >= 65 && c <= 70:
+                    v = c - 55
+                case let c where c >= 97:
+                    v = c - 87
+                default:
+                    removeAll()
+                    return
             }
             if let b = buffer {
                 append(b << 4 | v)
@@ -48,7 +48,7 @@ extension Array where Element == UInt8 {
             append(b)
         }
     }
-
+    
     func toHexString() -> String {
         return `lazy`.reduce("") {
             var s = String($1, radix: 16)
@@ -91,16 +91,16 @@ extension Array where Element: BinaryInteger {
         guard !self.isEmpty else { return nil }
         return BigUInt(self.reduce(0, +)) / BigUInt(self.count)
     }
-
+    
     /// Calculates percentile of dataset on which get called.
     /// - Parameter value: Percentile value.
     /// - Returns: Item from dataset that is belongs to given percentile, nil if dataset is empty.
     func percentile(of value: Double) -> Element? {
         guard !self.isEmpty else { return nil }
-
+        
         let normalizedValue = value / 100 * Double(self.count)
         let index = Int(ceil(normalizedValue))
-
+        
         let sorted_data = self.sorted()
         guard index < self.count else { return sorted_data[sorted_data.count - 1] }
         return sorted_data[index]

@@ -21,7 +21,7 @@ extension EIP2718Envelope {
         guard let sData = self.s.serialize().setLengthLeft(32) else { return nil }
         return SECP256K1.UnmarshaledSignature(v: UInt8(self.v), r: rData, s: sData)
     }
-
+    
     public mutating func setUnmarshalledSignatureData(_ unmarshalledSignature: SECP256K1.UnmarshaledSignature) {
         self.v = BigUInt(unmarshalledSignature.v) - 27 // our SECP256K1 lib is be hardcoded to return 27/28 instead of 0/1
         self.r = BigUInt(unmarshalledSignature.r)

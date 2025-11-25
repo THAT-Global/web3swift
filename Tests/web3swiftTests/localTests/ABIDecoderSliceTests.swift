@@ -9,7 +9,7 @@ import Foundation
 import Web3Core
 import XCTest
 import BigInt
-@testable import web3swift
+@testable import Web3Swift
 
 final class ABIDecoderSliceTests: XCTestCase {
     func testBallancesDataSlice() throws {

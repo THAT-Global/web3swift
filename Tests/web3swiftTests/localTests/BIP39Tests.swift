@@ -7,7 +7,7 @@
 
 import XCTest
 @testable import Web3Core
-@testable import web3swift
+@testable import Web3Swift
 
 final class BIP39Tests: XCTestCase {
 

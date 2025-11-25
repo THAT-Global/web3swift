@@ -9,9 +9,9 @@ import BigInt
 /// Default representation of a smart contract. Created out of an array of ``ABI/Element`` which could be functions, events,
 /// constructor, errors and optional ``EthereumAddress`` that could be set later.
 public class EthereumContract: DefaultContractProtocol {
-
+    
     public var address: EthereumAddress?
-
+    
     public let abi: [ABI.Element]
     public let methods: [String: [ABI.Element.Function]]
     public let allMethods: [ABI.Element.Function]
@@ -20,11 +20,11 @@ public class EthereumContract: DefaultContractProtocol {
     public let errors: [String: ABI.Element.EthError]
     public let allErrors: [ABI.Element.EthError]
     public let constructor: ABI.Element.Constructor
-
+    
     public init(abi: [ABI.Element], at: EthereumAddress? = nil) throws {
         self.abi = abi
-        address = at
-
+        self.address = at
+        
         methods = try abi.getFunctions()
         allMethods = methods.filter { pair in
             let data = Data.fromHex(pair.key)
@@ -36,7 +36,7 @@ public class EthereumContract: DefaultContractProtocol {
         errors = abi.getErrors()
         allErrors = Array(errors.values)
     }
-
+    
     public convenience required init(_ abiString: String, at: EthereumAddress? = nil) throws {
         let jsonData = abiString.data(using: .utf8)
         let abi = try JSONDecoder().decode([ABI.Record].self, from: jsonData!)

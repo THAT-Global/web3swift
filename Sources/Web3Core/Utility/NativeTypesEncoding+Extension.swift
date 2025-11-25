@@ -23,7 +23,7 @@ extension Data {
         data.append(self)
         return data
     }
-
+    
     func setLengthRight(_ toBytes: UInt64, isNegative: Bool = false) -> Data? {
         let existingLength = UInt64(self.count)
         if existingLength == toBytes {

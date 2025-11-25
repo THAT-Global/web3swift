@@ -7,7 +7,7 @@
 
 import XCTest
 @testable import Web3Core
-@testable import web3swift
+@testable import Web3Swift
 
 /// This test suite is focused on testing the ability of `BIP32Keystore`
 /// to be able to parse and work with mnemonic phrase that is of type `String`.

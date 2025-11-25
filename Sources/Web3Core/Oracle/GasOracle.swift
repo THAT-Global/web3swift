@@ -10,18 +10,18 @@ import BigInt
 
 /// Oracle is the class to do a transaction fee suggestion
 final public class Oracle {
-
+    
     /// Web3 provider by which accessing to the blockchain
     private let web3Provider: Web3Provider
-
+    
     private var feeHistory: FeeHistory?
-
+    
     /// Block to start getting history backward
     var block: BlockNumber
-
+    
     /// Count of blocks to include in dataset
     var blockCount: BigUInt
-
+    
     /// Percentiles
     ///
     /// This property set values by which dataset would be sliced.
@@ -33,11 +33,11 @@ final public class Oracle {
     ///
     /// Another example: If you set it [100.0] you'll get the very highest value of a dataset e.g. max Tip amount.
     var percentiles: [Double]
-
+    
     var forceDropCache = false
-
+    
     var cacheTimeout: Double
-
+    
     /// Oracle initializer
     /// - Parameters:
     ///   - provider: Web3 Ethereum provider
@@ -51,7 +51,7 @@ final public class Oracle {
         self.percentiles = percentiles
         self.cacheTimeout = cacheTimeout
     }
-
+    
     /// Returning one dimensional array from two dimensional array
     ///
     /// We've got `[[min],[middle],[max]]` 2 dimensional array
@@ -69,7 +69,7 @@ final public class Oracle {
         }
         .flatMap { $0 }
     }
-
+    
     /// Method calculates percentiles array based on `self.percetniles` value
     /// - Parameter data: Integer data from which percentiles should be calculated
     /// - Returns: Array of values which is in positions in dataset to given percentiles
@@ -78,11 +78,11 @@ final public class Oracle {
             data.percentile(of: percentile)
         }
     }
-
+    
     private func suggestGasValues() async throws -> FeeHistory {
         /// This is some kind of cache.
         /// It stores about 10 seconds, than it rewrites it with newer data.
-
+        
         /// We're explicitly checking that feeHistory is not nil before force unwrapping it.
         guard let feeHistory = feeHistory, !forceDropCache, feeHistory.timestamp.distance(to: Date()) < cacheTimeout else {
             // swiftlint: disable force_unwrapping
@@ -91,16 +91,16 @@ final public class Oracle {
             return feeHistory!
             // swiftlint: enable force_unwrapping
         }
-
+        
         return feeHistory
     }
-
+    
     /// Suggesting tip values
     /// - Returns: `[percentile_1, percentile_2, percentile_3, ...].count == self.percentile.count`
     /// by default there's 3 percentile.
     private func suggestTipValue() async throws -> [BigUInt] {
         var rearrengedArray: [[BigUInt]] = []
-
+        
         /// rearrange `[[min, middle, max]]` to `[[min], [middle], [max]]`
         try await suggestGasValues().reward
             .forEach { percentiles in
@@ -118,51 +118,57 @@ final public class Oracle {
             }
         return soft(twoDimentsion: rearrengedArray)
     }
-
+    
     private func suggestBaseFee() async throws -> [BigUInt] {
         self.feeHistory = try await suggestGasValues()
         return calculatePercentiles(for: feeHistory!.baseFeePerGas)
     }
-
+    
     private func combineRequest<Result>(request: APIRequest) async throws-> Result where Result: APIResultType {
         let response: APIResponse<Result> = try await APIRequest.sendRequest(with: self.web3Provider, for: request)
         return response.result
     }
-
+    
     private func suggestGasFeeLegacy() async throws -> [BigUInt] {
         var latestBlockNumber: BigUInt = 0
         switch block {
-        case .latest:
-            let block: BigUInt = try await combineRequest(request: .blockNumber)
-            latestBlockNumber = block
-        case let .exact(number): latestBlockNumber = number
-        default: throw Web3Error.valueError(desc: "Unable to use '\(block)' policy to resolve block number to calculate gas fee suggestion.")
+            case .latest:
+                let block: BigUInt = try await combineRequest(request: .blockNumber)
+                latestBlockNumber = block
+            case let .exact(number): latestBlockNumber = number
+            default: throw Web3Error.valueError(desc: "Unable to use '\(block)' policy to resolve block number to calculate gas fee suggestion.")
         }
-
+        
         /// checking if latest block number is greater than number of blocks to take in account
         /// we're ignoring case when `latestBlockNumber` == `blockCount` since it's unlikely case
         /// which we could neglect
         guard latestBlockNumber > blockCount else { return [] }
-
+        
+        // Pull out provider so we don't capture the actor in our @Sendable closure:
+        let provider = self.web3Provider
+        
         // TODO: Make me work with cache
         let blocks = try await withThrowingTaskGroup(of: Block.self, returning: [Block].self) { group in
-            (latestBlockNumber - blockCount ... latestBlockNumber)
-                .forEach { block in
-                    group.addTask {
-                        let result: Block = try await self.combineRequest(request: .getBlockByNumber(.exact(block), true))
-                        return result
-                    }
+            (latestBlockNumber - blockCount ... latestBlockNumber).forEach { block in
+                group.addTask {
+                    // **Important**: we only capture `provider` and `blockNumber` here, both of which are plain Sendable values.
+                    let response: APIResponse<Block> = try await APIRequest.sendRequest(
+                        with: provider,
+                        for: .getBlockByNumber(.exact(block), true)
+                    )
+                    return response.result
                 }
-
+            }
+            
             var collected = [Block]()
-
+            
             for try await value in group {
                 collected.append(value)
             }
-
+            
             return collected
         }
-
+        
         let lastNthBlockGasPrice = blocks.flatMap { b -> [CodableTransaction] in
             b.transactions.compactMap { t -> CodableTransaction? in
                 guard case let .transaction(transaction) = t else { return nil }
@@ -170,7 +176,7 @@ final public class Oracle {
             }
         }
             .compactMap { $0.meta?.gasPrice ?? 0 }
-
+        
         return calculatePercentiles(for: lastNthBlockGasPrice)
     }
 }
@@ -185,7 +191,7 @@ public extension Oracle {
         guard let value = try? await suggestBaseFee() else { return [] }
         return value
     }
-
+    
     // MARK: - Tip
     /// Tip amount
     ///
@@ -195,7 +201,7 @@ public extension Oracle {
         guard let value = try? await suggestTipValue() else { return [] }
         return value
     }
-
+    
     // MARK: - Summary fees
     /// Summary fees amount
     ///
@@ -212,7 +218,7 @@ public extension Oracle {
         }
         return (baseFee: baseFeeArr, tip: tipArr)
     }
-
+    
     // MARK: - Legacy GasPrice
     /// Legacy gasPrice amount
     ///
@@ -241,10 +247,10 @@ extension Oracle.FeeHistory: Decodable {
         case oldestBlock
         case reward
     }
-
+    
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-
+        
         self.baseFeePerGas = try values.decodeHex([BigUInt].self, forKey: .baseFeePerGas)
         self.gasUsedRatio = try values.decode([Double].self, forKey: .gasUsedRatio)
         self.oldestBlock = try values.decodeHex(BigUInt.self, forKey: .oldestBlock)

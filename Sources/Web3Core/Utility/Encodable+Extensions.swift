@@ -12,12 +12,12 @@ extension KeyedEncodingContainer {
     mutating func encodeHex<T: EncodableToHex>(_ value: T, forKey key: KeyedEncodingContainer<K>.Key) throws {
         try encode(value.hexString, forKey: key)
     }
-
+    
     mutating func encodeHex<T: EncodableToHex>(_ value: [T], forKey key: KeyedEncodingContainer<K>.Key) throws {
         var container = nestedUnkeyedContainer(forKey: key)
         try container.encodeHex(value)
     }
-
+    
     /// Encodes the given value for the given key if it is not `nil`.
     ///
     /// - parameter value: The value to encode.
@@ -38,11 +38,11 @@ extension UnkeyedEncodingContainer {
     mutating func encodeHex<T: EncodableToHex>(_ value: T) throws {
         try encode(value.hexString)
     }
-
+    
     mutating func encodeHex<T: EncodableToHex>(_ value: [T]) throws {
         try value.forEach { try encode($0.hexString) }
     }
-
+    
     mutating func encodeHex<T: EncodableToHex>(_ value: [[T]]) throws {
         try value.forEach {
             try $0.forEach {

@@ -69,10 +69,10 @@ import BigInt
 public protocol ContractProtocol {
     /// Address of the referenced smart contract. Can be set later, e.g. if the contract is deploying and address is not yet known.
     var address: EthereumAddress? {get set}
-
+    
     /// All ABI elements like: events, functions, constructors and errors.
     var abi: [ABI.Element] {get}
-
+    
     /// Functions filtered from ``abi``.
     /// Functions are mapped to:
     /// - name, like `getData` that is defined in ``ABI/Element/Function/name``;
@@ -82,25 +82,25 @@ public protocol ContractProtocol {
     /// The mapping by name (e.g. `getData`) is the one most likely expected to return arrays with
     /// more than one entry due to the fact that solidity allows method overloading.
     var methods: [String: [ABI.Element.Function]] {get}
-
+    
     /// All values from ``methods``.
     var allMethods: [ABI.Element.Function] {get}
-
+    
     /// Events filtered from ``abi`` and mapped to their unchanged ``ABI/Element/Event/name``.
     var events: [String: ABI.Element.Event] {get}
-
+    
     /// All values from ``events``.
     var allEvents: [ABI.Element.Event] {get}
-
+    
     /// Errors filtered from ``abi`` and mapped to their unchanged ``ABI/Element/EthError/name``.
     var errors: [String: ABI.Element.EthError] {get}
-
+    
     /// All values from ``errors``.
     var allErrors: [ABI.Element.EthError] {get}
-
+    
     /// Parsed from ABI or a default constructor with no input arguments.
     var constructor: ABI.Element.Constructor {get}
-
+    
     /// Required initializer that is capable of reading ABI in JSON format.
     /// - Parameters:
     ///   - abiString: ABI string in JSON format.
@@ -109,7 +109,7 @@ public protocol ContractProtocol {
     /// If ABI failed to be decoded `nil` will be returned. Reasons could be invalid keys and values in ABI, invalid JSON structure,
     /// new Solidity keywords, types etc. that are not yet supported, etc.
     init(_ abiString: String, at: EthereumAddress?) throws
-
+    
     /// Prepare transaction data for smart contract deployment transaction.
     ///
     /// - Parameters:
@@ -123,7 +123,7 @@ public protocol ContractProtocol {
                 constructor: ABI.Element.Constructor?,
                 parameters: [Any]?,
                 extraData: Data?) -> Data?
-
+    
     /// Creates function call transaction with data set as `method` encoded with given `parameters`.
     /// The `method` must be part of the ABI used to init this contract.
     /// - Parameters:
@@ -135,7 +135,7 @@ public protocol ContractProtocol {
     ///   - extraData: additional data to append at the end of `transaction.data` field;
     /// - Returns: transaction object if `method` was found and `parameters` were successfully encoded.
     func method(_ method: String, parameters: [Any], extraData: Data?) -> Data?
-
+    
     /// Decode output data of a function.
     /// - Parameters:
     ///   - method: method name in one of the following variants:
@@ -149,7 +149,7 @@ public protocol ContractProtocol {
     ///   - `Web3Error.revertCustom(String, Dictionary)` when function call aborted by `revert CustomError()`.
     @discardableResult
     func decodeReturnData(_ method: String, data: Data) throws -> [String: Any]
-
+    
     /// Decode input arguments of a function.
     /// - Parameters:
     ///   - method: method name in one of the following variants:
@@ -159,17 +159,17 @@ public protocol ContractProtocol {
     ///   - data: non empty bytes to decode;
     /// - Returns: dictionary with decoded values. `nil` if decoding failed.
     func decodeInputData(_ method: String, data: Data) -> [String: Any]?
-
+    
     /// Decode input data of a function.
     /// - Parameters:
     ///   - data: encoded function call with first 4 bytes being function signature and the rest is input arguments, if any.
     ///   Empty dictionary will be return if function call doesn't accept any input arguments.
     /// - Returns: dictionary with decoded input arguments. `nil` if decoding failed.
     func decodeInputData(_ data: Data) -> [String: Any]?
-
+    
     /// Attempts to parse given event based on the data from `allEvents`, or in other words based on the given smart contract ABI.
     func parseEvent(_ eventLog: EventLog) -> (eventName: String?, eventData: [String: Any]?)
-
+    
     /// Tests for probable presence of an event with `eventName` in a given bloom filter.
     /// - Parameters:
     ///   - eventName: event name like `ValueReceived`.
@@ -177,7 +177,7 @@ public protocol ContractProtocol {
     /// - Returns: `true` if event is possibly present, `false` if definitely not present and `nil` if event with given name
     /// is not part of the ``EthereumContract/abi``.
     func testBloomForEventPresence(eventName: String, bloom: EthereumBloomFilter) -> Bool?
-
+    
     /// Given the transaction data searches for a match in ``ContractProtocol/methods``.
     /// - Parameter data: encoded function call used in transaction data field. Must be at least 4 bytes long.
     /// - Returns: function decoded from the ABI of this contract or `nil` if nothing was found.
@@ -187,7 +187,7 @@ public protocol ContractProtocol {
 // MARK: - Overloaded ContractProtocol's functions
 
 extension ContractProtocol {
-
+    
     /// Overloading of ``ContractProtocol/deploy(bytecode:constructor:parameters:extraData:)`` to allow
     /// omitting everything but `bytecode`.
     ///
@@ -201,7 +201,7 @@ extension ContractProtocol {
                parameters: parameters,
                extraData: extraData)
     }
-
+    
     /// Overloading of ``ContractProtocol/method(_:parameters:extraData:)`` to allow
     /// omitting `extraData` and `parameters` if `method` does not expect any.
     ///
@@ -211,7 +211,7 @@ extension ContractProtocol {
                 extraData: Data? = nil) -> Data? {
         self.method(method, parameters: parameters ?? [], extraData: extraData)
     }
-
+    
     func decodeInputData(_ data: Data) -> [String: Any]? {
         guard data.count >= 4 else { return nil }
         let methodId = data[data.startIndex ..< data.startIndex + 4].toHexString()
@@ -224,12 +224,14 @@ extension ContractProtocol {
 public protocol DefaultContractProtocol: ContractProtocol {}
 extension DefaultContractProtocol {
     // MARK: Writing Data flow
-    public func deploy(bytecode: Data,
-                       constructor: ABI.Element.Constructor?,
-                       parameters: [Any]?,
-                       extraData: Data?) -> Data? {
+    public func deploy(
+        bytecode: Data,
+        constructor: ABI.Element.Constructor?,
+        parameters: [Any]?,
+        extraData: Data?
+    ) -> Data? {
         var fullData = bytecode
-
+        
         if let constructor = constructor,
            let parameters = parameters,
            !parameters.isEmpty {
@@ -240,15 +242,15 @@ extension DefaultContractProtocol {
             }
             fullData.append(encodedData)
         }
-
+        
         if let extraData = extraData {
             fullData.append(extraData)
         }
-
+        
         // MARK: Writing Data flow
         return fullData
     }
-
+    
     /// Call given contract method with given parameters
     /// - Parameters:
     ///   - method: Method to call
@@ -268,29 +270,29 @@ extension DefaultContractProtocol {
         if method == "fallback" {
             return extraData ?? Data()
         }
-
+        
         let method = Data.fromHex(method) == nil ? method : method.addHexPrefix().lowercased()
-
+        
         // MARK: - Encoding ABI Data flow
         guard let abiMethod = methods[method]?.first(where: { $0.inputs.count == parameters.count }),
               var encodedData = abiMethod.encodeParameters(parameters) else { return nil }
-
+        
         // Extra data just appends in the end of parameters data
         if let extraData = extraData {
             encodedData.append(extraData)
         }
-
+        
         // MARK: - Encoding ABI Data flow
         return encodedData
     }
-
+    
     public func event(_ event: String, parameters: [Any]) -> [EventFilterParameters.Topic?] {
         guard let event = events[event] else {
             return []
         }
         return event.encodeParameters(parameters)
     }
-
+    
     public func parseEvent(_ eventLog: EventLog) -> (eventName: String?, eventData: [String: Any]?) {
         for (eName, ev) in self.events {
             if !ev.anonymous {
@@ -315,7 +317,7 @@ extension DefaultContractProtocol {
         }
         return (nil, nil)
     }
-
+    
     public func testBloomForEventPresence(eventName: String, bloom: EthereumBloomFilter) -> Bool? {
         guard let event = events[eventName] else { return nil }
         if event.anonymous {
@@ -323,43 +325,43 @@ extension DefaultContractProtocol {
         }
         return bloom.test(topic: event.topic)
     }
-
+    
     @discardableResult
     public func decodeReturnData(_ method: String, data: Data) throws -> [String: Any] {
         if method == "fallback" {
             return [:]
         }
-
+        
         guard let function = methods[method]?.first else {
             throw Web3Error.inputError(desc: "Make sure ABI you use contains '\(method)' method.")
         }
-
+        
         switch data.count % 32 {
-        case 0:
-            return try function.decodeReturnData(data)
-        case 4:
-            let selector = data[0..<4]
-            if selector.toHexString() == "08c379a0", let reason = ABI.Element.EthError.decodeStringError(data[4...]) {
-                throw Web3Error.revert("revert(string)` or `require(expression, string)` was executed. reason: \(reason)", reason: reason)
-            }
-            else if selector.toHexString() == "4e487b71", let reason = ABI.Element.EthError.decodePanicError(data[4...]) {
-                let panicCode = String(format: "%02X", Int(reason)).addHexPrefix()
-                throw Web3Error.revert("Error: call revert exception; VM Exception while processing transaction: reverted with panic code \(panicCode)", reason: panicCode)
-            }
-            else if let customError = errors[selector.toHexString().addHexPrefix().lowercased()] {
-                if let errorArgs = customError.decodeEthError(data[4...]) {
-                    throw Web3Error.revertCustom(customError.signature, errorArgs)
-                } else {
-                    throw Web3Error.inputError(desc: "Signature matches \(customError.errorDeclaration) but failed to be decoded.")
+            case 0:
+                return try function.decodeReturnData(data)
+            case 4:
+                let selector = data[0..<4]
+                if selector.toHexString() == "08c379a0", let reason = ABI.Element.EthError.decodeStringError(data[4...]) {
+                    throw Web3Error.revert("revert(string)` or `require(expression, string)` was executed. reason: \(reason)", reason: reason)
                 }
-            } else {
-                throw Web3Error.inputError(desc: "Make sure ABI you use contains error that can match signature: 0x\(selector.toHexString())")
-            }
-        default:
-            throw Web3Error.inputError(desc: "Given data has invalid bytes count.")
+                else if selector.toHexString() == "4e487b71", let reason = ABI.Element.EthError.decodePanicError(data[4...]) {
+                    let panicCode = String(format: "%02X", Int(reason)).addHexPrefix()
+                    throw Web3Error.revert("Error: call revert exception; VM Exception while processing transaction: reverted with panic code \(panicCode)", reason: panicCode)
+                }
+                else if let customError = errors[selector.toHexString().addHexPrefix().lowercased()] {
+                    if let errorArgs = customError.decodeEthError(data[4...]) {
+                        throw Web3Error.revertCustom(customError.signature, errorArgs)
+                    } else {
+                        throw Web3Error.inputError(desc: "Signature matches \(customError.errorDeclaration) but failed to be decoded.")
+                    }
+                } else {
+                    throw Web3Error.inputError(desc: "Make sure ABI you use contains error that can match signature: 0x\(selector.toHexString())")
+                }
+            default:
+                throw Web3Error.inputError(desc: "Given data has invalid bytes count.")
         }
     }
-
+    
     public func decodeInputData(_ method: String, data: Data) -> [String: Any]? {
         if method == "fallback" {
             return nil
@@ -368,15 +370,15 @@ extension DefaultContractProtocol {
             return function.decodeInputData(data)
         }).first
     }
-
+    
     public func decodeInputData(_ data: Data) -> [String: Any]? {
         guard data.count % 32 == 4 else { return nil }
         let methodSignature = data[data.startIndex ..< data.startIndex + 4].toHexString().addHexPrefix().lowercased()
-
+        
         guard let function = methods[methodSignature]?.first else { return nil }
         return function.decodeInputData(Data(data[data.startIndex + 4 ..< data.startIndex + data.count]))
     }
-
+    
     public func decodeEthError(_ data: Data) -> [String: Any]? {
         guard data.count >= 4,
               let err = errors.first(where: { $0.value.selectorEncoded == data[0..<4] })?.value else {
@@ -384,7 +386,7 @@ extension DefaultContractProtocol {
         }
         return err.decodeEthError(data[4...])
     }
-
+    
     public func getFunctionCalled(_ data: Data) -> ABI.Element.Function? {
         guard data.count >= 4 else { return nil }
         return methods[data[data.startIndex ..< data.startIndex + 4].toHexString().addHexPrefix()]?.first
@@ -401,7 +403,7 @@ extension DefaultContractProtocol {
             throw Web3Error.dataError
         }
         let transaction = CodableTransaction(to: address, data: data)
-
+        
         let result: Data = try await APIRequest.sendRequest(with: provider, for: .call(transaction, .latest)).result
         return try decodeReturnData(method, data: result)
     }

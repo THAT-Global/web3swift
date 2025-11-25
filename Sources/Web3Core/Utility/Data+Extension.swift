@@ -6,13 +6,13 @@
 import Foundation
 
 public extension Data {
-
+    
     init<T>(fromArray values: [T]) {
         let values = values
         let ptrUB = values.withUnsafeBufferPointer { (ptr: UnsafeBufferPointer) in return ptr }
         self.init(buffer: ptrUB)
     }
-
+    
     func toArray<T>(type: T.Type) throws -> [T] {
         return try self.withUnsafeBytes { (body: UnsafeRawBufferPointer) in
             if let bodyAddress = body.baseAddress, body.count > 0 {
@@ -23,7 +23,7 @@ public extension Data {
             }
         }
     }
-
+    
     func constantTimeComparisonTo(_ other: Data?) -> Bool {
         guard let rhs = other else {return false}
         guard self.count == rhs.count else {return false}
@@ -33,14 +33,14 @@ public extension Data {
         }
         return difference == UInt8(0x00)
     }
-
+    
     static func zero(_ data: inout Data) {
         let count = data.count
         data.withUnsafeMutableBytes { (body: UnsafeMutableRawBufferPointer) in
             body.baseAddress?.assumingMemoryBound(to: UInt8.self).initialize(repeating: 0, count: count)
         }
     }
-
+    
     /**
      Generates an array of random bytes of the specified length.
      This function uses `SecRandomCopyBytes` to generate random bytes returning it as a `Data` object.
@@ -49,7 +49,7 @@ public extension Data {
      See [all status codes](https://developer.apple.com/documentation/security/1542001-security_framework_result_codes) for possible error reasons.
      Note: in v4 of web3swift this function will be deprecated and a new implementation will be provided that will throw occurred error.
      - Parameter length: The number of random bytes to generate.
-
+     
      - Returns: optional `Data` object containing the generated random bytes, or `nil` if an error occurred during generation.
      */
     static func randomBytes(length: Int) -> Data? {
@@ -60,7 +60,7 @@ public extension Data {
         }
         return Data(entropyBytes)
     }
-
+    
     func bitsInRange(_ startingBit: Int, _ length: Int) -> UInt64? { // return max of 8 bytes for simplicity, non-public
         if startingBit + length / 8 > self.count, length > 64, startingBit > 0, length >= 1 { return nil }
         let bytes = self[(startingBit/8) ..< (startingBit+length+7)/8]

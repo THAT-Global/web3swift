@@ -12,21 +12,21 @@ import BigInt
 /// from the blockchain. The data here is not
 /// part of the transaction itself
 public struct TransactionMetadata: Sendable {
-
+    
     /// hash for the block that contains this transaction on chain
     public var blockHash: Data?
-
+    
     /// block number for the block containing this transaction on chain
     public var blockNumber: BigUInt?
-
+    
     /// index for this transaction within the containing block
     public var transactionIndex: UInt?
-
+    
     /// hash for this transaction as returned by the node [not computed]
     /// this can be used for validation against the computed hash returned
     /// by the transaction envelope.
     public var transactionHash: Data?
-
+    
     /// gasPrice value returned by the node
     /// note this is a duplicate value for legacy and EIP-2930 transaction types
     /// but is included here since EIP-1559 does not contain a `gasPrice`, but
@@ -42,12 +42,12 @@ public extension TransactionMetadata {
         case transactionHash
         case gasPrice
     }
-
+    
     /// since metadata realistically can only come when a transaction is created from
     /// JSON returned by a node, we only provide an initializer from JSON
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-
+        
         self.blockHash = try container.decodeHexIfPresent(Data.self, forKey: .blockHash)
         self.transactionHash = try container.decodeHexIfPresent(Data.self, forKey: .transactionHash)
         self.transactionIndex = try container.decodeHexIfPresent(UInt.self, forKey: .transactionIndex)

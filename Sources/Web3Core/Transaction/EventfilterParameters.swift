@@ -10,26 +10,36 @@ import Foundation
 import BigInt
 
 /// Global counter object to enumerate JSON RPC requests.
-public struct Counter {
-    public static var counter: UInt = 1
-    public static var lockQueue = DispatchQueue(label: "counterQueue")
+public final class Counter {
+    private static let shared = Counter()
+    private var next: UInt = 1
+    private let lock = NSLock()
+    
+    // Prevent external instantiation
+    private init() {}
+    
+    /// Thread-safe increment, callable from any thread.
+    private func increment() -> UInt {
+        lock.lock(); defer { lock.unlock() }
+        let v = next
+        next += 1
+        return v
+    }
+    
+    /// Old synchronous API—just forwards to the shared instance.
+    @discardableResult
     public static func increment() -> UInt {
-        defer {
-            lockQueue.sync {
-                Counter.counter += 1
-            }
-        }
-        return counter
+        shared.increment()
     }
 }
 
 /// Event filter parameters JSON structure for interaction with Ethereum node.
-public struct EventFilterParameters: Encodable {
+public struct EventFilterParameters: Encodable, Sendable {
     public var fromBlock: BlockNumber
     public var toBlock: BlockNumber
     public var address: [EthereumAddress]
     public var topics: [Topic?]
-
+    
     public init(fromBlock: BlockNumber = .latest, toBlock: BlockNumber = .latest, address: [EthereumAddress] = [], topics: [Topic?] = []) {
         self.fromBlock = fromBlock
         self.toBlock = toBlock
@@ -45,7 +55,7 @@ extension EventFilterParameters {
         case address
         case topics
     }
-
+    
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(fromBlock.description, forKey: .fromBlock)
@@ -92,28 +102,28 @@ extension EventFilterParameters {
     ///          ])
     ///      ]
     /// ```
-    public enum Topic: Encodable {
+    public enum Topic: Encodable, Sendable {
         case string(String?)
         case strings([Topic?]?)
-
+        
         public func encode(to encoder: Encoder) throws {
             switch self {
-            case let .string(s):
-                var container = encoder.singleValueContainer()
-                try container.encode(s)
-            case let .strings(ss):
-                var container = encoder.unkeyedContainer()
-                try container.encode(contentsOf: ss ?? [])
+                case let .string(s):
+                    var container = encoder.singleValueContainer()
+                    try container.encode(s)
+                case let .strings(ss):
+                    var container = encoder.unkeyedContainer()
+                    try container.encode(contentsOf: ss ?? [])
             }
         }
-
+        
         var rawValue: String {
             switch self {
-            case let .string(string):
-                // Associated value can contain only String or nil, both of them always encoded as a JSON could be represented as String again.
-                return String(data: try! JSONEncoder().encode(string), encoding: .utf8)!
-            case let .strings(strings):
-                return strings!.textRepresentation
+                case let .string(string):
+                    // Associated value can contain only String or nil, both of them always encoded as a JSON could be represented as String again.
+                    return String(data: try! JSONEncoder().encode(string), encoding: .utf8)!
+                case let .strings(strings):
+                    return strings!.textRepresentation
             }
         }
     }

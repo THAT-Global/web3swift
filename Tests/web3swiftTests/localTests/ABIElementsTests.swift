@@ -7,7 +7,7 @@
 
 import Foundation
 import XCTest
-@testable import web3swift
+@testable import Web3Swift
 @testable import Web3Core
 
 class ABIElementsTests: XCTestCase {

@@ -8,7 +8,7 @@
 import Foundation
 import BigInt
 
-public struct TransactionReceipt {
+public struct TransactionReceipt: Sendable {
     public var transactionHash: Data
     public var blockHash: Data
     public var blockNumber: BigUInt
@@ -20,17 +20,17 @@ public struct TransactionReceipt {
     public var logs: [EventLog]
     public var status: TXStatus
     public var logsBloom: EthereumBloomFilter?
-
+    
     static func notProcessed(transactionHash: Data) -> TransactionReceipt {
         TransactionReceipt(transactionHash: transactionHash, blockHash: Data(), blockNumber: 0, transactionIndex: 0, contractAddress: nil, cumulativeGasUsed: 0, gasUsed: 0, effectiveGasPrice: 0, logs: [], status: .notYetProcessed, logsBloom: nil)
     }
 }
 
 extension TransactionReceipt {
-    public enum TXStatus {
-        case ok
-        case failed
-        case notYetProcessed
+    public enum TXStatus: String, Sendable {
+        case ok = "Confirmed"
+        case failed = "Failed"
+        case notYetProcessed = "Submitted"
     }
 }
 
@@ -48,35 +48,35 @@ extension TransactionReceipt: Decodable {
         case status
         case effectiveGasPrice
     }
-
+    
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-
+        
         self.blockNumber = try container.decodeHex(BigUInt.self, forKey: .blockNumber)
-
+        
         self.blockHash = try container.decodeHex(Data.self, forKey: .blockHash)
-
+        
         self.transactionIndex = try container.decodeHex(BigUInt.self, forKey: .transactionIndex)
-
+        
         self.transactionHash = try container.decodeHex(Data.self, forKey: .transactionHash)
-
+        
         self.contractAddress = try? container.decodeIfPresent(EthereumAddress.self, forKey: .contractAddress)
-
+        
         self.cumulativeGasUsed = try container.decodeHex(BigUInt.self, forKey: .cumulativeGasUsed)
-
+        
         self.gasUsed = try container.decodeHex(BigUInt.self, forKey: .gasUsed)
-
+        
         self.effectiveGasPrice = (try? container.decodeHex(BigUInt.self, forKey: .effectiveGasPrice)) ?? 0
-
+        
         let status = try? container.decodeHex(BigUInt.self, forKey: .status)
         switch status {
-        case nil: self.status = .notYetProcessed
-        case 1: self.status = .ok
-        default: self.status = .failed
+            case nil: self.status = .notYetProcessed
+            case 1: self.status = .ok
+            default: self.status = .failed
         }
-
+        
         self.logs = try container.decode([EventLog].self, forKey: .logs)
-
+        
         if let hexBytes = try? container.decodeHex(Data.self, forKey: .logsBloom) {
             self.logsBloom = EthereumBloomFilter(hexBytes)
         }

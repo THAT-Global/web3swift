@@ -3,7 +3,7 @@ import XCTest
 import BigInt
 import Web3Core
 
-import web3swift
+import Web3Swift
 
 // SuperClass that all local tests should be derived from
 // while this class does show up in the navigator, it has no associated tests

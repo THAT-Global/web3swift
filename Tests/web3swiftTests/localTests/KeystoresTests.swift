@@ -7,7 +7,7 @@ import XCTest
 import CryptoSwift
 import Web3Core
 
-@testable import web3swift
+@testable import Web3Swift
 
 class KeystoresTests: LocalTestCase {
     let mnemonic = "fruit wave dwarf banana earth journey tattoo true farm silk olive fence"

@@ -14,10 +14,10 @@ public struct RLP {
         case encodingError
         case decodingError
     }
-
-    static var length56 = BigUInt(UInt(56))
-    static var lengthMax = (BigUInt(UInt(1)) << 256)
-
+    
+    static let length56 = BigUInt(UInt(56))
+    static let lengthMax = (BigUInt(UInt(1)) << 256)
+    
     internal static func encode(element: Any?) -> Data? {
         if let string = element as? String {
             return encode(string)
@@ -28,7 +28,7 @@ public struct RLP {
         }
         return nil
     }
-
+    
     internal static func encode(_ string: String) -> Data? {
         if let hexData = Data.fromHex(string) {
             return encode(hexData)
@@ -36,23 +36,23 @@ public struct RLP {
         guard let data = string.data(using: .utf8) else { return nil }
         return encode(data)
     }
-
+    
     internal static func encode(_ number: Int) -> Data? {
         guard number >= 0 else { return nil }
         let uint = UInt(number)
         return encode(uint)
     }
-
+    
     internal static func encode(_ number: UInt) -> Data? {
         let biguint = BigUInt(number)
         return encode(biguint)
     }
-
+    
     internal static func encode(_ number: BigUInt) -> Data? {
         let encoded = number.serialize()
         return encode(encoded)
     }
-
+    
     internal static func encode(_ data: Data) -> Data? {
         if data.count == 1 && data.bytes[0] < UInt8(0x80) {
             return data
@@ -64,7 +64,7 @@ public struct RLP {
             return encoded
         }
     }
-
+    
     internal static func encodeLength(_ length: Int, offset: UInt8) -> Data? {
         if length < 0 {
             return nil
@@ -72,7 +72,7 @@ public struct RLP {
         let bigintLength = BigUInt(UInt(length))
         return encodeLength(bigintLength, offset: offset)
     }
-
+    
     internal static func encodeLength(_ length: BigUInt, offset: UInt8) -> Data? {
         if length < length56 {
             let encodedLength = length + BigUInt(UInt(offset))
@@ -89,7 +89,7 @@ public struct RLP {
         }
         return nil
     }
-
+    
     internal static func lengthToBinary(_ length: BigUInt) -> UInt8? {
         if length == 0 {
             return UInt8(0)
@@ -98,19 +98,19 @@ public struct RLP {
         var encoded = Data()
         guard let prefix = lengthToBinary(length/divisor) else { return nil }
         let suffix = length % divisor
-
+        
         var prefixData = Data([prefix])
         if prefix == UInt8(0) {
             prefixData = Data()
         }
         let suffixData = suffix.serialize()
-
+        
         encoded.append(prefixData)
         encoded.append(suffixData)
         guard encoded.count == 1 else { return nil }
         return encoded.bytes[0]
     }
-
+    
     internal static func encode(_ elements: [Any?]) -> Data? {
         var encodedData = Data()
         for e in elements {
@@ -128,12 +128,12 @@ public struct RLP {
         }
         return encodedLength
     }
-
+    
     internal static func decode(_ raw: String) -> RLPItem? {
         guard let rawData = Data.fromHex(raw) else { return nil }
         return decode(rawData)
     }
-
+    
     internal static func decode(_ raw: Data) -> RLPItem? {
         if raw.count == 0 {
             return RLPItem.noItem
@@ -144,77 +144,77 @@ public struct RLP {
             let (of, dl, t) = decodeLength(bytesToParse)
             guard let offset = of, let dataLength = dl, let type = t else { return nil }
             switch type {
-            case .empty:
-                break
-            case .data:
-                guard let slice = try? slice(data: bytesToParse, offset: offset, length: dataLength) else { return nil }
-                let data = Data(slice)
-                let rlpItem = RLPItem.init(content: .data(data))
-                outputArray.append(rlpItem)
-            case .list:
-                guard let slice = try? slice(data: bytesToParse, offset: offset, length: dataLength) else { return nil }
-                guard let inside = decode(Data(slice)) else { return nil }
-                switch inside.content {
+                case .empty:
+                    break
                 case .data:
-                    return nil
-                default:
-                    outputArray.append(inside)
-                }
+                    guard let slice = try? slice(data: bytesToParse, offset: offset, length: dataLength) else { return nil }
+                    let data = Data(slice)
+                    let rlpItem = RLPItem.init(content: .data(data))
+                    outputArray.append(rlpItem)
+                case .list:
+                    guard let slice = try? slice(data: bytesToParse, offset: offset, length: dataLength) else { return nil }
+                    guard let inside = decode(Data(slice)) else { return nil }
+                    switch inside.content {
+                        case .data:
+                            return nil
+                        default:
+                            outputArray.append(inside)
+                    }
             }
             guard let tail = try? slice(data: bytesToParse, start: offset + dataLength) else { return nil }
             bytesToParse = tail
         }
         return RLPItem.init(content: .list(outputArray, 0, Data(raw)))
     }
-
+    
     public struct RLPItem {
-
+        
         enum UnderlyingType {
             case empty
             case data
             case list
         }
-
+        
         public enum RLPContent {
             case noItem
             case data(Data)
             indirect case list([RLPItem], Int, Data)
         }
-
+        
         public var content: RLPContent
-
+        
         public var isData: Bool {
             switch self.content {
-            case .noItem:
-                return false
-            case .data:
-                return true
-            case .list:
-                return false
+                case .noItem:
+                    return false
+                case .data:
+                    return true
+                case .list:
+                    return false
             }
         }
-
+        
         public var isList: Bool {
             switch self.content {
-            case .noItem:
-                return false
-            case .data:
-                return false
-            case .list:
-                return true
+                case .noItem:
+                    return false
+                case .data:
+                    return false
+                case .list:
+                    return true
             }
         }
         public var count: Int? {
             switch self.content {
-            case .noItem:
-                return nil
-            case .data:
-                return nil
-            case .list(let list, _, _):
-                return list.count
+                case .noItem:
+                    return nil
+                case .data:
+                    return nil
+                case .list(let list, _, _):
+                    return list.count
             }
         }
-
+        
         public subscript(index: Int) -> RLPItem? {
             get {
                 guard case .list(let list, _, _) = self.content else { return nil }
@@ -222,11 +222,11 @@ public struct RLP {
                 return item
             }
         }
-
+        
         public var data: Data? {
             return self.getData()
         }
-
+        
         public func getData() -> Data? {
             if self.isList {
                 guard case .list(_, _, let rawContent) = self.content else { return nil }
@@ -235,12 +235,12 @@ public struct RLP {
             guard case .data(let data) = self.content else { return nil }
             return data
         }
-
+        
         public static var noItem: RLPItem {
             return RLPItem.init(content: .noItem)
         }
     }
-
+    
     internal static func decodeLength(_ input: Data) -> (offset: BigUInt?, length: BigUInt?, type: RLPItem.UnderlyingType?) {
         do {
             let length = BigUInt(input.count)
@@ -271,19 +271,19 @@ public struct RLP {
             return (nil, nil, nil)
         }
     }
-
+    
     internal static func slice(data: Data, offset: BigUInt, length: BigUInt) throws -> Data {
         if BigUInt(data.count) < offset + length {throw Error.encodingError}
         let slice = data[UInt64(offset) ..< UInt64(offset + length)]
         return Data(slice)
     }
-
+    
     internal static func slice(data: Data, start: BigUInt) throws -> Data {
         if BigUInt(data.count) < start {throw Error.encodingError}
         let slice = data[UInt64(start) ..< UInt64(data.count)]
         return Data(slice)
     }
-
+    
     internal static func toBigUInt(_ raw: Data) throws -> BigUInt {
         if raw.count == 0 {
             throw Error.encodingError
@@ -297,7 +297,7 @@ public struct RLP {
 }
 
 fileprivate extension Data {
-
+    
     var bytes: [UInt8] {
         return Array(self)
     }

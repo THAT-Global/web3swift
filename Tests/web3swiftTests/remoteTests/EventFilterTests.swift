@@ -9,7 +9,7 @@ import XCTest
 import Web3Core
 import BigInt
 import CryptoSwift
-@testable import web3swift
+@testable import Web3Swift
 
 class EventFilerTests: XCTestCase {
 

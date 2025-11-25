@@ -19,27 +19,27 @@ public struct EnvelopeFactory {
         // no valid transaction will be only 1 byte
         let typeUInt: UInt = UInt(rawValue[0])
         let envelopeType: TransactionType
-
+        
         if typeUInt < 0x80 {
             if typeUInt < TransactionType.allCases.count {
                 guard let rawType = TransactionType(rawValue: typeUInt) else { return nil }
                 envelopeType = rawType
             } else { return nil }
         } else { envelopeType = .legacy } // legacy streams do not have type set
-
+        
         if typeUInt == 0xff { return nil } // reserved value per EIP-2718
-
+        
         switch envelopeType {
-        case .legacy: return LegacyEnvelope(rawValue: rawValue)
-        case .eip2930: return EIP2930Envelope(rawValue: rawValue)
-        case .eip1559: return EIP1559Envelope(rawValue: rawValue)
+            case .legacy: return LegacyEnvelope(rawValue: rawValue)
+            case .eip2930: return EIP2930Envelope(rawValue: rawValue)
+            case .eip1559: return EIP1559Envelope(rawValue: rawValue)
         }
     }
-
+    
     enum CodingKeys: String, CodingKey {
         case type
     }
-
+    
     // consider that this can throw as it is part of Decodable
     // from a raw transaction stream of bytes
     /// create a transaction envelope from a decoder stream (Decodable protocol)
@@ -47,7 +47,7 @@ public struct EnvelopeFactory {
     /// - Returns: a transaction envelope according to the type dictated by the input data
     static func createEnvelope(from decoder: Decoder) throws -> AbstractEnvelope? {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-
+        
         let envelopeType: TransactionType
         if container.contains(.type) {
             let typeUInt = try container.decodeHex(UInt.self, forKey: .type)
@@ -56,14 +56,14 @@ public struct EnvelopeFactory {
                 envelopeType = type
             } else { throw Web3Error.dataError } // illegal value
         } else { envelopeType = .legacy } // legacy streams may not have type set
-
+        
         switch envelopeType {
-        case .legacy: return try LegacyEnvelope(from: decoder)
-        case .eip2930: return try EIP2930Envelope(from: decoder)
-        case .eip1559: return try EIP1559Envelope(from: decoder)
+            case .legacy: return try LegacyEnvelope(from: decoder)
+            case .eip2930: return try EIP2930Envelope(from: decoder)
+            case .eip1559: return try EIP1559Envelope(from: decoder)
         }
     }
-
+    
     // MARK: Delete all default values in initializer, because of this is a internal factory, so it shouldn't be convenient,
     // rather then is should have no magic in itself.
     /// Description Create a new transaction envelope of the type dictated by the type parameter
@@ -76,16 +76,57 @@ public struct EnvelopeFactory {
     ///   - s: signature s parameter (default 0) - will get set properly once signed
     ///   - options: TransactionParameters containing additional parameters for the transaction like gas
     /// - Returns: a new envelope of type dictated by 'type'
-    static func createEnvelope(type: TransactionType? = nil, to: EthereumAddress, nonce: BigUInt,
-                               chainID: BigUInt, value: BigUInt, data: Data,
-                               gasLimit: BigUInt, maxFeePerGas: BigUInt?, maxPriorityFeePerGas: BigUInt?, gasPrice: BigUInt?,
-                               accessList: [AccessListEntry]?, v: BigUInt, r: BigUInt, s: BigUInt) -> AbstractEnvelope {
-        let envelopeType: TransactionType = type ?? .legacy
-
-        switch envelopeType {
-        case .eip2930: return EIP2930Envelope(to: to, nonce: nonce, chainID: chainID, value: value, data: data, gasPrice: gasPrice ?? 0, gasLimit: gasLimit, accessList: accessList, v: v, r: r, s: s)
-        case .eip1559: return EIP1559Envelope(to: to, nonce: nonce, chainID: chainID, value: value, data: data, maxPriorityFeePerGas: maxPriorityFeePerGas ?? 0, maxFeePerGas: maxFeePerGas ?? 0, gasLimit: gasLimit, accessList: accessList, v: v, r: r, s: s)
-        default: return LegacyEnvelope(to: to, nonce: nonce, chainID: chainID, value: value, data: data, gasPrice: gasPrice ?? 0, gasLimit: gasLimit, v: v, r: r, s: s)
+    static func createEnvelope(
+        type: TransactionType,
+        to: EthereumAddress,
+        nonce: BigUInt,
+        chainID: BigUInt,
+        value: BigUInt,
+        data: Data,
+        gasLimit: BigUInt,
+        maxFeePerGas: BigUInt?,
+        maxPriorityFeePerGas: BigUInt?,
+        gasPrice: BigUInt?,
+        accessList: [AccessListEntry]?,
+        v: BigUInt, r: BigUInt, s: BigUInt
+    ) -> AbstractEnvelope {
+        switch type {
+            case .eip2930:
+                return EIP2930Envelope(
+                    to: to,
+                    nonce: nonce,
+                    chainID: chainID,
+                    value: value,
+                    data: data,
+                    gasPrice: gasPrice ?? 0,
+                    gasLimit: gasLimit,
+                    accessList: accessList,
+                    v: v, r: r, s: s
+                )
+            case .eip1559:
+                return EIP1559Envelope(
+                    to: to,
+                    nonce: nonce,
+                    chainID: chainID,
+                    value: value,
+                    data: data,
+                    maxPriorityFeePerGas: maxPriorityFeePerGas ?? 0,
+                    maxFeePerGas: maxFeePerGas ?? 0,
+                    gasLimit: gasLimit,
+                    accessList: accessList,
+                    v: v, r: r, s: s
+                )
+            case .legacy:
+                return LegacyEnvelope(
+                    to: to,
+                    nonce: nonce,
+                    chainID: chainID,
+                    value: value,
+                    data: data,
+                    gasPrice: gasPrice ?? 0,
+                    gasLimit: gasLimit,
+                    v: v, r: r, s: s
+                )
         }
     }
 }

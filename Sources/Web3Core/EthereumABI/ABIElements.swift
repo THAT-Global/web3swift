@@ -13,13 +13,13 @@ public extension ABI {
         public var indexed: Bool?
         public var components: [Input]?
     }
-
+    
     struct Output: Decodable {
         public var name: String?
         public var type: String
         public var components: [Output]?
     }
-
+    
     struct Record: Decodable {
         public var name: String?
         public var type: String?
@@ -30,58 +30,58 @@ public extension ABI {
         public var outputs: [ABI.Output]?
         public var anonymous: Bool?
     }
-
+    
     enum Element {
         public enum ArraySize { // bytes for convenience
             case staticSize(UInt64)
             case dynamicSize
             case notArray
         }
-
+        
         case function(Function)
         case constructor(Constructor)
         case fallback(Fallback)
         case event(Event)
         case receive(Receive)
         case error(EthError)
-
+        
         public enum StateMutability {
             case payable
             case mutating
             case view
             case pure
-
+            
             var isConstant: Bool {
                 switch self {
-                case .payable:
-                    return false
-                case .mutating:
-                    return false
-                default:
-                    return true
+                    case .payable:
+                        return false
+                    case .mutating:
+                        return false
+                    default:
+                        return true
                 }
             }
-
+            
             var isPayable: Bool {
                 switch self {
-                case .payable:
-                    return true
-                default:
-                    return false
+                    case .payable:
+                        return true
+                    default:
+                        return false
                 }
             }
         }
-
+        
         public struct InOut {
             public let name: String
             public let type: ParameterType
-
+            
             public init(name: String, type: ParameterType) {
                 self.name = name.trim()
                 self.type = type
             }
         }
-
+        
         public struct Function {
             public let name: String?
             public let inputs: [InOut]
@@ -89,7 +89,7 @@ public extension ABI {
             public let stateMutability: StateMutability? = nil
             public let constant: Bool
             public let payable: Bool
-
+            
             public init(name: String?, inputs: [InOut], outputs: [InOut], constant: Bool, payable: Bool) {
                 self.name = name?.trim()
                 self.inputs = inputs
@@ -98,45 +98,45 @@ public extension ABI {
                 self.payable = payable
             }
         }
-
+        
         public struct Constructor {
             public let inputs: [InOut]
             public let constant: Bool
             public let payable: Bool
-
+            
             public init(inputs: [InOut], constant: Bool, payable: Bool) {
                 self.inputs = inputs
                 self.constant = constant
                 self.payable = payable
             }
         }
-
+        
         public struct Fallback {
             public let constant: Bool
             public let payable: Bool
-
+            
             public init(constant: Bool, payable: Bool) {
                 self.constant = constant
                 self.payable = payable
             }
         }
-
+        
         public struct Event {
             public let name: String
             public let inputs: [Input]
             public let anonymous: Bool
-
+            
             public init(name: String, inputs: [Input], anonymous: Bool) {
                 self.name = name.trim()
                 self.inputs = inputs
                 self.anonymous = anonymous
             }
-
+            
             public struct Input {
                 public let name: String
                 public let type: ParameterType
                 public let indexed: Bool
-
+                
                 public init(name: String, type: ParameterType, indexed: Bool) {
                     self.name = name.trim()
                     self.type = type
@@ -147,7 +147,7 @@ public extension ABI {
         public struct Receive {
             public let payable: Bool
             public let inputs: [InOut]
-
+            
             public init(inputs: [InOut], payable: Bool) {
                 self.inputs = inputs
                 self.payable = payable
@@ -157,12 +157,12 @@ public extension ABI {
         public struct EthError {
             public let name: String
             public let inputs: [InOut]
-
+            
             /// e.g. `CustomError(uint32, address sender)`
             public var errorDeclaration: String {
                 "\(name)(\(inputs.map { "\($0.type.abiRepresentation) \($0.name)".trim() }.joined(separator: ",")))"
             }
-
+            
             public init(name: String, inputs: [InOut] = []) {
                 self.name = name.trim()
                 self.inputs = inputs
@@ -176,18 +176,18 @@ public extension ABI {
 extension ABI.Element {
     public func encodeParameters(_ parameters: [Any]) -> Data? {
         switch self {
-        case .constructor(let constructor):
-            return constructor.encodeParameters(parameters)
-        case .event:
-            return nil
-        case .fallback:
-            return nil
-        case .function(let function):
-            return function.encodeParameters(parameters)
-        case .receive:
-            return nil
-        case .error:
-            return nil
+            case .constructor(let constructor):
+                return constructor.encodeParameters(parameters)
+            case .event:
+                return nil
+            case .fallback:
+                return nil
+            case .function(let function):
+                return function.encodeParameters(parameters)
+            case .receive:
+                return nil
+            case .error:
+                return nil
         }
     }
 }
@@ -200,7 +200,7 @@ extension ABI.Element.Constructor {
 }
 
 extension ABI.Element.Function {
-
+    
     /// Encode parameters of a given contract method
     /// - Parameters: Parameters to pass to Ethereum contract
     /// - Returns: Encoded data
@@ -218,48 +218,48 @@ extension ABI.Element.Event {
         guard let eventContent = ABIDecoder.decodeLog(event: self, eventLogTopics: eventLogTopics, eventLogData: eventLogData) else { return nil }
         return eventContent
     }
-
+    
     public static func encodeTopic(input: ABI.Element.Event.Input, value: Any) -> EventFilterParameters.Topic? {
         switch input.type {
-        case .string:
-            guard let string = value as? String else {
-                return nil
-            }
-            return .string(string.sha3(.keccak256).addHexPrefix())
-        case .dynamicBytes:
-            guard let data = ABIEncoder.convertToData(value) else {
-                return nil
-            }
-            return .string(data.sha3(.keccak256).toHexString().addHexPrefix())
-        case .bytes(length: _):
-            guard let data = ABIEncoder.convertToData(value), let data = data.setLengthLeft(32) else {
-                return nil
-            }
-            return .string(data.toHexString().addHexPrefix())
-        case .address, .uint(bits: _), .int(bits: _), .bool:
-            guard let encoded = ABIEncoder.encodeSingleType(type: input.type, value: value) else {
-                return nil
-            }
-            return .string(encoded.toHexString().addHexPrefix())
-        default:
-            guard let data = try? ABIEncoder.abiEncode(value).setLengthLeft(32) else {
-                return nil
-            }
-            return .string(data.toHexString().addHexPrefix())
+            case .string:
+                guard let string = value as? String else {
+                    return nil
+                }
+                return .string(string.sha3(.keccak256).addHexPrefix())
+            case .dynamicBytes:
+                guard let data = ABIEncoder.convertToData(value) else {
+                    return nil
+                }
+                return .string(data.sha3(.keccak256).toHexString().addHexPrefix())
+            case .bytes(length: _):
+                guard let data = ABIEncoder.convertToData(value), let data = data.setLengthLeft(32) else {
+                    return nil
+                }
+                return .string(data.toHexString().addHexPrefix())
+            case .address, .uint(bits: _), .int(bits: _), .bool:
+                guard let encoded = ABIEncoder.encodeSingleType(type: input.type, value: value) else {
+                    return nil
+                }
+                return .string(encoded.toHexString().addHexPrefix())
+            default:
+                guard let data = try? ABIEncoder.abiEncode(value).setLengthLeft(32) else {
+                    return nil
+                }
+                return .string(data.toHexString().addHexPrefix())
         }
     }
-
+    
     public func encodeParameters(_ parameters: [Any?]) -> [EventFilterParameters.Topic?] {
         guard parameters.count <= inputs.count else {
             // too many arguments for fragment
             return []
         }
         var topics: [EventFilterParameters.Topic?] = []
-
+        
         if !anonymous {
             topics.append(.string(topic.toHexString().addHexPrefix()))
         }
-
+        
         for (i, p) in parameters.enumerated() {
             let input = inputs[i]
             if !input.indexed {
@@ -277,7 +277,7 @@ extension ABI.Element.Event {
                 topics.append(Self.encodeTopic(input: input, value: p!))
             }
         }
-
+        
         // Trim off trailing nulls
         while let last = topics.last {
             if last == nil {
@@ -304,7 +304,7 @@ extension ABI.Element.EthError {
               let decoded = ABIDecoder.decode(types: inputs, data: data) else {
             return nil
         }
-
+        
         var result = [String: Any]()
         for (index, out) in inputs.enumerated() {
             result["\(index)"] = decoded[index]
@@ -314,14 +314,14 @@ extension ABI.Element.EthError {
         }
         return result
     }
-
+    
     /// Decodes `revert(string)` or `require(expression, string)` calls.
     /// These calls are decomposed as `Error(string)` error.
     public static func decodeStringError(_ data: Data) -> String? {
         let decoded = ABIDecoder.decode(types: [.init(name: "", type: .string)], data: data)
         return decoded?.first as? String
     }
-
+    
     /// Decodes `Panic(uint256)` errors.
     /// See more about panic code explain at:  https://docs.soliditylang.org/en/v0.8.21/control-structures.html#panic-via-assert-and-error-via-require
     public static func decodePanicError(_ data: Data) -> BigUInt? {
@@ -335,37 +335,37 @@ extension ABI.Element.EthError {
 extension ABI.Element {
     public func decodeReturnData(_ data: Data) -> [String: Any]? {
         switch self {
-        case .constructor:
-            return nil
-        case .event:
-            return nil
-        case .fallback:
-            return nil
-        case .function(let function):
-            return try? function.decodeReturnData(data)
-        case .receive:
-            return nil
-        case .error:
-            return nil
+            case .constructor:
+                return nil
+            case .event:
+                return nil
+            case .fallback:
+                return nil
+            case .function(let function):
+                return try? function.decodeReturnData(data)
+            case .receive:
+                return nil
+            case .error:
+                return nil
         }
     }
-
+    
     public func decodeInputData(_ data: Data) -> [String: Any]? {
         guard data.count == 0 || data.count % 32 == 4 else { return nil }
-
+        
         switch self {
-        case .constructor(let constructor):
-            return constructor.decodeInputData(data)
-        case .event:
-            return nil
-        case .fallback:
-            return nil
-        case .function(let function):
-            return function.decodeInputData(data)
-        case .receive:
-            return nil
-        case .error:
-            return nil
+            case .constructor(let constructor):
+                return constructor.decodeInputData(data)
+            case .event:
+                return nil
+            case .fallback:
+                return nil
+            case .function(let function):
+                return function.decodeInputData(data)
+            case .receive:
+                return nil
+            case .error:
+                return nil
         }
     }
 }
@@ -374,7 +374,7 @@ extension ABI.Element.Function {
     public func decodeInputData(_ rawData: Data) -> [String: Any]? {
         return ABIDecoder.decodeInputData(rawData, methodEncoding: selectorEncoded, inputs: inputs)
     }
-
+    
     /// Decodes data returned by a function call.
     /// - Parameters:
     ///  - data: bytes returned by a function call;
@@ -397,11 +397,11 @@ extension ABI.Element.Function {
             NSLog("Function doesn't have any output types to decode given data.")
             return [:]
         }
-
+        
         guard outputs.count * 32 <= data.count else {
             throw Web3Error.processingError(desc: "Bytes count must be at least \(outputs.count * 32). Given \(data.count). Decoding will fail.")
         }
-
+        
         // TODO: need improvement - we should be able to tell which value failed to be decoded
         guard let values = ABIDecoder.decode(types: outputs, data: data) else {
             throw Web3Error.processingError(desc: "Failed to decode at least one value.")
@@ -415,7 +415,7 @@ extension ABI.Element.Function {
         }
         return returnArray
     }
-
+    
     /// Decodes `revert(string)`, `revert CustomError(...)` and `require(expression, string)` calls.
     /// If `data` is empty and `outputs` are not empty it's considered that data is a result of `revert()` or `require(false)`.
     /// - Parameters:
@@ -462,7 +462,7 @@ extension ABI.Element.Function {
         if data.isEmpty && !outputs.isEmpty {
             return ["_success": false, "_failureReason": "Cannot decode empty data. \(outputs.count) outputs are expected: \(outputs.map { $0.type.abiRepresentation }). Was this a result of en empty `require(false)` or `revert()` call?"]
         }
-
+        
         /// Explanation of this condition:
         /// When `revert(string)` or `require(false, string)` are called in soliditiy they produce
         /// an error, specifically an instance of default `Error(string)` type.
@@ -482,12 +482,12 @@ extension ABI.Element.Function {
                     "_abortedByRevertOrRequire": true,
                     "_errorMessage": message]
         }
-
+        
         if data.count >= 4,
            let errors = errors,
            let customError = errors[data[data.startIndex ..< data.startIndex + 4].toHexString().stripHexPrefix()] {
             var errorResponse: [String: Any] = ["_success": false, "_abortedByRevertOrRequire": true, "_error": customError.errorDeclaration]
-
+            
             if (data.count > 32 && !customError.inputs.isEmpty),
                let decodedInputs = ABIDecoder.decode(types: customError.inputs, data: Data(data[data.startIndex + 4 ..< data.startIndex + data.count])) {
                 for idx in decodedInputs.indices {
@@ -520,27 +520,27 @@ extension ABIDecoder {
     /// - Returns: decoded dictionary of input arguments mapped to their indices and arguments' names if these are not empty.
     /// If decoding of at least one argument fails, `rawData` size is invalid or `methodEncoding` doesn't match - `nil` is returned.
     static func decodeInputData(_ rawData: Data,
-                                     methodEncoding: Data? = nil,
-                                     inputs: [ABI.Element.InOut]) -> [String: Any]? {
+                                methodEncoding: Data? = nil,
+                                inputs: [ABI.Element.InOut]) -> [String: Any]? {
         let data: Data
         let sig: Data?
-
+        
         switch rawData.count % 32 {
-        case 0:
-            sig = nil
-            data = Data()
-            break
-        case 4:
-            sig = rawData[0 ..< 4]
-            data = Data(rawData[4 ..< rawData.count])
-        default:
-            return nil
+            case 0:
+                sig = nil
+                data = Data()
+                break
+            case 4:
+                sig = rawData[0 ..< 4]
+                data = Data(rawData[4 ..< rawData.count])
+            default:
+                return nil
         }
-
+        
         if methodEncoding != nil && sig != nil && sig != methodEncoding {
             return nil
         }
-
+        
         var returnArray = [String: Any]()
         if data.count == 0 && inputs.count == 1 {
             let name = "0"
@@ -551,7 +551,7 @@ extension ABIDecoder {
             }
         } else {
             guard inputs.count * 32 <= data.count else { return nil }
-
+            
             var i = 0
             guard let values = ABIDecoder.decode(types: inputs, data: data) else { return nil }
             for input in inputs {

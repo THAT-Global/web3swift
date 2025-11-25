@@ -3,8 +3,8 @@
 //  Copyright © 2018 Alex Vlasov. All rights reserved.
 //
 
-import Foundation
 import BigInt
+import Foundation
 
 public struct ICAP {
     public var asset: String
@@ -14,19 +14,19 @@ public struct ICAP {
 
 public struct IBAN {
     public var iban: String
-
+    
     public var isDirect: Bool {
         return self.iban.count == 34 || self.iban.count == 35
     }
-
+    
     public var isIndirect: Bool {
         return self.iban.count == 20
     }
-
+    
     public var checksum: String {
         return self.iban[2..<4]
     }
-
+    
     public var asset: String {
         if self.isIndirect {
             return self.iban[4..<7]
@@ -34,7 +34,7 @@ public struct IBAN {
             return ""
         }
     }
-
+    
     public var institution: String {
         if self.isIndirect {
             return self.iban[7..<11]
@@ -42,7 +42,7 @@ public struct IBAN {
             return ""
         }
     }
-
+    
     public var client: String {
         if self.isIndirect {
             return self.iban[11...]
@@ -50,7 +50,7 @@ public struct IBAN {
             return ""
         }
     }
-
+    
     public func toEthereumAddress() -> EthereumAddress? {
         if self.isDirect {
             let base36 = self.iban[4...]
@@ -61,7 +61,7 @@ public struct IBAN {
             return nil
         }
     }
-
+    
     internal static func decodeToInts(_ iban: String) -> String {
         let uppercasedIBAN = iban.replacingOccurrences(of: " ", with: "").uppercased()
         let beginning = String(uppercasedIBAN[0..<4])
@@ -83,7 +83,7 @@ public struct IBAN {
         }).joined()
         return joinedString
     }
-
+    
     internal static func calculateChecksumMod97(_ preparedString: String) -> Int {
         var m = 0
         for digit in preparedString.split(intoChunksOf: 1) {
@@ -93,7 +93,7 @@ public struct IBAN {
         }
         return m
     }
-
+    
     public static func isValidIBANaddress(_ iban: String, noValidityCheck: Bool = false) -> Bool {
         let regex = "^XE[0-9]{2}(ETH[0-9A-Z]{13}|[0-9A-Z]{30,31})$"
         let matcher = try! NSRegularExpression(pattern: regex, options: NSRegularExpression.Options.dotMatchesLineSeparators)
@@ -108,13 +108,13 @@ public struct IBAN {
             return true
         }
     }
-
+    
     public init?(_ ibanString: String) {
         let matched = ibanString.replacingOccurrences(of: " ", with: "").uppercased()
         guard IBAN.isValidIBANaddress(matched) else { return nil }
         self.iban = matched
     }
-
+    
     public init?(_ address: EthereumAddress) {
         let addressString = address.address.lowercased().stripHexPrefix()
         guard let bigNumber = BigUInt(addressString, radix: 16) else { return nil }

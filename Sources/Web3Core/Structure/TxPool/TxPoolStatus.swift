@@ -11,7 +11,7 @@ import BigInt
 public struct TxPoolStatus: Decodable {
     public var pending: BigUInt
     public var queued: BigUInt
-
+    
     enum CodingKeys: String, CodingKey {
         case pending
         case queued

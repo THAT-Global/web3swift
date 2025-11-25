@@ -12,7 +12,7 @@ import Web3Core
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
 
-@testable import web3swift
+@testable import Web3Swift
 
 class TransactionsTests: XCTestCase {
 

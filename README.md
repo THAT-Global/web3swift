@@ -82,7 +82,7 @@ Or if your project is not a package follow these guidelines on [how to add a Swi
 In the imports section:
 
 ```swift
-import web3swift
+import Web3Swift
 import Web3Core
 ```
 

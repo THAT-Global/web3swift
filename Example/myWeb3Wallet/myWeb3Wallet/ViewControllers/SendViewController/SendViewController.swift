@@ -7,7 +7,7 @@
 
 import UIKit
 import Web3Core
-import web3swift
+import Web3Swift
 import BigInt
 
 final class SendViewController: UIViewController {

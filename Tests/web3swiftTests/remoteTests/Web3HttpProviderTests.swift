@@ -8,7 +8,7 @@
 import XCTest
 import Web3Core
 
-@testable import web3swift
+@testable import Web3Swift
 
 final class Web3HttpProviderTests: XCTestCase {
     /// if one of these rpc server lose efficacy, find a substitution from https://chainlist.org/

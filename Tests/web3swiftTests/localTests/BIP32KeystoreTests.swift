@@ -9,7 +9,7 @@ import Foundation
 import XCTest
 import Web3Core
 
-@testable import web3swift
+@testable import Web3Swift
 
 class BIP32KeystoreTests: XCTestCase {
     func testAddressGeneration() throws {

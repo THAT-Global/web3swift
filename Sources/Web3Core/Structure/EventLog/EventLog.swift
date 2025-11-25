@@ -1,5 +1,5 @@
-import Foundation
 import BigInt
+import Foundation
 
 /// Represent a log, a record of some action, emitted during transaction execution.
 ///
@@ -26,7 +26,7 @@ public struct EventLog: Decodable {
     public var topics: [Data]
     public var transactionHash: Data
     public var transactionIndex: BigUInt
-
+    
     enum CodingKeys: String, CodingKey {
         case address
         case blockHash
@@ -38,30 +38,30 @@ public struct EventLog: Decodable {
         case transactionHash
         case transactionIndex
     }
-
+    
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-
+        
         let address = try container.decode(EthereumAddress.self, forKey: .address)
         self.address = address
-
+        
         self.blockNumber = try container.decodeHex(BigUInt.self, forKey: .blockNumber)
-
+        
         self.blockHash = try container.decodeHex(Data.self, forKey: .blockHash)
-
+        
         self.transactionIndex = try container.decodeHex(BigUInt.self, forKey: .transactionIndex)
-
+        
         self.transactionHash = try container.decodeHex(Data.self, forKey: .transactionHash)
-
+        
         self.data = try container.decodeHex(Data.self, forKey: .data)
-
+        
         self.logIndex = try container.decodeHex(BigUInt.self, forKey: .logIndex)
-
+        
         let removed = try? container.decodeHex(BigUInt.self, forKey: .removed)
         self.removed = removed == 1 ? true : false
-
+        
         let topicsStrings = try container.decode([String].self, forKey: .topics)
-
+        
         self.topics = try topicsStrings.map {
             guard let topic = Data.fromHex($0) else { throw Web3Error.dataError }
             return topic

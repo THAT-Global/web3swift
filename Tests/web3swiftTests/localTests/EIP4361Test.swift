@@ -8,7 +8,7 @@ import Foundation
 import XCTest
 import Web3Core
 
-@testable import web3swift
+@testable import Web3Swift
 
 class EIP4361Test: XCTestCase {
 

@@ -18,18 +18,18 @@ public extension Sequence where Element == ABI.Element {
     /// Throws an error if there are two functions in the sequence with exactly the same name and input parameters.
     func getFunctions() throws -> [String: [ABI.Element.Function]] {
         var functions = [String: [ABI.Element.Function]]()
-
+        
         func appendFunction(_ key: String, _ value: ABI.Element.Function) {
             var array = functions[key] ?? []
             array.append(value)
             functions[key] = array
         }
-
+        
         for case let .function(function) in self where function.name != nil {
             appendFunction(function.name!, function)
             appendFunction(function.signature, function)
             appendFunction(function.selector.addHexPrefix().lowercased(), function)
-
+            
             /// ABI cannot have two functions with exactly the same name and input arguments
             if (functions[function.signature]?.count ?? 0) > 1 {
                 throw ABIError.invalidFunctionOverloading("Given ABI is invalid: contains two functions with possibly different return values but exactly the same name and input parameters!")
@@ -37,7 +37,7 @@ public extension Sequence where Element == ABI.Element {
         }
         return functions
     }
-
+    
     /// Filters out all ``ABI/Element/Event`` types and maps them to their names
     /// provided in ``ABI/Element/Event/name`` variable.
     /// - Returns: dictionary of all events mapped to their names.
@@ -48,7 +48,7 @@ public extension Sequence where Element == ABI.Element {
         }
         return events
     }
-
+    
     /// Filters out all ``ABI/Element/EthError`` types and maps them to their names
     /// provided in ``ABI/Element/EthError/name`` variable.
     /// - Returns: dictionary of all errors mapped to their names.
@@ -61,7 +61,7 @@ public extension Sequence where Element == ABI.Element {
         }
         return errors
     }
-
+    
     /// Filters out ``ABI/Element/Constructor``.
     /// If there are multiple of them the first encountered will be returned and if there are none a default constructor will be returned
     /// that accepts no input parameters.

@@ -22,22 +22,22 @@ extension UInt32 {
 }
 
 public class HDNode {
-    private static var maxIterationIndex = UInt32(1) << 31
-
+    private static let maxIterationIndex = UInt32(1) << 31
+    
     /// Contains private and public prefixes for serialization.
     /// See [BIP-32's serialization format](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#serialization-format) for more info.
     public struct HDversion {
         /// Mainnet public key prefix.
         /// Value `0x0488B21E` is a string `xpub` encoded as Base-58 and later as hexadecimal.
         public static let publicPrefix: Data! = Data.fromHex("0x0488B21E")
-
+        
         /// Mainnet private key prefix.
         /// Value `0x0488ADE4` is a string `xprv` encoded as Base-58 and later as hexadecimal.
         public static let privatePrefix: Data! = Data.fromHex("0x0488ADE4")
-
+        
         public let publicPrefix: Data
         public let privatePrefix: Data
-
+        
         /// Default values for `publicPrefix` and `privatePrefix` are
         /// `HDversion.publicPrefix` and `HDversion.privatePrefix` respectively.
         public init(public publicPrefix: Data = HDversion.publicPrefix,
@@ -46,7 +46,7 @@ public class HDNode {
             self.privatePrefix = privatePrefix
         }
     }
-
+    
     public var path: String? = "m"
     public var privateKey: Data?
     public var publicKey: Data
@@ -63,18 +63,18 @@ public class HDNode {
     public var hasPrivate: Bool {
         privateKey != nil
     }
-
+    
     init() {
         publicKey = Data()
         chaincode = Data()
         depth = UInt8(0)
     }
-
+    
     public convenience init?(_ serializedString: String) {
         let data = Data(Base58.bytesFromBase58(serializedString))
         self.init(data)
     }
-
+    
     public init?(_ data: Data) {
         guard data.count == 82 else { return nil }
         let header = data[0..<4]
@@ -101,13 +101,13 @@ public class HDNode {
         let checksum = hashedData[0..<4]
         if checksum != data[78..<82] { return nil }
     }
-
+    
     public init?(seed: Data) {
         guard seed.count >= 16 else { return nil }
-
+        
         guard let hmacKey = "Bitcoin seed".data(using: .ascii) else { return nil }
         let hmac = HMAC(key: hmacKey.bytes, variant: .sha2(.sha512))
-
+        
         guard let entropy = try? hmac.authenticate(seed.bytes), entropy.count == 64 else { return nil }
         let I_L = entropy[0..<32]
         let I_R = entropy[32..<64]
@@ -121,7 +121,7 @@ public class HDNode {
         depth = 0x00
         childNumber = UInt32(0)
     }
-
+    
     private static let curveOrder = BigUInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!
     public static let defaultPath = "m/44'/60'/0'/0"
     public static let defaultPathPrefix = "m/44'/60'/0'"
@@ -138,7 +138,7 @@ extension HDNode {
             return derivePublicKey(index: index, hardened: hardened)
         }
     }
-
+    
     public func derive(path: String, derivePrivateKey: Bool = true) -> HDNode? {
         let components = path.components(separatedBy: "/")
         var currentNode: HDNode = self
@@ -157,7 +157,7 @@ extension HDNode {
         }
         return currentNode
     }
-
+    
     /// Derive public key when is itself private key.
     /// Derivation of private key when is itself extended public key is impossible and will return `nil`.
     private func derivePrivateKey(index: UInt32, hardened: Bool) -> HDNode? {
@@ -165,14 +165,14 @@ extension HDNode {
             // derive private key when is itself extended public key (impossible)
             return nil
         }
-
+        
         var trueIndex = index
         if trueIndex < (UInt32(1) << 31) && hardened {
             trueIndex += (UInt32(1) << 31)
         }
-
+        
         guard let entropy = calculateEntropy(index: trueIndex, privateKey: privateKey, hardened: hardened) else { return nil }
-
+        
         let I_L = entropy[0..<32]
         let I_R = entropy[32..<64]
         let chainCode = Data(I_R)
@@ -190,7 +190,7 @@ extension HDNode {
             }
             return nil
         }
-
+        
         guard
             let newPrivateKey = newPK.serialize().setLengthLeft(32),
             SECP256K1.verifyPrivateKey(privateKey: newPrivateKey),
@@ -200,7 +200,7 @@ extension HDNode {
         else { return nil }
         return createNode(chainCode: chainCode, depth: depth + 1, publicKey: newPublicKey, privateKey: newPrivateKey, childNumber: trueIndex)
     }
-
+    
     /// Derive public key when is itself public key.
     /// No derivation of hardened public key from extended public key is allowed.
     private func derivePublicKey(index: UInt32, hardened: Bool) -> HDNode? {
@@ -208,9 +208,9 @@ extension HDNode {
             // no derivation of hardened public key from extended public key
             return nil
         }
-
+        
         guard let entropy = calculateEntropy(index: index, hardened: hardened) else { return nil }
-
+        
         let I_L = entropy[0..<32]
         let I_R = entropy[32..<64]
         let chainCode = Data(I_R)
@@ -221,7 +221,7 @@ extension HDNode {
             }
             return nil
         }
-
+        
         guard
             let tempKey = bn.serialize().setLengthLeft(32),
             SECP256K1.verifyPrivateKey(privateKey: tempKey),
@@ -231,10 +231,10 @@ extension HDNode {
             (newPublicKey.bytes[0] == 0x02 || newPublicKey.bytes[0] == 0x03),
             self.depth < UInt8.max
         else { return nil }
-
+        
         return createNode(chainCode: chainCode, depth: depth + 1, publicKey: newPublicKey, childNumber: index)
     }
-
+    
     private func createNode(chainCode: Data, depth: UInt8, publicKey: Data, privateKey: Data? = nil, childNumber: UInt32) -> HDNode? {
         let newNode = HDNode()
         newNode.chaincode = chainCode
@@ -257,21 +257,21 @@ extension HDNode {
         newNode.path = newPath
         return newNode
     }
-
+    
     private func calculateHMACInput(_ index: UInt32, privateKey: Data? = nil, hardened: Bool) -> Data {
         var inputForHMAC = Data()
-
+        
         if let privateKey = privateKey, (index >= (UInt32(1) << 31) || hardened) {
             inputForHMAC.append(Data([UInt8(0x00)]))
             inputForHMAC.append(privateKey)
         } else {
             inputForHMAC.append(self.publicKey)
         }
-
+        
         inputForHMAC.append(index.serialize32())
         return inputForHMAC
     }
-
+    
     /// Calculates entropy used for private or public key derivation.
     /// - Parameters:
     ///   - index: index
@@ -284,12 +284,12 @@ extension HDNode {
         guard let entropy = try? hmac.authenticate(inputForHMAC.bytes), entropy.count == 64 else { return nil }
         return entropy
     }
-
+    
     public func serializeToString(serializePublic: Bool = true, version: HDversion = HDversion()) -> String? {
         guard let data = self.serialize(serializePublic: serializePublic, version: version) else { return nil }
         return Base58.base58FromBytes(data.bytes)
     }
-
+    
     public func serialize(serializePublic: Bool = true, version: HDversion = HDversion()) -> Data? {
         var data = Data()
         /// Public or private key
@@ -315,5 +315,5 @@ extension HDNode {
         data.append(checksum)
         return data
     }
-
+    
 }

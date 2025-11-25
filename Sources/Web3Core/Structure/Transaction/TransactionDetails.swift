@@ -8,18 +8,18 @@
 import Foundation
 import BigInt
 
-public struct TransactionDetails: Decodable {
+public struct TransactionDetails: Decodable, Sendable {
     public var blockHash: Data?
     public var blockNumber: BigUInt?
     public var transactionIndex: BigUInt?
     public var transaction: CodableTransaction
-
+    
     enum CodingKeys: String, CodingKey {
         case blockHash
         case blockNumber
         case transactionIndex
     }
-
+    
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.blockNumber = try? container.decodeHex(BigUInt.self, forKey: .blockNumber)

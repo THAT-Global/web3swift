@@ -7,7 +7,7 @@
 // import Web3Core
 // import BigInt
 //
-// @testable import web3swift
+// @testable import Web3Swift
 //
 // class web3swiftPromisesTests: XCTestCase {
 //    var urlSession : URLSession?

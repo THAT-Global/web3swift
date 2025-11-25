@@ -4,12 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "Web3swift",
+    name: "Web3Swift",
     platforms: [
-        .macOS(.v10_15), .iOS(.v13)
+        .macOS(.v10_15), .iOS(.v16)
     ],
     products: [
-        .library(name: "web3swift", targets: ["web3swift"])
+        .library(name: "Web3Swift", targets: ["Web3Swift"])
     ],
     dependencies: [
         // pin secp256k1 (used by web3swift & solana-swift)
@@ -27,7 +27,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "web3swift",
+            name: "Web3Swift",
             dependencies: [
                 "BigInt",
                 "Web3Core",
@@ -41,7 +41,7 @@ let package = Package(
         ),
         .testTarget(
             name: "localTests",
-            dependencies: ["web3swift"],
+            dependencies: ["Web3Swift"],
             path: "Tests/web3swiftTests/localTests",
             resources: [
                 .copy("../../../TestToken/Helpers/SafeMath/SafeMath.sol"),
@@ -52,7 +52,7 @@ let package = Package(
         ),
         .testTarget(
             name: "remoteTests",
-            dependencies: ["web3swift"],
+            dependencies: ["Web3Swift"],
             path: "Tests/web3swiftTests/remoteTests",
             resources: [
                 .copy("../../../TestToken/Helpers/SafeMath/SafeMath.sol"),

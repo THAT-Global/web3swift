@@ -76,59 +76,59 @@ public typealias TransactionHash = Hash // 64 chars length without 0x
 ///  - eth Namespace - https://ethereum.org/en/developers/docs/apis/json-rpc/#json-rpc-methods
 ///  - personal Namespace - https://geth.ethereum.org/docs/rpc/ns-personal
 ///  - tx Namespace - https://geth.ethereum.org/docs/rpc/ns-txpool
-public enum APIRequest {
+public enum APIRequest: Sendable {
     // MARK: - Official Ethereum API
     // eth Namespace - https://ethereum.org/en/developers/docs/apis/json-rpc/#json-rpc-methods
-
+    
     /// Gas price request
     case gasPrice
-
+    
     /// Get last block number
     case blockNumber
-
+    
     /// Get current network
     case getNetwork
-
+    
     /// Get accounts
     case getAccounts
-
+    
     /// Estimate required gas amount for transaction
     /// - Parameters:
     ///     - TransactionParameters: parameters of planned transaction
     ///     - BlockNumber: block where it should be evaluated
     case estimateGas(CodableTransaction, BlockNumber)
-
+    
     /// Send raw transaction
     /// - Parameters:
     ///     - Hash: String representation of a transaction data
     case sendRawTransaction(Hash)
-
+    
     /// Send transaction object
     /// - Parameters:
     ///     - TransactionParameters: transaction to be sent into chain
     case sendTransaction(CodableTransaction)
-
+    
     /// Get transaction by hash
     /// - Parameters:
     ///     - Hash: transaction hash ID
     case getTransactionByHash(Hash)
-
+    
     /// Get transaction receipt
     /// - Parameters:
     ///     - Hash: transaction hash ID
     case getTransactionReceipt(Hash)
-
+    
     /// Get logs
     /// - Parameters:
     ///     - EventFilterParameters: event filter parameters for interaction with node
     case getLogs(EventFilterParameters)
-
+    
     /// Sign given string by users private key
     /// - Parameters:
     ///     - Address: address where to sign
     ///     - String: custom string to be signed
     case personalSign(Address, String)
-
+    
     /// Call a given contract
     ///
     /// Mostly could be used for intreacting with a contracts, but also could be used for simple transaction sending
@@ -136,7 +136,7 @@ public enum APIRequest {
     ///     - TransactionParameters: transaction to be sent into chain
     ///     - BlockNumber: block where it should be evaluated
     case call(CodableTransaction, BlockNumber)
-
+    
     /// Get a transaction counts on a given block
     ///
     /// Consider that there's no out of the box way to get counts of all transactions sent by the address
@@ -146,13 +146,13 @@ public enum APIRequest {
     ///     - Address: address which is engaged in transaction
     ///     - BlockNumber: block to check
     case getTransactionCount(Address, BlockNumber)
-
+    
     /// Get a balance of a given address
     /// - Parameters:
     ///     - Address: address which balance would be received
     ///     - BlockNumber: block to check
     case getBalance(Address, BlockNumber)
-
+    
     /// Returns the value from a storage position at a given address.
     ///
     /// - Parameters:
@@ -160,25 +160,25 @@ public enum APIRequest {
     ///     - Position: Integer of the position in the storage.
     ///     - BlockNumber: block to check
     case getStorageAt(Address, BigUInt, BlockNumber)
-
+    
     /// Returns code of a given address
     /// - Parameters:
     ///     - Address: address what code to get
     ///     - BlockNumber: block to check
     case getCode(Address, BlockNumber)
-
+    
     /// Get block object by hash
     /// - Parameters:
     ///     - Hash: Hash of the block to reach
     ///     - Bool: Transaction included in block could be received as just array of their hashes or as Transaction objects, set true for latter.
     case getBlockByHash(Hash, Bool)
-
+    
     /// Get block object by its number
     /// - Parameters:
     ///     - Hash: Number of the block to reach
     ///     - Bool: Transaction included in block could be received as just array of their hashes or as Transaction objects, set true for latter.
     case getBlockByNumber(BlockNumber, Bool)
-
+    
     /// Returns fee history with a respect to given setup
     ///
     /// Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
@@ -192,10 +192,10 @@ public enum APIRequest {
     ///         For each block in the requested range, the transactions will be sorted in ascending order
     ///         by effective tip per gas and the corresponding effective tip for the percentile will be determined, accounting for gas consumed."
     case feeHistory(BigUInt, BlockNumber, [Double])
-
+    
     // MARK: - Personal Ethereum API
     // personal Namespace - https://geth.ethereum.org/docs/rpc/ns-personal
-
+    
     /// Creates new account.
     ///
     /// Note: it becomes the new current unlocked account. There can only be one unlocked account at a time.
@@ -203,7 +203,7 @@ public enum APIRequest {
     /// - Parameters:
     ///   - String: Password for the new account.
     case createAccount(String) // No in Eth API
-
+    
     /// Unlocks specified account for use.
     ///
     /// If permanent unlocking is disabled (the default) then the duration argument will be ignored,
@@ -218,7 +218,7 @@ public enum APIRequest {
     ///   - String: Passphrase to unlock the account.
     ///   - UInt?: Duration in seconds how long the account should remain unlocked for.
     case unlockAccount(Address, String, UInt?)
-
+    
     // MARK: - Tx Ethereum API
     // tx Namespace - https://geth.ethereum.org/docs/rpc/ns-txpool
     case getTxPoolStatus // No in Eth API

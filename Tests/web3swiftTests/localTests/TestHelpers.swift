@@ -10,7 +10,7 @@ import Foundation
 import BigInt
 import Web3Core
 
-import web3swift
+import Web3Swift
 
 class TestHelpers {
     static func localDeployERC20() async throws -> (Web3, TransactionSendingResult, TransactionReceipt, String) {

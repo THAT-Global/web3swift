@@ -5,7 +5,7 @@
 //
 
 import Foundation
-@testable import web3swift
+@testable import Web3Swift
 @testable import Web3Core
 
 class Web3EthMock: IEth {

@@ -8,7 +8,7 @@
 import XCTest
 import Web3Core
 
-@testable import web3swift
+@testable import Web3Swift
 
 //
 // This Test suite is intended to hold various tests for our data conversion code
