@@ -170,5 +170,5 @@ extension EthereumAddress: CustomStringConvertible {
 }
 
 extension EthereumAddress {
-    var normalizedAddress: String { address.lowercased() }
+    public var normalizedAddress: String { address.lowercased() }
 }

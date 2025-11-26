@@ -10,14 +10,14 @@ import Foundation
 import BigInt
 
 public struct CustomNetwork: Codable, Hashable, Sendable {
-    let id: BigUInt
-    let name: String
-    let coinName: String
-    let symbol: String
-    var rpcOverride: String? = nil
-    let rpcURLs: [String] // 1...Many (1 = Primary, Others = Fallbacks)
-    var explorerURL: String? = nil
-    let decimals: Int
+    public let id: BigUInt
+    public let name: String
+    public let coinName: String
+    public let symbol: String
+    public var rpcOverride: String? = nil
+    public let rpcURLs: [String] // 1...Many (1 = Primary, Others = Fallbacks)
+    public var explorerURL: String? = nil
+    public let decimals: Int
 }
 
 /// Enum for the most-used EVM networks. Network ID is crucial for EIP155 support
