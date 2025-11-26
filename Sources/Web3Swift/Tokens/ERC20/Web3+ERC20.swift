@@ -120,20 +120,20 @@ public class ERC20: IERC20, ERC20BaseProperties {
 
 extension ERC20 {
     /// Creates an `ERC20` from a raw token id (string/hex), validating it.
-    static func make(address: String, chainId: BigUInt, abiString: String = Web3.Utils.erc20ABI) throws -> ERC20 {
+    public static func make(address: String, chainId: BigUInt, abiString: String = Web3.Utils.erc20ABI) throws -> ERC20 {
         guard let tokenAddress = EthereumAddress(address) else { throw ValidationError.invalidAddress }
         return try ERC20(address: tokenAddress, chainId: chainId, abiString: abiString)
     }
     
     /// Creates an `ERC20` and preloads on-chain metadata (`name`, `symbol`, `decimals`).
-    static func makeWithMetadata(address: EthereumAddress, chainId: BigUInt, using web3: Web3) async throws -> ERC20 {
+    public static func makeWithMetadata(address: EthereumAddress, chainId: BigUInt, using web3: Web3) async throws -> ERC20 {
         let erc20 = try ERC20(address: address, chainId: chainId)
         try await erc20.readProperties(using: web3)
         return erc20
     }
     
     /// Bulk-create `ERC20`s with metadata. Simple throttle to avoid rate limits (default ~12 req/sec).
-    static func makeManyWithMetadata(addresses: [EthereumAddress], chainId: BigUInt, using web3: Web3) async throws -> [ERC20] {
+    public static func makeManyWithMetadata(addresses: [EthereumAddress], chainId: BigUInt, using web3: Web3) async throws -> [ERC20] {
         var result: [ERC20] = []
         result.reserveCapacity(addresses.count)
         
