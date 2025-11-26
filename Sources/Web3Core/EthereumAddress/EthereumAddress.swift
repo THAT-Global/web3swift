@@ -88,6 +88,12 @@ public struct EthereumAddress: Equatable, Sendable {
     public static func contractDeploymentAddress() -> EthereumAddress {
         EthereumAddress("0x", type: .contractDeployment)!
     }
+    
+    /// Use public memberwise `init(_address:type:)` with caution. _address must be precisely correct
+    public init(_address: String, type: AddressType = .normal) {
+        self._address = _address
+        self.type = type
+    }
 }
 
 /// In swift structs it's better to implement initializers in extension
@@ -135,7 +141,6 @@ extension EthereumAddress {
         self._address = addressData.toHexString().addHexPrefix()
         self.type = type
     }
-    
 }
 
 extension EthereumAddress: Codable {
