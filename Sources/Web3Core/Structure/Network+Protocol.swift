@@ -18,6 +18,17 @@ public struct CustomNetwork: Codable, Hashable, Sendable {
     public let rpcURLs: [String] // 1...Many (1 = Primary, Others = Fallbacks)
     public var explorerURL: String? = nil
     public let decimals: Int
+    
+    public init(id: BigUInt, name: String, coinName: String, symbol: String, rpcOverride: String? = nil, rpcURLs: [String], explorerURL: String? = nil, decimals: Int) {
+        self.id = id
+        self.name = name
+        self.coinName = coinName
+        self.symbol = symbol
+        self.rpcOverride = rpcOverride
+        self.rpcURLs = rpcURLs
+        self.explorerURL = explorerURL
+        self.decimals = decimals
+    }
 }
 
 /// Enum for the most-used EVM networks. Network ID is crucial for EIP155 support
