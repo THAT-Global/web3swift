@@ -72,15 +72,19 @@ public enum TransactionExecutor {
             throw Web3Error.dataError
         }
         
+#if DEBUG
         // === MARK: Temp Transaction Submission Logging ===
         print("XXX Submitting transaction:")
         print("XXX To: \(transaction.to.address)")
         print("XXX Value: \(transaction.value)")
         print("XXX Gas Limit: \(transaction.gasLimit)")
         print("XXX Gas Price: \(transaction.gasPrice ?? 0)")
+        print("XXX Max Fee Per Gas : \(transaction.maxFeePerGas ?? 0)")
+        print("XXX Max Priority Fee Per Gas: \(transaction.maxPriorityFeePerGas ?? 0)")
         print("XXX Data: \(transaction.data.toHexString().prefix(50))...") // Log first 50 chars
         print("XXX Broadcasting: \(transactionData.toHexString().prefix(20))... via \(web3.provider.url)")
         // === TODO: Submitting ===
+#endif
         
         return try await web3.eth.send(raw: transactionData)
     }
