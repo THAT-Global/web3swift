@@ -29,15 +29,15 @@ public enum PolicyResolver {
             txn.gasLimit = try await resolveGasEstimate(for: txn, policy: policies.gasLimitPolicy, using: provider)
         }
         
-        let oracle = Oracle(provider) // Pull all fee data from one oracle (shared fee‑history cache)
+        let oracle = Oracle(provider, percentiles: [50, 75, 95]) // Pull all fee data from one oracle (shared fee-history cache)
         if case .eip1559 = txn.type {
             if txn.maxFeePerGas == 0 || txn.maxPriorityFeePerGas == 0 {
                 let base = await resolveGasBaseFee(policy: policies.maxFeePerGasPolicy, using: oracle)
                 let tip = await resolveGasPriorityFee(policy: policies.maxPriorityFeePerGasPolicy, using: oracle)
                 txn.maxPriorityFeePerGas = tip
-                txn.maxFeePerGas = base + tip
+                txn.maxFeePerGas = (base * 2) + tip
             }
-            if txn.maxFeePerGas ?? 0 < txn.maxPriorityFeePerGas ?? 0 {
+            if (txn.maxFeePerGas ?? 0) < (txn.maxPriorityFeePerGas ?? 0) {
                 txn.maxFeePerGas = txn.maxPriorityFeePerGas
             }
         } else {
