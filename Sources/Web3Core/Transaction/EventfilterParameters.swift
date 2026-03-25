@@ -6,30 +6,27 @@
 //
 //  Made most structs generics by Yaroslav Yashin 2022
 
-import Foundation
 import BigInt
+import Foundation
+import os
 
 /// Global counter object to enumerate JSON RPC requests.
 public final class Counter {
-    private static let shared = Counter()
-    private var next: UInt = 1
-    private let lock = NSLock()
+    /// Thread-safe counter using OSAllocatedUnfairLock (safe from Swift concurrency contexts).
+    /// If we later bump to iOS 18 for other reasons, we can swap OSAllocatedUnfairLock to Mutex at that point with a one-line change per call site.
+    private static let state = OSAllocatedUnfairLock(initialState: UInt(1))
     
     // Prevent external instantiation
     private init() {}
     
-    /// Thread-safe increment, callable from any thread.
-    private func increment() -> UInt {
-        lock.lock(); defer { lock.unlock() }
-        let v = next
-        next += 1
-        return v
-    }
-    
-    /// Old synchronous API—just forwards to the shared instance.
+    /// Old synchronous API — thread-safe, concurrency-safe.
     @discardableResult
     public static func increment() -> UInt {
-        shared.increment()
+        state.withLock { next in
+            let v = next
+            next += 1
+            return v
+        }
     }
 }
 
@@ -108,22 +105,22 @@ extension EventFilterParameters {
         
         public func encode(to encoder: Encoder) throws {
             switch self {
-                case let .string(s):
-                    var container = encoder.singleValueContainer()
-                    try container.encode(s)
-                case let .strings(ss):
-                    var container = encoder.unkeyedContainer()
-                    try container.encode(contentsOf: ss ?? [])
+            case let .string(s):
+                var container = encoder.singleValueContainer()
+                try container.encode(s)
+            case let .strings(ss):
+                var container = encoder.unkeyedContainer()
+                try container.encode(contentsOf: ss ?? [])
             }
         }
         
         var rawValue: String {
             switch self {
-                case let .string(string):
-                    // Associated value can contain only String or nil, both of them always encoded as a JSON could be represented as String again.
-                    return String(data: try! JSONEncoder().encode(string), encoding: .utf8)!
-                case let .strings(strings):
-                    return strings!.textRepresentation
+            case let .string(string):
+                // Associated value can contain only String or nil, both of them always encoded as a JSON could be represented as String again.
+                return String(data: try! JSONEncoder().encode(string), encoding: .utf8)!
+            case let .strings(strings):
+                return strings!.textRepresentation
             }
         }
     }
