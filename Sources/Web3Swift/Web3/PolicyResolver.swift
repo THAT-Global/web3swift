@@ -32,10 +32,19 @@ public enum PolicyResolver {
         let oracle = Oracle(provider, percentiles: [50, 75, 95]) // Pull all fee data from one oracle (shared fee-history cache)
         if case .eip1559 = txn.type {
             if txn.maxFeePerGas == 0 || txn.maxPriorityFeePerGas == 0 {
-                let base = await resolveGasBaseFee(policy: policies.maxFeePerGasPolicy, using: oracle)
-                let tip = await resolveGasPriorityFee(policy: policies.maxPriorityFeePerGasPolicy, using: oracle)
-                txn.maxPriorityFeePerGas = tip
-                txn.maxFeePerGas = (base * 2) + tip
+                // When both fee policies are manual, use them as final values directly.
+                // This lets callers pass exact maxFeePerGas/maxPriorityFeePerGas without
+                // the values being reinterpreted through the (base × 2) + tip formula.
+                if case .manual(let manualMaxFee) = policies.maxFeePerGasPolicy,
+                   case .manual(let manualTip) = policies.maxPriorityFeePerGasPolicy {
+                    txn.maxFeePerGas = manualMaxFee
+                    txn.maxPriorityFeePerGas = manualTip
+                } else {
+                    let base = await resolveGasBaseFee(policy: policies.maxFeePerGasPolicy, using: oracle)
+                    let tip = await resolveGasPriorityFee(policy: policies.maxPriorityFeePerGasPolicy, using: oracle)
+                    txn.maxPriorityFeePerGas = tip
+                    txn.maxFeePerGas = (base * 2) + tip
+                }
             }
             if (txn.maxFeePerGas ?? 0) < (txn.maxPriorityFeePerGas ?? 0) {
                 txn.maxFeePerGas = txn.maxPriorityFeePerGas
