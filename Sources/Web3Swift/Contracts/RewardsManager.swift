@@ -41,7 +41,7 @@ public struct UserRewardBalances {
     }
 }
 
-/// Full system configuration returned by `getSystemConfig`.
+/// System configuration parameters and flags returned by `getSystemConfig`.
 public struct RewardsSystemConfig {
     public let baseRateBps: UInt16
     public let rateCapBps: UInt16
@@ -59,6 +59,10 @@ public struct RewardsSystemConfig {
     public let defaultPairDailyCap: BigUInt
     public let globalDailyCap: BigUInt
     public let defaultMinPayment: BigUInt
+}
+
+/// Live system metrics returned by `getSystemMetrics`.
+public struct RewardsSystemMetrics {
     public let totalCashbackDistributed: BigUInt
     public let totalEligibleVolume: BigUInt
     public let totalPaymentCount: BigUInt
@@ -125,7 +129,7 @@ public enum CashbackInactiveReason: UInt8, Sendable {
 
 // MARK: - Implementation
 
-public final class RewardsManager {
+public final class RewardsManager: AccessControlContract {
     public let contract: Contract
     public let contractAddress: EthereumAddress
 
@@ -408,6 +412,11 @@ public final class RewardsManager {
         try contract.createWriteTransaction(method: "removeTrustedForwarder", parameters: [forwarder])
     }
 
+    /// Set or disable the TierRegistry. address(0) disables the tier feature.
+    public func setTierRegistry(_ newTierRegistry: EthereumAddress) throws -> CodableTransaction {
+        try contract.createWriteTransaction(method: "setTierRegistry", parameters: [newTierRegistry])
+    }
+
     // ═══════════════════════════════════════════════════════════════
     //  MARK: - Read: Payment Preview
     // ═══════════════════════════════════════════════════════════════
@@ -596,7 +605,7 @@ public final class RewardsManager {
         return try await executor.call(method: "cashbackPaused")
     }
 
-    /// All system config in one call — useful for admin dashboards.
+    /// System config parameters and flags in one call. See also `getSystemMetrics()` for live counters.
     public func getSystemConfig(using web3: Web3) async throws -> RewardsSystemConfig {
         let executor = ContractReadExecutor(contract: contract, web3: web3)
         let r = try await executor.call(method: "getSystemConfig")
@@ -608,10 +617,7 @@ public final class RewardsManager {
               let v8 = r["8"] as? Bool, let v9 = r["9"] as? Bool,
               let v10 = r["10"] as? BigUInt, let v11 = r["11"] as? BigUInt,
               let v12 = r["12"] as? BigUInt, let v13 = r["13"] as? BigUInt,
-              let v14 = r["14"] as? BigUInt, let v15 = r["15"] as? BigUInt,
-              let v16 = r["16"] as? BigUInt, let v17 = r["17"] as? BigUInt,
-              let v18 = r["18"] as? BigUInt, let v19 = r["19"] as? BigUInt,
-              let v20 = r["20"] as? BigUInt else {
+              let v14 = r["14"] as? BigUInt, let v15 = r["15"] as? BigUInt else {
             throw Web3Error.processingError(desc: "getSystemConfig returned unexpected format")
         }
 
@@ -623,10 +629,33 @@ public final class RewardsManager {
             cashbackPaused: v8, emergencyPaused: v9,
             defaultMaxPerTx: v10, defaultUserDailyCap: v11,
             defaultMerchantDailyCap: v12, defaultPairDailyCap: v13,
-            globalDailyCap: v14, defaultMinPayment: v15,
-            totalCashbackDistributed: v16, totalEligibleVolume: v17,
-            totalPaymentCount: v18, rewardsBucket: v19,
-            totalAllocatedRewards: v20
+            globalDailyCap: v14, defaultMinPayment: v15
         )
+    }
+
+    /// Live system metrics — counters and pool state.
+    public func getSystemMetrics(using web3: Web3) async throws -> RewardsSystemMetrics {
+        let executor = ContractReadExecutor(contract: contract, web3: web3)
+        let r = try await executor.call(method: "getSystemMetrics")
+
+        guard let v0 = r["0"] as? BigUInt, let v1 = r["1"] as? BigUInt,
+              let v2 = r["2"] as? BigUInt, let v3 = r["3"] as? BigUInt,
+              let v4 = r["4"] as? BigUInt else {
+            throw Web3Error.processingError(desc: "getSystemMetrics returned unexpected format")
+        }
+
+        return RewardsSystemMetrics(
+            totalCashbackDistributed: v0,
+            totalEligibleVolume: v1,
+            totalPaymentCount: v2,
+            rewardsBucket: v3,
+            totalAllocatedRewards: v4
+        )
+    }
+
+    /// Current TierRegistry address (address(0) if disabled).
+    public func tierRegistry(using web3: Web3) async throws -> EthereumAddress {
+        let executor = ContractReadExecutor(contract: contract, web3: web3)
+        return try await executor.call(method: "tierRegistry")
     }
 }

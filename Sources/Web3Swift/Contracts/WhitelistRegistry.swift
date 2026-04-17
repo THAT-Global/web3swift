@@ -26,7 +26,7 @@ public struct MerchantStateBatch {
 
 // MARK: - Implementation
 
-public final class WhitelistRegistry {
+public final class WhitelistRegistry: AccessControlContract {
     public let contract: Contract
     public let contractAddress: EthereumAddress
 

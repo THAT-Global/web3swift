@@ -13,7 +13,7 @@ import Web3Core
 
 /// Wrapper for the RewardsVault contract — token custody for the THAT Cashback System.
 /// Includes both read-only pool queries and admin (TREASURY_ROLE / Owner) write functions.
-public final class CashbackRewardsVault {
+public final class CashbackRewardsVault: AccessControlContract {
     public let contract: Contract
     public let contractAddress: EthereumAddress
 
