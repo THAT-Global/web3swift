@@ -605,6 +605,12 @@ public final class RewardsManager: AccessControlContract {
         return try await executor.call(method: "cashbackPaused")
     }
 
+    /// Current client-key address used for app-attestation verification.
+    public func clientKeyAddress(using web3: Web3) async throws -> EthereumAddress {
+        let executor = ContractReadExecutor(contract: contract, web3: web3)
+        return try await executor.call(method: "clientKeyAddress")
+    }
+
     /// System config parameters and flags in one call. See also `getSystemMetrics()` for live counters.
     public func getSystemConfig(using web3: Web3) async throws -> RewardsSystemConfig {
         let executor = ContractReadExecutor(contract: contract, web3: web3)
