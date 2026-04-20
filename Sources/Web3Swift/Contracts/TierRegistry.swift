@@ -29,7 +29,7 @@ public struct TierConfiguration {
 }
 
 /// Resolved tier and multiplier returned by `getUserTier`.
-public struct UserTierInfo {
+public struct UserTierInfo: Codable, Sendable {
     public let tier: UInt8
     public let multiplierBps: UInt16
 
