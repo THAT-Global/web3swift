@@ -12,7 +12,7 @@ import Web3Core
 // MARK: - Return Types
 
 /// Batch merchant state returned by `getMerchantStateBatch`.
-public struct MerchantStateBatch {
+public struct MerchantStateBatch: Codable, Sendable {
     public let earnEligible: [Bool]
     public let spendEligible: [Bool]
     public let blacklisted: [Bool]

@@ -12,7 +12,7 @@ import Web3Core
 // MARK: - Return Types
 
 /// Payment preview returned by `previewPayment`.
-public struct PaymentPreview {
+public struct PaymentPreview: Codable, Sendable {
     public let fromWallet: BigUInt
     public let fromRewards: BigUInt
     public let estimatedCashback: BigUInt
@@ -29,7 +29,7 @@ public struct PaymentPreview {
 }
 
 /// User reward balances returned by `getUserBalances`.
-public struct UserRewardBalances {
+public struct UserRewardBalances: Codable, Sendable {
     public let spendable: BigUInt
     public let pending: BigUInt
     public let nextVesting: UInt64
@@ -42,7 +42,7 @@ public struct UserRewardBalances {
 }
 
 /// System configuration parameters and flags returned by `getSystemConfig`.
-public struct RewardsSystemConfig {
+public struct RewardsSystemConfig: Codable, Sendable {
     public let baseRateBps: UInt16
     public let rateCapBps: UInt16
     public let rateScalingEnabled: Bool
@@ -62,7 +62,7 @@ public struct RewardsSystemConfig {
 }
 
 /// Live system metrics returned by `getSystemMetrics`.
-public struct RewardsSystemMetrics {
+public struct RewardsSystemMetrics: Codable, Sendable {
     public let totalCashbackDistributed: BigUInt
     public let totalEligibleVolume: BigUInt
     public let totalPaymentCount: BigUInt
@@ -71,7 +71,7 @@ public struct RewardsSystemMetrics {
 }
 
 /// Batch merchant overrides returned by `getMerchantOverridesBatch`.
-public struct MerchantOverridesBatch {
+public struct MerchantOverridesBatch: Codable, Sendable {
     public let customRate: [BigUInt]
     public let maxPerTx: [BigUInt]
     public let dailyCap: [BigUInt]
@@ -80,7 +80,7 @@ public struct MerchantOverridesBatch {
 }
 
 /// User status enum matching the Solidity `UserStatus` enum.
-public enum RewardsUserStatus: UInt8, Sendable {
+public enum RewardsUserStatus: UInt8, Codable, Sendable {
     case ok = 0
     case cashbackPaused = 1
     case frozen = 2
@@ -100,7 +100,7 @@ public enum RewardsUserStatus: UInt8, Sendable {
 }
 
 /// Cashback inactive reason enum matching the Solidity `CashbackInactiveReason` enum.
-public enum CashbackInactiveReason: UInt8, Sendable {
+public enum CashbackInactiveReason: UInt8, Codable, Sendable {
     case none = 0
     case recipientNotMerchant = 1
     case notEarnEligible = 2

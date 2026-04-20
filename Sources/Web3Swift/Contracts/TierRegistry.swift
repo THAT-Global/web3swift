@@ -12,7 +12,7 @@ import Web3Core
 // MARK: - Return Types
 
 /// Tier configuration returned by the `tierConfig()` public getter.
-public struct TierConfiguration {
+public struct TierConfiguration: Codable, Sendable {
     public let maxTier: UInt8
     public let multiplier1: UInt16
     public let multiplier2: UInt16
