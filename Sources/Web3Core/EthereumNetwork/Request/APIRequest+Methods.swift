@@ -17,36 +17,8 @@ func checkError(method: String, error: JsonRpcErrorObject.RpcError) throws -> St
         }
         throw Web3Error.nodeError(desc: "Error data decoding failed: missing revert data in exception; Transaction reverted without a reason string.")
     }
-
-    // For eth_estimateGas (and other methods), try to extract revert reason from error data.
-    if method == "eth_estimateGas" {
-        if let result = spelunkData(value: error) {
-            let reason = decodeRevertReason(from: result.data)
-            throw Web3Error.nodeError(desc: "\(error.message): \(reason ?? result.data)")
-        }
-    }
-
+    
     throw Web3Error.nodeError(desc: error.message)
-}
-
-/// Attempt to decode a human-readable revert reason from ABI-encoded revert data.
-/// Handles standard Error(string) (0x08c379a0) and raw hex fallback.
-func decodeRevertReason(from hexData: String) -> String? {
-    let hex = hexData.hasPrefix("0x") ? String(hexData.dropFirst(2)) : hexData
-    let data = Data(hex: hex)
-
-    // Error(string) selector: 0x08c379a0
-    if data.count >= 68, data.prefix(4) == Data([0x08, 0xc3, 0x79, 0xa0]) {
-        // ABI layout: selector(4) + offset(32) + length(32) + string data
-        let lengthBig = BigUInt(data.subdata(in: 36..<68))
-        guard lengthBig < 10_000 else { return nil }
-        let length = Int(lengthBig)
-        let stringEnd = min(68 + length, data.count)
-        guard stringEnd > 68 else { return nil }
-        return String(data: data.subdata(in: 68..<stringEnd), encoding: .utf8)
-    }
-
-    return nil
 }
 
 func spelunkData(value: Any?) -> (message: String, data: String)? {
