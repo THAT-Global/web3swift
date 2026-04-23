@@ -59,6 +59,34 @@ public struct RewardsSystemConfig: Codable, Sendable {
     public let defaultPairDailyCap: BigUInt
     public let globalDailyCap: BigUInt
     public let defaultMinPayment: BigUInt
+
+    public init(
+        baseRateBps: UInt16, rateCapBps: UInt16,
+        rateScalingEnabled: Bool, rewardsBaseline: BigUInt,
+        cooldownSeconds: UInt64, vestingDuration: UInt64,
+        epochLength: UInt64, inactivityThreshold: UInt64,
+        cashbackPaused: Bool, emergencyPaused: Bool,
+        defaultMaxPerTx: BigUInt, defaultUserDailyCap: BigUInt,
+        defaultMerchantDailyCap: BigUInt, defaultPairDailyCap: BigUInt,
+        globalDailyCap: BigUInt, defaultMinPayment: BigUInt
+    ) {
+        self.baseRateBps = baseRateBps
+        self.rateCapBps = rateCapBps
+        self.rateScalingEnabled = rateScalingEnabled
+        self.rewardsBaseline = rewardsBaseline
+        self.cooldownSeconds = cooldownSeconds
+        self.vestingDuration = vestingDuration
+        self.epochLength = epochLength
+        self.inactivityThreshold = inactivityThreshold
+        self.cashbackPaused = cashbackPaused
+        self.emergencyPaused = emergencyPaused
+        self.defaultMaxPerTx = defaultMaxPerTx
+        self.defaultUserDailyCap = defaultUserDailyCap
+        self.defaultMerchantDailyCap = defaultMerchantDailyCap
+        self.defaultPairDailyCap = defaultPairDailyCap
+        self.globalDailyCap = globalDailyCap
+        self.defaultMinPayment = defaultMinPayment
+    }
 }
 
 /// Live system metrics returned by `getSystemMetrics`.
