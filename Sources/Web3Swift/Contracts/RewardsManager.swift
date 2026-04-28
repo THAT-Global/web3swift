@@ -6,6 +6,7 @@
 //
 
 import BigInt
+import CryptoSwift
 import Foundation
 import Web3Core
 
@@ -691,5 +692,66 @@ public final class RewardsManager: AccessControlContract {
     public func tierRegistry(using web3: Web3) async throws -> EthereumAddress {
         let executor = ContractReadExecutor(contract: contract, web3: web3)
         return try await executor.call(method: "tierRegistry")
+    }
+}
+
+// MARK: - Client Signature
+
+extension RewardsManager {
+
+    /// Build the digest that the contract's `verifyClientSig` checks:
+    /// `keccak256(abi.encodePacked(user, recipient, amount, chainId, contractAddress))`
+    public static func encodeClientSigDigest(
+        user: EthereumAddress,
+        recipient: EthereumAddress,
+        amount: BigUInt,
+        chainId: BigUInt,
+        contract: EthereumAddress
+    ) -> Data {
+        var packed = Data()
+        packed.append(user.addressData)
+        packed.append(recipient.addressData)
+        packed.append(padUInt256(amount))
+        packed.append(padUInt256(chainId))
+        packed.append(contract.addressData)
+        return Data(packed.sha3(.keccak256))
+    }
+
+    /// Full signing ritual for the `clientSig` parameter.
+    /// Returns a 65-byte `(r ++ s ++ v)` signature with `v` in `{27, 28}`.
+    public static func signClientSig(
+        privateKey: Data,
+        user: EthereumAddress,
+        recipient: EthereumAddress,
+        amount: BigUInt,
+        chainId: BigUInt,
+        contract: EthereumAddress
+    ) throws -> Data {
+        let messageHash = encodeClientSigDigest(
+            user: user, recipient: recipient,
+            amount: amount, chainId: chainId, contract: contract
+        )
+
+        guard let ethSignedHash = Utilities.hashPersonalMessage(messageHash) else {
+            throw Web3Error.dataError
+        }
+
+        let (serialized, _) = SECP256K1.signForRecovery(
+            hash: ethSignedHash, privateKey: privateKey
+        )
+        guard var sig = serialized, sig.count == 65 else {
+            throw Web3Error.dataError
+        }
+
+        if sig[64] < 27 {
+            sig[64] += 27
+        }
+        return sig
+    }
+
+    private static func padUInt256(_ value: BigUInt) -> Data {
+        let bytes = value.serialize()
+        if bytes.count >= 32 { return Data(bytes.suffix(32)) }
+        return Data(repeating: 0, count: 32 - bytes.count) + bytes
     }
 }
