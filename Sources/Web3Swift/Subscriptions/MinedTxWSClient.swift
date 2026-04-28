@@ -1,8 +1,8 @@
 //
-//  AlchemyWSClient.swift
+//  MinedTxWSClient.swift
 //  web3swift
 //
-//  Alchemy WebSocket client for mined-transaction subscriptions.
+//  WebSocket client for mined-transaction subscriptions.
 //
 
 import Foundation
@@ -77,9 +77,9 @@ public enum AddressFilter: Sendable, Equatable, Hashable {
 // MARK: - Delegate
 
 @MainActor
-public protocol AlchemyWSClientDelegate: AnyObject {
-    func alchemyWS(_ client: AlchemyWSClient, didReceive message: WSMessage)
-    func alchemyWS(_ client: AlchemyWSClient, didChange isConnected: Bool)
+public protocol MinedTxWSClientDelegate: AnyObject {
+    func minedTxWS(_ client: MinedTxWSClient, didReceive message: WSMessage)
+    func minedTxWS(_ client: MinedTxWSClient, didChange isConnected: Bool)
 }
 
 // MARK: - WeakBox
@@ -91,9 +91,9 @@ public final class WeakBox<T: AnyObject>: @unchecked Sendable {
 
 // MARK: - URLSession WebSocket delegate proxy
 
-public final class AlchemyWSDelegateProxy: NSObject, URLSessionWebSocketDelegate, @unchecked Sendable {
-    weak var owner: AlchemyWSClient?
-    public init(owner: AlchemyWSClient) { self.owner = owner }
+public final class MinedTxWSDelegateProxy: NSObject, URLSessionWebSocketDelegate, @unchecked Sendable {
+    weak var owner: MinedTxWSClient?
+    public init(owner: MinedTxWSClient) { self.owner = owner }
 
     public func urlSession(_ session: URLSession,
                            webSocketTask: URLSessionWebSocketTask,
@@ -112,14 +112,14 @@ public final class AlchemyWSDelegateProxy: NSObject, URLSessionWebSocketDelegate
 // MARK: - Client (MainActor)
 
 @MainActor
-public final class AlchemyWSClient: NSObject {
+public final class MinedTxWSClient: NSObject {
     public let chainId: Int
     public let wssURL: URL
-    public weak var delegate: AlchemyWSClientDelegate?
+    public weak var delegate: MinedTxWSClientDelegate?
 
     private var session: URLSession?
     private var ws: URLSessionWebSocketTask?
-    private var delegateProxy: AlchemyWSDelegateProxy?
+    private var delegateProxy: MinedTxWSDelegateProxy?
     private var isOpen = false
     private var isClosing = false
     private var hasActiveReceive = false
@@ -149,7 +149,7 @@ public final class AlchemyWSClient: NSObject {
         let cfg = URLSessionConfiguration.default
         cfg.waitsForConnectivity = true
 
-        let proxy = AlchemyWSDelegateProxy(owner: self)
+        let proxy = MinedTxWSDelegateProxy(owner: self)
         delegateProxy = proxy
 
         let session = URLSession(configuration: cfg, delegate: proxy, delegateQueue: nil)
@@ -168,7 +168,7 @@ public final class AlchemyWSClient: NSObject {
         session?.invalidateAndCancel()
         session = nil
         hasActiveReceive = false
-        delegate?.alchemyWS(self, didChange: false)
+        delegate?.minedTxWS(self, didChange: false)
     }
 
     public func handleDidOpen() {
@@ -176,7 +176,7 @@ public final class AlchemyWSClient: NSObject {
         backoff = 1.0
         listen()
         startHeartbeat()
-        delegate?.alchemyWS(self, didChange: true)
+        delegate?.minedTxWS(self, didChange: true)
         if let filter = lastFilterDict {
             _ = internalSubscribe(kind: "alchemy_minedTransactions", filter: filter)
         }
@@ -264,7 +264,7 @@ public final class AlchemyWSClient: NSObject {
            let subId = obj["result"] as? String,
            let kind = subLookup.removeValue(forKey: id) {
             currentSubscriptionId = subId
-            delegate?.alchemyWS(self, didReceive: .subscribed(kind: kind, rpcID: id, subId: subId))
+            delegate?.minedTxWS(self, didReceive: .subscribed(kind: kind, rpcID: id, subId: subId))
             return
         }
 
@@ -275,7 +275,7 @@ public final class AlchemyWSClient: NSObject {
             let subId = params["subscription"] as? String,
             let result = params["result"] as? [String: Any]
         else {
-            delegate?.alchemyWS(self, didReceive: .raw(data))
+            delegate?.minedTxWS(self, didReceive: .raw(data))
             return
         }
 
@@ -293,22 +293,22 @@ public final class AlchemyWSClient: NSObject {
                 hash: hash, from: from, to: to, value: value,
                 blockNumber: blockNumber, removed: removed
             )
-            delegate?.alchemyWS(self, didReceive: .minedTx(subId: subId, tx: mined))
+            delegate?.minedTxWS(self, didReceive: .minedTx(subId: subId, tx: mined))
             return
         }
 
         if let hashDirect = result["hash"] as? String {
-            delegate?.alchemyWS(self, didReceive: .minedTxHash(hashDirect, removed: removed))
+            delegate?.minedTxWS(self, didReceive: .minedTxHash(hashDirect, removed: removed))
             return
         }
 
         if let txObj = result["transaction"] as? [String: Any],
            let onlyHash = txObj["hash"] as? String {
-            delegate?.alchemyWS(self, didReceive: .minedTxHash(onlyHash, removed: removed))
+            delegate?.minedTxWS(self, didReceive: .minedTxHash(onlyHash, removed: removed))
             return
         }
 
-        delegate?.alchemyWS(self, didReceive: .raw(data))
+        delegate?.minedTxWS(self, didReceive: .raw(data))
     }
 
     // MARK: - Subscriptions

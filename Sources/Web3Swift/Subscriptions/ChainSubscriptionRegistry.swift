@@ -1,15 +1,15 @@
 //
-//  LiveCenters.swift
+//  ChainSubscriptionRegistry.swift
 //  web3swift
 //
-//  Registry of per-chain ChainLiveCenters.
+//  Registry of per-chain subscription centers, keyed by chain ID.
 //
 
 import Foundation
 
 @MainActor
-public final class LiveCenters {
-    public static let shared = LiveCenters()
+public final class ChainSubscriptionRegistry {
+    public static let shared = ChainSubscriptionRegistry()
     private var centers: [Int: ChainLiveCenter] = [:]
     private init() {}
 

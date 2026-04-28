@@ -9,7 +9,7 @@
 import Foundation
 
 @MainActor
-public final class ChainLiveCenter: NSObject, AlchemyWSClientDelegate {
+public final class ChainLiveCenter: NSObject, MinedTxWSClientDelegate {
 
     // MARK: Public outputs
 
@@ -32,7 +32,7 @@ public final class ChainLiveCenter: NSObject, AlchemyWSClientDelegate {
 
     // MARK: Private
 
-    private let client: AlchemyWSClient
+    private let client: MinedTxWSClient
     private var started = false
     private var isConnected = false
 
@@ -47,7 +47,7 @@ public final class ChainLiveCenter: NSObject, AlchemyWSClientDelegate {
         self.wssURL = wssURL
         self.hashesOnly = hashesOnly
         self.includeRemoved = includeRemoved
-        self.client = AlchemyWSClient(chainId: chainId, wssURL: wssURL)
+        self.client = MinedTxWSClient(chainId: chainId, wssURL: wssURL)
         super.init()
         self.client.delegate = self
     }
@@ -169,7 +169,7 @@ public final class ChainLiveCenter: NSObject, AlchemyWSClientDelegate {
 
     // MARK: Delegate
 
-    public func alchemyWS(_ client: AlchemyWSClient, didReceive message: WSMessage) {
+    public func minedTxWS(_ client: MinedTxWSClient, didReceive message: WSMessage) {
         switch message {
         case .subscribed(let kind, _, let subId):
             guard kind == "alchemy_minedTransactions" else { return }
@@ -191,7 +191,7 @@ public final class ChainLiveCenter: NSObject, AlchemyWSClientDelegate {
         }
     }
 
-    public func alchemyWS(_ client: AlchemyWSClient, didChange isConnected: Bool) {
+    public func minedTxWS(_ client: MinedTxWSClient, didChange isConnected: Bool) {
         self.isConnected = isConnected
     }
 
