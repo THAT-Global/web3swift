@@ -4,7 +4,6 @@
 //
 
 import Foundation
-import os
 import Web3Core
 
 public actor EndpointManager {
@@ -36,24 +35,11 @@ public actor EndpointManager {
     }
 }
 
-public enum Web3ClientFactory {
-    public static func make(
-        network: Network,
-        endpoint: String,
-        keystoreManager: KeystoreManager? = nil,
-        credentials: BasicAuthCredentials? = nil
-    ) throws -> Web3 {
-        guard let url = URL(string: endpoint) else { throw Web3ClientServiceError.invalidURLError }
-        let provider = Web3HttpProvider(url: url, network: network, keystoreManager: keystoreManager, credentials: credentials)
-        return Web3(provider: provider)
-    }
-}
-
 public actor Web3ClientService {
     public static let shared = Web3ClientService()
     private init() {}
 
-    private static let log = Logger(subsystem: "web3swift", category: "Web3ClientService")
+    private static let log = LogChannel(subsystem: "web3swift", category: "Web3ClientService")
     private let endpointManager = EndpointManager()
     private var cache: [String: (web3: Web3, timestamp: Date)] = [:]
     private var cacheOrder: [String] = []
