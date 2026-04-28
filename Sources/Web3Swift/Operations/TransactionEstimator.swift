@@ -31,6 +31,10 @@ public struct GasEstimation: Sendable {
         self.gasPrice = gasPrice
         self.estimatedGasCost = gasLimit * gasPrice
     }
+
+    public init(_ gasLimit: BigUInt, _ gasPrice: BigUInt) {
+        self.init(gasLimit: gasLimit, gasPrice: gasPrice)
+    }
 }
 
 public enum TransactionEstimator {
