@@ -112,7 +112,7 @@ public enum ERC2612 {
         encoded += typeHash
         encoded += nameHash
         encoded += versionHash
-        encoded += pad32(chainId)
+        encoded += chainId.uint256BE
         encoded += Data(repeating: 0, count: 12) + verifyingContract.addressData
 
         return encoded.sha3(.keccak256)
@@ -145,7 +145,7 @@ public enum ERC2612 {
             "primaryType": "Permit",
             "domain": [
                 "name": name, "version": version,
-                "chainId": Int(chainId),
+                "chainId": chainId.description,
                 "verifyingContract": verifyingContract
             ],
             "message": [
@@ -200,9 +200,7 @@ public enum ERC2612 {
         var sig = try Web3Signer.signEIP712(
             eip712, keystore: keystore, account: owner, password: password
         )
-        if sig.count == 65, sig[64] < 27 {
-            sig[64] += 27
-        }
+        Web3Signer.normalizeRecoveryByte(in: &sig)
         guard sig.count == 65 else { return nil }
 
         return PermitSignature(
@@ -243,9 +241,4 @@ public enum ERC2612 {
         return sep
     }
 
-    private static func pad32(_ x: BigUInt) -> Data {
-        let d = x.serialize()
-        if d.count >= 32 { return d }
-        return Data(repeating: 0, count: 32 - d.count) + d
-    }
 }

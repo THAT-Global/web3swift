@@ -12,6 +12,13 @@ public extension BigUInt {
         guard let value = Utilities.parseToBigUInt(naturalUnits, units: ethereumUnits) else { return nil }
         self = value
     }
+
+    /// Big-endian 32-byte representation, zero-padded on the left.
+    var uint256BE: Data {
+        let bytes = serialize()
+        if bytes.count >= 32 { return Data(bytes.suffix(32)) }
+        return Data(repeating: 0, count: 32 - bytes.count) + bytes
+    }
 }
 
 #if COCOAPODS

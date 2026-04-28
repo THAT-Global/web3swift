@@ -101,9 +101,14 @@ public struct Web3Signer {
     ) throws -> String {
         let eip712 = try EIP712Parser.parse(typedDataJSON)
         var sig = try signEIP712(eip712, keystore: keystore, account: account, password: password)
+        normalizeRecoveryByte(in: &sig)
+        return "0x" + sig.toHexString()
+    }
+
+    /// Ensure the recovery byte `v` at index 64 of a 65-byte signature is in `{27, 28}`.
+    public static func normalizeRecoveryByte(in sig: inout Data) {
         if sig.count == 65, sig[64] < 27 {
             sig[64] += 27
         }
-        return "0x" + sig.toHexString()
     }
 }

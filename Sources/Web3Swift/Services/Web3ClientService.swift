@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import os
 import Web3Core
 
 public actor EndpointManager {
@@ -52,12 +53,19 @@ public actor Web3ClientService {
     public static let shared = Web3ClientService()
     private init() {}
 
-    public let endpointManager = EndpointManager()
+    private static let log = Logger(subsystem: "web3swift", category: "Web3ClientService")
+    private let endpointManager = EndpointManager()
     private var cache: [String: (web3: Web3, timestamp: Date)] = [:]
+    private var cacheOrder: [String] = []
     private let cacheExpiration: TimeInterval = 604_800
+    private let cacheCapacity = 32
 
     public func registerEndpoints(_ endpoints: [String], for network: Network) async {
         await endpointManager.register(for: network, endpoints: endpoints)
+    }
+
+    public func endpoints(for network: Network) async -> [String] {
+        await endpointManager.endpoints(for: network)
     }
 
     public func web3Client(
@@ -97,7 +105,7 @@ public actor Web3ClientService {
 
         let provider = Web3HttpProvider(url: url, network: network, keystoreManager: keystoreManager, credentials: credentials)
         let client = Web3(provider: provider)
-        cache[key] = (web3: client, timestamp: Date())
+        insertCache(key: key, web3: client)
         return client
     }
 
@@ -112,7 +120,7 @@ public actor Web3ClientService {
 
         var lastError: Error = Web3ClientServiceError.unrecoverableRPCError
         for (index, endpoint) in endpoints.enumerated() {
-            print("Trying endpoint[\(index)]: \(endpoint)")
+            Self.log.debug("Trying endpoint[\(index)]: \(endpoint)")
             do {
                 let web3 = try await web3Client(for: network, endpoint: endpoint, keystoreManager: keystoreManager, credentials: credentials)
                 let result = try await task(web3)
@@ -121,16 +129,37 @@ public actor Web3ClientService {
             } catch {
                 lastError = error
                 if Self.isDeterministicError(error) {
-                    print("RPC deterministic failure on endpoint: \(endpoint). Error: \(error.localizedDescription)")
+                    Self.log.error("Deterministic failure on endpoint: \(endpoint). Error: \(error.localizedDescription)")
                     throw error
                 }
-                print("RPC call failed on endpoint: \(endpoint). Error: \(error.localizedDescription)")
+                Self.log.warning("RPC call failed on endpoint: \(endpoint). Error: \(error.localizedDescription)")
                 continue
             }
         }
 
         throw lastError
     }
+
+    // MARK: - Cache
+
+    private func insertCache(key: String, web3: Web3) {
+        if cache[key] != nil {
+            cacheOrder.removeAll { $0 == key }
+        } else if cache.count >= cacheCapacity, let oldest = cacheOrder.first {
+            cache.removeValue(forKey: oldest)
+            cacheOrder.removeFirst()
+        }
+        cache[key] = (web3: web3, timestamp: Date())
+        cacheOrder.append(key)
+    }
+
+    private func cacheKey(_ endpoint: String, _ keystoreManager: KeystoreManager?, _ credentials: BasicAuthCredentials?) -> String {
+        let address = (keystoreManager?.addresses?.first?.address ?? "no_keystore").lowercased()
+        let authHash = credentials.map { "\($0.username):\($0.password)".hashValue } ?? 0
+        return "web3Client_\(endpoint)_\(address)_auth:\(authHash)"
+    }
+
+    // MARK: - Error classification
 
     private static func isDeterministicError(_ error: Error) -> Bool {
         if let web3Error = error as? Web3Error {
@@ -160,12 +189,6 @@ public actor Web3ClientService {
             }
         }
         return false
-    }
-
-    private func cacheKey(_ endpoint: String, _ keystoreManager: KeystoreManager?, _ credentials: BasicAuthCredentials?) -> String {
-        let address = keystoreManager?.addresses?.first?.address ?? "no_keystore"
-        let authHash = credentials.map { "\($0.username):\($0.password)".hashValue } ?? 0
-        return "web3Client_\(endpoint)_\(address)_auth:\(authHash)"
     }
 }
 

@@ -711,8 +711,8 @@ extension RewardsManager {
         var packed = Data()
         packed.append(user.addressData)
         packed.append(recipient.addressData)
-        packed.append(padUInt256(amount))
-        packed.append(padUInt256(chainId))
+        packed.append(amount.uint256BE)
+        packed.append(chainId.uint256BE)
         packed.append(contract.addressData)
         return Data(packed.sha3(.keccak256))
     }
@@ -743,15 +743,8 @@ extension RewardsManager {
             throw Web3Error.dataError
         }
 
-        if sig[64] < 27 {
-            sig[64] += 27
-        }
+        Web3Signer.normalizeRecoveryByte(in: &sig)
         return sig
     }
 
-    private static func padUInt256(_ value: BigUInt) -> Data {
-        let bytes = value.serialize()
-        if bytes.count >= 32 { return Data(bytes.suffix(32)) }
-        return Data(repeating: 0, count: 32 - bytes.count) + bytes
-    }
 }
