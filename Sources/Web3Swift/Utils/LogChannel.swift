@@ -11,11 +11,11 @@ struct LogChannel {
     init(subsystem: String, category: String) {
         self.logger = Logger(subsystem: subsystem, category: category)
     }
-    func debug(_ message: @autoclosure () -> String) { logger.debug("\(message())") }
-    func info(_ message: @autoclosure () -> String) { logger.info("\(message())") }
-    func warning(_ message: @autoclosure () -> String) { logger.warning("\(message())") }
-    func error(_ message: @autoclosure () -> String) { logger.error("\(message())") }
-    func fault(_ message: @autoclosure () -> String) { logger.fault("\(message())") }
+    func debug(_ message: @autoclosure () -> String) { let m = message(); logger.debug("\(m)") }
+    func info(_ message: @autoclosure () -> String) { let m = message(); logger.info("\(m)") }
+    func warning(_ message: @autoclosure () -> String) { let m = message(); logger.warning("\(m)") }
+    func error(_ message: @autoclosure () -> String) { let m = message(); logger.error("\(m)") }
+    func fault(_ message: @autoclosure () -> String) { let m = message(); logger.fault("\(m)") }
     #else
     init(subsystem: String, category: String) {}
     @inline(__always) func debug(_ message: @autoclosure () -> String) {}
