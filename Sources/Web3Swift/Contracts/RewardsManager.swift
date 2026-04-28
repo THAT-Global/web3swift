@@ -473,7 +473,7 @@ public final class RewardsManager: AccessControlContract {
             fromRewards: fromRewards,
             estimatedCashback: estimatedCashback,
             cashbackActive: cashbackActive,
-            cashbackInactiveReason: CashbackInactiveReason(rawValue: UInt8(reasonRaw))
+            cashbackInactiveReason: CashbackInactiveReason(rawValue: UInt8(clamping: reasonRaw))
         )
     }
 
@@ -485,7 +485,7 @@ public final class RewardsManager: AccessControlContract {
     public func getUserStatus(user: EthereumAddress, using web3: Web3) async throws -> RewardsUserStatus {
         let executor = ContractReadExecutor(contract: contract, web3: web3)
         let result: BigUInt = try await executor.call(method: "getUserStatus", parameters: [user])
-        return RewardsUserStatus(rawValue: UInt8(result))
+        return RewardsUserStatus(rawValue: UInt8(clamping: result))
     }
 
     /// Aggregated balances: spendable, pending, and next vesting timestamp.
@@ -502,7 +502,7 @@ public final class RewardsManager: AccessControlContract {
         return UserRewardBalances(
             spendable: spendable,
             pending: pending,
-            nextVesting: UInt64(nextVesting)
+            nextVesting: UInt64(clamping: nextVesting)
         )
     }
 
@@ -656,10 +656,10 @@ public final class RewardsManager: AccessControlContract {
         }
 
         return RewardsSystemConfig(
-            baseRateBps: UInt16(v0), rateCapBps: UInt16(v1),
+            baseRateBps: UInt16(clamping: v0), rateCapBps: UInt16(clamping: v1),
             rateScalingEnabled: v2, rewardsBaseline: v3,
-            cooldownSeconds: UInt64(v4), vestingDuration: UInt64(v5),
-            epochLength: UInt64(v6), inactivityThreshold: UInt64(v7),
+            cooldownSeconds: UInt64(clamping: v4), vestingDuration: UInt64(clamping: v5),
+            epochLength: UInt64(clamping: v6), inactivityThreshold: UInt64(clamping: v7),
             cashbackPaused: v8, emergencyPaused: v9,
             defaultMaxPerTx: v10, defaultUserDailyCap: v11,
             defaultMerchantDailyCap: v12, defaultPairDailyCap: v13,
