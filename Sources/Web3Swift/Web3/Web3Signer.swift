@@ -90,4 +90,20 @@ public struct Web3Signer {
         }
         return signature
     }
+
+    /// Parse EIP-712 typed-data JSON, sign, and return `0x`-prefixed 65-byte hex
+    /// with `v` normalised to `{27, 28}`.
+    public static func signTypedDataV4(
+        _ typedDataJSON: String,
+        keystore: AbstractKeystore,
+        account: EthereumAddress,
+        password: String
+    ) throws -> String {
+        let eip712 = try EIP712Parser.parse(typedDataJSON)
+        var sig = try signEIP712(eip712, keystore: keystore, account: account, password: password)
+        if sig.count == 65, sig[64] < 27 {
+            sig[64] += 27
+        }
+        return "0x" + sig.toHexString()
+    }
 }
