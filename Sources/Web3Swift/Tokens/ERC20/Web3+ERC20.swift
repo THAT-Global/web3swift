@@ -146,6 +146,20 @@ extension ERC20 {
     }
 }
 
+extension ERC20 {
+    public func estimateApproveCost(
+        from: EthereumAddress,
+        spender: EthereumAddress,
+        value: BigUInt,
+        using web3: Web3
+    ) async throws -> (limit: BigUInt, priceWei: BigUInt) {
+        let tx = try approveTxn(from: from, spender: spender, value: value)
+        let gasLimit = try await web3.eth.estimateGas(for: tx)
+        let gasPrice = try await web3.eth.gasPrice()
+        return (gasLimit, gasPrice)
+    }
+}
+
 extension ERC20: Hashable {
     public static func == (lhs: ERC20, rhs: ERC20) -> Bool {
         return lhs.contractAddress == rhs.contractAddress && lhs.contract.chainId == rhs.contract.chainId
