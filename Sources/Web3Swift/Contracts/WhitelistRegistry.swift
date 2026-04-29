@@ -26,7 +26,7 @@ public struct MerchantStateBatch: Codable, Sendable {
 
 // MARK: - Implementation
 
-public final class WhitelistRegistry: AccessControlContract {
+public final class WhitelistRegistry: AccessControlContract, @unchecked Sendable {
     public let contract: Contract
     public let contractAddress: EthereumAddress
 

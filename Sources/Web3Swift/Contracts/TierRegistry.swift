@@ -42,7 +42,7 @@ public struct UserTierInfo: Codable, Sendable {
 // MARK: - Implementation
 
 /// Wrapper for the TierRegistry contract — user loyalty tier directory for the THAT Cashback System.
-public final class TierRegistry: AccessControlContract {
+public final class TierRegistry: AccessControlContract, @unchecked Sendable {
     public let contract: Contract
     public let contractAddress: EthereumAddress
 

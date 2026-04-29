@@ -158,7 +158,7 @@ public enum CashbackInactiveReason: UInt8, Codable, Sendable {
 
 // MARK: - Implementation
 
-public final class RewardsManager: AccessControlContract {
+public final class RewardsManager: AccessControlContract, @unchecked Sendable {
     public let contract: Contract
     public let contractAddress: EthereumAddress
 
