@@ -111,4 +111,56 @@ public struct Web3Signer {
             sig[64] += 27
         }
     }
+
+    // MARK: - EIP-7702
+
+    /// Sign an EIP-7702 authorization tuple with the EOA key. The caller is
+    /// responsible for verifying that `tuple.address` is the pinned per-chain
+    /// delegate BEFORE calling this — Web3Signer doesn't know about THAT's
+    /// pinning policy, so it can't enforce §5.2 on its own. The crypto-level
+    /// guard `chainID != 0` is enforced inside `EIP7702Authorization.sign`.
+    public static func signEIP7702Authorization(
+        _ tuple: inout EIP7702Authorization,
+        keystore: AbstractKeystore,
+        account: EthereumAddress,
+        password: String,
+        useExtraEntropy: Bool = false
+    ) throws {
+        var privateKey = try keystore.UNSAFE_getPrivateKeyData(password: password, account: account)
+        defer { Data.zero(&privateKey) }
+        try tuple.sign(privateKey: privateKey, useExtraEntropy: useExtraEntropy)
+    }
+
+    /// Sign an EIP-7702 SetCode transaction (type 0x04) with the EOA key.
+    /// Used by the native revoke path (§5.7).
+    public static func signEIP7702SetCodeTransaction(
+        _ tx: inout EIP7702SetCodeTransaction,
+        keystore: AbstractKeystore,
+        account: EthereumAddress,
+        password: String,
+        useExtraEntropy: Bool = false
+    ) throws {
+        var privateKey = try keystore.UNSAFE_getPrivateKeyData(password: password, account: account)
+        defer { Data.zero(&privateKey) }
+        try tx.sign(privateKey: privateKey, useExtraEntropy: useExtraEntropy)
+    }
+
+    /// Sign an ERC-4337 PackedUserOperation. The signature gets attached to
+    /// the user-op's `signature` field for the bundler to forward.
+    public static func signUserOperation(
+        _ op: inout PackedUserOperation,
+        entryPoint: EthereumAddress,
+        chainID: BigUInt,
+        keystore: AbstractKeystore,
+        account: EthereumAddress,
+        password: String,
+        useExtraEntropy: Bool = false
+    ) throws {
+        var privateKey = try keystore.UNSAFE_getPrivateKeyData(password: password, account: account)
+        defer { Data.zero(&privateKey) }
+        try op.sign(
+            entryPoint: entryPoint, chainID: chainID,
+            privateKey: privateKey, useExtraEntropy: useExtraEntropy
+        )
+    }
 }
