@@ -109,10 +109,20 @@ public struct PackedUserOperation: Sendable, Equatable {
         return outer.sha3(.keccak256)
     }
 
-    /// Sign the user-op in place. Resulting signature is 65 bytes (r ‖ s ‖ v),
-    /// `v` in {27,28} — the standard Ethereum recovery encoding accepted by
-    /// most account contracts. Some delegate contracts expect `v` in {0,1};
-    /// callers that need that should post-process.
+    /// **LEGACY — DO NOT USE FOR MODULAR ACCOUNT V2 / SemiModularAccount7702.**
+    ///
+    /// Signs the raw v0.7 userOpHash directly. SMA7702's fallback signer
+    /// validates with EIP-191 wrapping (`"\x19Ethereum Signed Message:\n32"
+    /// || userOpHash`) before ecrecover, so signatures produced here
+    /// won't recover the right address.
+    ///
+    /// THAT's sponsored pipeline signs `hash(entryPoint:chainID:)` via
+    /// `Web3Signer.signPersonalMessage(_, useHash: true)` which performs
+    /// the EIP-191 wrap natively. This method is kept only for non-AA
+    /// bundler integrations or future delegates that genuinely want a raw
+    /// 4337 signature.
+    ///
+    /// Resulting signature is 65 bytes (r ‖ s ‖ v), `v` in {27, 28}.
     public mutating func sign(
         entryPoint: EthereumAddress,
         chainID: BigUInt,

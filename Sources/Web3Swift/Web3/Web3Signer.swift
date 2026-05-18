@@ -145,8 +145,19 @@ public struct Web3Signer {
         try tx.sign(privateKey: privateKey, useExtraEntropy: useExtraEntropy)
     }
 
-    /// Sign an ERC-4337 PackedUserOperation. The signature gets attached to
-    /// the user-op's `signature` field for the bundler to forward.
+    /// **LEGACY — DO NOT USE FOR MODULAR ACCOUNT V2 / SemiModularAccount7702.**
+    ///
+    /// Signs the raw v0.7 userOpHash directly (no EIP-191 wrapping, no
+    /// MA v2 validator prefix). SMA7702's fallback signer validates with
+    /// EIP-191 wrapping, so signatures produced by this method will
+    /// recover the wrong address and reverts AA24.
+    ///
+    /// THAT's sponsored pipeline signs user-ops via
+    /// `Web3Signer.signPersonalMessage(hash, useHash: true)` and wraps
+    /// the resulting bytes in MA v2's `0xff 0x00` prefix at the
+    /// app-layer (`SponsoredUserOpPipeline.packMAv2UOSignature`). This
+    /// method is kept only for non-AA bundler integrations that
+    /// genuinely want a raw 4337 signature.
     public static func signUserOperation(
         _ op: inout PackedUserOperation,
         entryPoint: EthereumAddress,
