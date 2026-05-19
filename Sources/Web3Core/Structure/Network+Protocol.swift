@@ -109,6 +109,15 @@ public enum Network: CaseIterable, Hashable, Sendable {
     ]
     public static let commonCases: [Network] = [Ethereum, Polygon, BinanceSmartChain, Optimism, Arbitrum, GnosisChain, Avalanche, zkSync]
     
+    /// Networks that always appear in a new install's network list,
+    /// before any user-added or auto-discovered chains. Intentionally
+    /// limited to the chains the THAT token is deployed on (Polygon,
+    /// Ethereum) — these are the only networks where the THAT-specific
+    /// rewards, balance, and treasury surfaces have anything to show by
+    /// default. Tier 1/Tier 2 chains beyond these two are added either
+    /// manually by the user (Add Network → custom or supported list) or
+    /// automatically by `ChainDiscoveryService` when Zerion reports the
+    /// wallet has activity on them.
     public static let defaultNetworks = [Polygon, Ethereum]
     public static let oneInchSupportedNetworks = [Arbitrum, Avalanche, Base, BinanceSmartChain, Ethereum, GnosisChain, Optimism, Polygon, zkSync]
     
