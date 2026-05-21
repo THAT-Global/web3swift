@@ -29,6 +29,24 @@ public class Web3HttpProvider: Web3Provider {
         self.attachedKeystoreManager = keystoreManager
         self.session = {
             let config = URLSessionConfiguration.default
+            // 15s per RPC call (down from the URLSession default of 60s).
+            //
+            // A single rewards payment makes ~10 sequential RPC calls
+            // (preview, EIP-2612 permit reads, estimateGas, nonce, fees,
+            // broadcast). With the default 60s timeout, a single stalled
+            // call under poor reception could leave the user staring at
+            // the loader for a full minute before failure. 15s is long
+            // enough that a healthy Polygon RPC always completes (typical
+            // p99 << 2s) but short enough that a flaky connection fails
+            // fast and the retry+endpoint-fallback layers above
+            // (`RetryPolicy.exponentialPreset` × `performWithRPCFallback`)
+            // can recover within the user's patience window.
+            //
+            // If you bump this back up, also revisit the rewards payment
+            // path's overall budget — a 60s/call ceiling × 10 calls × 3
+            // retry attempts is well beyond what a checkout user will
+            // wait for.
+            config.timeoutIntervalForRequest = 15
             if let credentials { config.httpAdditionalHeaders = ["Authorization": credentials.authorizationHeader] }
             return URLSession(configuration: config)
         }()
