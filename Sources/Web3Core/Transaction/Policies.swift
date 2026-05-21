@@ -30,6 +30,20 @@ public struct Policies: Sendable {
     public let maxPriorityFeePerGasPolicy: ValueResolutionPolicy
     
     public init(
+        // `.latest` (not `.pending`) is the deliberate default. A
+        // user-driven retry against a tx that's still in mempool would
+        // otherwise resolve to the next nonce and confirm a second
+        // payment instead of colliding with the first — i.e. a retry
+        // tap at a POS counter could pay the merchant twice. With
+        // `.latest`, the retry uses the same nonce as the in-flight
+        // tx, the node returns `already known` / `replacement
+        // underpriced`, and only one confirms. We prefer that failure
+        // mode over silent double-confirm. Specific call sites that
+        // genuinely need mempool-aware nonces (e.g. `RewardsStore
+        // +Payment.swift:620`'s permit→pay sequence) opt in by setting
+        // `tx.callOnBlock = .pending` or constructing
+        // `Policies(noncePolicy: .pending, ...)` explicitly — `PolicyResolver`
+        // now honours both. (V202-RELEASE-AUDIT.md H-1 follow-up.)
         noncePolicy: NoncePolicy = .latest,
         gasLimitPolicy: ValueResolutionPolicy = .automatic,
         gasPricePolicy: ValueResolutionPolicy = .automatic,

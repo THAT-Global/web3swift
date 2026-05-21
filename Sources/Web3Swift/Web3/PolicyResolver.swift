@@ -97,13 +97,27 @@ public enum PolicyResolver {
     
     public static func resolveNonce(for tx: CodableTransaction, policy: NoncePolicy, using provider: Web3Provider) async throws -> BigUInt {
         switch policy {
-            case .pending, .latest, .earliest:
-                guard let address = tx.from ?? tx.sender else { throw Web3Error.valueError() }
-                let request: APIRequest = .getTransactionCount(address.address, tx.callOnBlock ?? .latest)
-                let response: APIResponse<BigUInt> = try await APIRequest.sendRequest(with: provider, for: request)
-                return response.result
             case .exact(let value):
                 return value
+            case .pending, .latest, .earliest:
+                guard let address = tx.from ?? tx.sender else { throw Web3Error.valueError() }
+                // Honour the supplied policy as the block tag. The
+                // previous implementation pattern-matched the policy
+                // but then unconditionally resolved against `.latest`,
+                // making the enum decorative. This fix is purely
+                // code-correctness — the app-level default in
+                // `Policies()` remains `.latest`, so the behavior
+                // doesn't change for existing call sites. Callers that
+                // genuinely want a mempool-aware read can now opt in
+                // by constructing `Policies(noncePolicy: .pending, ...)`
+                // or by setting `tx.callOnBlock = .pending` directly.
+                // `tx.callOnBlock` still wins if explicitly set so
+                // existing call sites that pin a block continue to do so.
+                // (V202-RELEASE-AUDIT.md H-1.)
+                let block: BlockNumber = tx.callOnBlock ?? policy
+                let request: APIRequest = .getTransactionCount(address.address, block)
+                let response: APIResponse<BigUInt> = try await APIRequest.sendRequest(with: provider, for: request)
+                return response.result
         }
     }
     
