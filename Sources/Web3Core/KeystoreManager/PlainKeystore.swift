@@ -6,6 +6,11 @@
 import Foundation
 import secp256k1
 
+// `@unchecked Sendable` — see the rationale on
+// `KeystoreManager: @unchecked Sendable`. Properties are `var` but
+// only written during construction; signing callers only read.
+extension PlainKeystore: @unchecked Sendable {}
+
 public class PlainKeystore: AbstractKeystore {
     
     public var isHDKeystore: Bool = false

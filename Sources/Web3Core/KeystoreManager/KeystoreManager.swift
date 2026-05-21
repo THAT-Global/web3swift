@@ -5,6 +5,17 @@
 
 import Foundation
 
+// `@unchecked` because the internal `_keystores` / `_bip32keystores` /
+// `_plainKeystores` arrays are `var` — they're appended-to during disk
+// load (`pathToKeystores`-bearing inits + `KeystoreV3-loaded` callers).
+// In actual use across this app the manager is loaded once and read
+// thereafter (private-key derivation, address listing, EIP-712
+// signing). No concurrent write path mutates these arrays. Marking
+// Sendable lets MainActor-isolated callers pass the keystore into
+// nonisolated package functions (e.g. `ERC2612.signPermit`,
+// `TransactionExecutor.resolveAndSignTransaction`) without copying.
+extension KeystoreManager: @unchecked Sendable {}
+
 public class KeystoreManager: AbstractKeystore {
     public var isHDKeystore: Bool = false
     

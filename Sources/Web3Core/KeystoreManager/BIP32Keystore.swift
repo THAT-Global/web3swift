@@ -6,6 +6,11 @@
 import Foundation
 import CryptoSwift
 
+// `@unchecked Sendable` — see the rationale on
+// `KeystoreManager: @unchecked Sendable`. Properties are `var` but
+// only written during construction; signing callers only read.
+extension BIP32Keystore: @unchecked Sendable {}
+
 public class BIP32Keystore: AbstractKeystore {
     
     // Protocol

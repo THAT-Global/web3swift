@@ -6,6 +6,11 @@
 import Foundation
 import CryptoSwift
 
+// `@unchecked Sendable` — see the rationale on
+// `KeystoreManager: @unchecked Sendable`. Properties are `var` but
+// only written during construction; signing callers only read.
+extension EthereumKeystoreV3: @unchecked Sendable {}
+
 // swiftlint:disable cyclomatic_complexity
 public class EthereumKeystoreV3: AbstractKeystore {
     // Protocol
