@@ -99,6 +99,44 @@ public struct RewardsSystemMetrics: Codable, Sendable {
     public let totalAllocatedRewards: BigUInt
 }
 
+/// Payment record returned by the `paymentRecords(uint256)` view — mirrors the
+/// Solidity `PaymentRecord` struct field-for-field. Stored at payment time for
+/// every merchant-context payment so the merchant can later refund it.
+public struct PaymentRecord: Codable, Sendable, Hashable {
+    public let user: EthereumAddress
+    public let merchant: EthereumAddress
+    public let walletPortion: BigUInt
+    public let rewardPortion: BigUInt
+    /// On-chain type is `uint96`. Held as `BigUInt` since
+    /// Swift has no native unsigned 96-bit integer.
+    public let cashbackEarned: BigUInt
+    public let epoch: UInt64
+    /// `epochStart + vestingDuration` at payment time. After this the
+    /// payment is final and `refundPayment` reverts `RefundWindowExpired`.
+    public let refundDeadline: UInt64
+    public let refunded: Bool
+
+    public init(
+        user: EthereumAddress,
+        merchant: EthereumAddress,
+        walletPortion: BigUInt,
+        rewardPortion: BigUInt,
+        cashbackEarned: BigUInt,
+        epoch: UInt64,
+        refundDeadline: UInt64,
+        refunded: Bool
+    ) {
+        self.user = user
+        self.merchant = merchant
+        self.walletPortion = walletPortion
+        self.rewardPortion = rewardPortion
+        self.cashbackEarned = cashbackEarned
+        self.epoch = epoch
+        self.refundDeadline = refundDeadline
+        self.refunded = refunded
+    }
+}
+
 /// Batch merchant overrides returned by `getMerchantOverridesBatch`.
 public struct MerchantOverridesBatch: Codable, Sendable {
     public let customRate: [BigUInt]
@@ -554,6 +592,36 @@ public final class RewardsManager: AccessControlContract, @unchecked Sendable {
     public func userBlacklisted(user: EthereumAddress, using web3: Web3) async throws -> Bool {
         let executor = ContractReadExecutor(contract: contract, web3: web3)
         return try await executor.call(method: "userBlacklisted", parameters: [user])
+    }
+
+    /// Read the stored `PaymentRecord` for a given paymentId.
+    /// A record with `user == address(0)` means the paymentId was never assigned
+    /// (caller should treat this as "no payment exists" — same as `UnknownPaymentId`).
+    public func paymentRecords(paymentId: BigUInt, using web3: Web3) async throws -> PaymentRecord {
+        let executor = ContractReadExecutor(contract: contract, web3: web3)
+        let result = try await executor.call(method: "paymentRecords", parameters: [paymentId])
+
+        guard let user = result["0"] as? EthereumAddress,
+              let merchant = result["1"] as? EthereumAddress,
+              let walletPortion = result["2"] as? BigUInt,
+              let rewardPortion = result["3"] as? BigUInt,
+              let cashbackEarned = result["4"] as? BigUInt,
+              let epoch = result["5"] as? BigUInt,
+              let refundDeadline = result["6"] as? BigUInt,
+              let refunded = result["7"] as? Bool else {
+            throw Web3Error.processingError(desc: "paymentRecords returned unexpected format")
+        }
+
+        return PaymentRecord(
+            user: user,
+            merchant: merchant,
+            walletPortion: walletPortion,
+            rewardPortion: rewardPortion,
+            cashbackEarned: cashbackEarned,
+            epoch: UInt64(clamping: epoch),
+            refundDeadline: UInt64(clamping: refundDeadline),
+            refunded: refunded
+        )
     }
 
     // ═══════════════════════════════════════════════════════════════
