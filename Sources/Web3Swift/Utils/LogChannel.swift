@@ -3,10 +3,12 @@
 //  web3swift
 //
 
+#if canImport(os)
 import os
+#endif
 
 struct LogChannel {
-    #if DEBUG
+    #if DEBUG && canImport(os)
     let logger: Logger
     init(subsystem: String, category: String) {
         self.logger = Logger(subsystem: subsystem, category: category)

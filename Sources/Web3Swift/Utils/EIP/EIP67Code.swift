@@ -4,9 +4,11 @@
 //
 
 import Foundation
-import CoreImage
 import BigInt
 import Web3Core
+#if canImport(CoreImage)
+import CoreImage
+#endif
 
 extension Web3 {
     
@@ -77,13 +79,16 @@ extension Web3 {
             return mainPart
         }
         
+        #if canImport(CoreImage)
         public func toImage(scale: Double = 1.0) -> CIImage {
             return EIP67CodeGenerator.createImage(from: self, scale: scale)
         }
+        #endif
     }
-    
+
+    #if canImport(CoreImage)
     public struct EIP67CodeGenerator {
-        
+
         public static func createImage(from: EIP67Code, scale: Double = 1.0) -> CIImage {
             guard let string = from.toString().addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {return CIImage()}
             guard let data = string.data(using: .utf8, allowLossyConversion: false) else {return CIImage()}
@@ -94,6 +99,7 @@ extension Web3 {
             return image
         }
     }
+    #endif
     
     public struct EIP67CodeParser {
         public static func parse(_ data: Data) -> EIP67Code? {

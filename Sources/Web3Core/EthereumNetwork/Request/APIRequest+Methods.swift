@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 import BigInt
 
 /// TODO: should we do more error explain like ethers.js?
