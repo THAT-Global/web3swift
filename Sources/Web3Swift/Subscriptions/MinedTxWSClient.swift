@@ -6,7 +6,11 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
+#if !os(Android)
 // MARK: - Value Types
 
 public struct MinedTx: Sendable, Equatable {
@@ -390,3 +394,4 @@ public final class MinedTxWSClient: NSObject {
 
     private func nextID() -> Int { defer { nextRequestID &+= 1 }; return nextRequestID }
 }
+#endif // !os(Android)

@@ -7,6 +7,7 @@
 
 import Foundation
 
+#if !os(Android)
 @MainActor
 public final class ChainSubscriptionRegistry {
     public static let shared = ChainSubscriptionRegistry()
@@ -56,3 +57,4 @@ public final class ChainSubscriptionRegistry {
         centers[chainId] = nil
     }
 }
+#endif // !os(Android)

@@ -8,6 +8,8 @@
 
 import Foundation
 
+#if !os(Android)
+
 @MainActor
 public final class ChainLiveCenter: NSObject, MinedTxWSClientDelegate {
 
@@ -225,3 +227,4 @@ public final class ChainLiveCenter: NSObject, MinedTxWSClientDelegate {
         watchedTo = tos
     }
 }
+#endif // !os(Android)
