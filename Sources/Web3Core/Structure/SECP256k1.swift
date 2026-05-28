@@ -4,6 +4,9 @@
 //
 
 import Foundation
+#if canImport(Security)
+import Security
+#endif
 import secp256k1
 
 public struct SECP256K1 {
@@ -355,6 +358,7 @@ extension SECP256K1 {
     }
     
     internal static func randomBytes(length: Int) -> Data? {
+        #if canImport(Security)
         for _ in 0...1024 {
             var data = Data(repeating: 0, count: length)
             let result = data.withUnsafeMutableBytes { mutableRBBytes -> Int32? in
@@ -372,6 +376,14 @@ extension SECP256K1 {
             }
         }
         return nil
+        #else
+        // Non-Apple platforms (Linux, Android): use Swift's SystemRandomNumberGenerator,
+        // which is documented to be cryptographically secure and is backed on Android by
+        // getrandom(2)/getentropy(3) — the same kernel CSPRNG that Apple's SecRandomCopyBytes
+        // ultimately reads from. Equivalent under the wallet's threat model (entropy from a
+        // kernel CSPRNG). See docs/POC-RESULTS.md POC-2 and plan RK-1.
+        return Data((0..<length).map { _ in UInt8.random(in: 0...255) })
+        #endif
     }
     
     internal static func toByteArray<T>(_ value: T) -> [UInt8] {

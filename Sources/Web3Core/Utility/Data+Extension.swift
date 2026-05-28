@@ -4,6 +4,9 @@
 //
 
 import Foundation
+#if canImport(Security)
+import Security
+#endif
 
 public extension Data {
     
@@ -53,12 +56,21 @@ public extension Data {
      - Returns: optional `Data` object containing the generated random bytes, or `nil` if an error occurred during generation.
      */
     static func randomBytes(length: Int) -> Data? {
+        #if canImport(Security)
         var entropyBytes = [UInt8](repeating: 0, count: length)
         let status = SecRandomCopyBytes(kSecRandomDefault, entropyBytes.count, &entropyBytes)
         guard status == errSecSuccess else {
             return nil
         }
         return Data(entropyBytes)
+        #else
+        // Non-Apple platforms (Linux, Android): use Swift's SystemRandomNumberGenerator,
+        // which is documented to be cryptographically secure and is backed on Android by
+        // getrandom(2)/getentropy(3) — the same kernel CSPRNG that Apple's SecRandomCopyBytes
+        // ultimately reads from. Equivalent under the wallet's threat model (entropy from a
+        // kernel CSPRNG). See docs/POC-RESULTS.md POC-2 and plan RK-1.
+        return Data((0..<length).map { _ in UInt8.random(in: 0...255) })
+        #endif
     }
     
     func bitsInRange(_ startingBit: Int, _ length: Int) -> UInt64? { // return max of 8 bytes for simplicity, non-public

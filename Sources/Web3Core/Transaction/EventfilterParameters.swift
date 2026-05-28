@@ -8,25 +8,40 @@
 
 import BigInt
 import Foundation
+#if canImport(os)
 import os
+#endif
 
 /// Global counter object to enumerate JSON RPC requests.
 public final class Counter {
+    #if canImport(os)
     /// Thread-safe counter using OSAllocatedUnfairLock (safe from Swift concurrency contexts).
     /// If we later bump to iOS 18 for other reasons, we can swap OSAllocatedUnfairLock to Mutex at that point with a one-line change per call site.
     private static let state = OSAllocatedUnfairLock(initialState: UInt(1))
-    
+    #else
+    private static let lock = NSLock()
+    nonisolated(unsafe) private static var counter: UInt = 1
+    #endif
+
     // Prevent external instantiation
     private init() {}
-    
+
     /// Old synchronous API — thread-safe, concurrency-safe.
     @discardableResult
     public static func increment() -> UInt {
+        #if canImport(os)
         state.withLock { next in
             let v = next
             next += 1
             return v
         }
+        #else
+        lock.lock()
+        defer { lock.unlock() }
+        let v = counter
+        counter += 1
+        return v
+        #endif
     }
 }
 
