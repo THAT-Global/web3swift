@@ -9,7 +9,13 @@ let package = Package(
         .macOS(.v13), .iOS(.v16), .tvOS(.v17)
     ],
     products: [
-        .library(name: "Web3Swift", targets: ["Web3Swift"])
+        .library(name: "Web3Swift", targets: ["Web3Swift"]),
+        // Exposed for downstream packages that only need Web3Core's
+        // pure-Swift primitives (EthereumAddress checksum, RLP, ABI) without
+        // pulling in Web3Swift's HTTP + WebKit + CoreImage surface. Added for
+        // wire-schema (R-7), which references EthereumAddress in Contact and
+        // BizWallet.sanitized().
+        .library(name: "Web3Core", targets: ["Web3Core"])
     ],
     dependencies: [
         // pin secp256k1 (used by web3swift & solana-swift)
