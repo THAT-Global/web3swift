@@ -1,7 +1,44 @@
 // swift-tools-version: 5.9.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
+import Foundation
 import PackageDescription
+
+// THAT fork. `localTests` and `remoteTests` have not compiled since the contracts
+// rewrite: 29 files reference removed APIs (`Web3.new(url)`, `ethInstance`,
+// `InfuraGoerliWeb3`, …) and most need a local node. Porting them is owed as its
+// own act. Until then, setting WEB3SWIFT_CORE_TESTS_ONLY drops those two targets so
+// the Web3Core-only suite can build and run:
+//
+//     WEB3SWIFT_CORE_TESTS_ONLY=1 swift test --parallel --filter Web3CoreTests
+//
+// Without the variable the manifest is exactly upstream's shape plus `Web3CoreTests`.
+let coreTestsOnly = ProcessInfo.processInfo.environment["WEB3SWIFT_CORE_TESTS_ONLY"] != nil
+
+let legacyTestTargets: [Target] = [
+    .testTarget(
+        name: "localTests",
+        dependencies: ["Web3Swift"],
+        path: "Tests/web3swiftTests/localTests",
+        resources: [
+            .copy("../../../TestToken/Helpers/SafeMath/SafeMath.sol"),
+            .copy("../../../TestToken/Helpers/TokenBasics/ERC20.sol"),
+            .copy("../../../TestToken/Helpers/TokenBasics/IERC20.sol"),
+            .copy("../../../TestToken/Token/Web3SwiftToken.sol")
+        ]
+    ),
+    .testTarget(
+        name: "remoteTests",
+        dependencies: ["Web3Swift"],
+        path: "Tests/web3swiftTests/remoteTests",
+        resources: [
+            .copy("../../../TestToken/Helpers/SafeMath/SafeMath.sol"),
+            .copy("../../../TestToken/Helpers/TokenBasics/ERC20.sol"),
+            .copy("../../../TestToken/Helpers/TokenBasics/IERC20.sol"),
+            .copy("../../../TestToken/Token/Web3SwiftToken.sol")
+        ]
+    )
+]
 
 let package = Package(
     name: "Web3Swift",
@@ -45,27 +82,12 @@ let package = Package(
                 .copy("./Browser/wk.bridge.min.js")
             ]
         ),
+        // THAT fork: offline tests over Web3Core alone (ABI head/tail bookkeeping,
+        // typed custom-error decoding). Runnable today via the gate above.
         .testTarget(
-            name: "localTests",
-            dependencies: ["Web3Swift"],
-            path: "Tests/web3swiftTests/localTests",
-            resources: [
-                .copy("../../../TestToken/Helpers/SafeMath/SafeMath.sol"),
-                .copy("../../../TestToken/Helpers/TokenBasics/ERC20.sol"),
-                .copy("../../../TestToken/Helpers/TokenBasics/IERC20.sol"),
-                .copy("../../../TestToken/Token/Web3SwiftToken.sol")
-            ]
-        ),
-        .testTarget(
-            name: "remoteTests",
-            dependencies: ["Web3Swift"],
-            path: "Tests/web3swiftTests/remoteTests",
-            resources: [
-                .copy("../../../TestToken/Helpers/SafeMath/SafeMath.sol"),
-                .copy("../../../TestToken/Helpers/TokenBasics/ERC20.sol"),
-                .copy("../../../TestToken/Helpers/TokenBasics/IERC20.sol"),
-                .copy("../../../TestToken/Token/Web3SwiftToken.sol")
-            ]
+            name: "Web3CoreTests",
+            dependencies: ["Web3Core", "BigInt", "CryptoSwift"],
+            path: "Tests/Web3CoreTests"
         )
-    ]
+    ] + (coreTestsOnly ? [] : legacyTestTargets)
 )

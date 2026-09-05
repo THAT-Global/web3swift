@@ -1,6 +1,13 @@
 # web3swift
 **web3swift** is an iOS toolbelt for interaction with the Ethereum network.
 
+> **THAT fork** (`THAT-Global/web3swift`, trunk `develop`). Cross-compiles to Android
+> and is consumed by THAT's shared core; `Web3Core` is exposed as its own product for
+> packages that need only the pure-Swift primitives. Fork-specific fixes carry a
+> `THAT fork` note at the site. Tests: `localTests` / `remoteTests` have not compiled
+> since the contracts rewrite (owed as its own act); the Web3Core-only suite runs with
+> `WEB3SWIFT_CORE_TESTS_ONLY=1 swift test --parallel --filter Web3CoreTests`.
+
 ## Social media
 [Join our discord](https://discord.gg/ZgABSCGNWF) or [Telegram](https://t.me/web3swift) if you need support or want to contribute to web3swift development!
 

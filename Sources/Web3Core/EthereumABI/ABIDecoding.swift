@@ -23,12 +23,31 @@ extension ABIDecoder {
             let (v, c) = decodeSingleType(type: types[i], data: data, pointer: consumed)
             guard let valueUnwrapped = v, let consumedUnwrapped = c else { return nil }
             toReturn.append(valueUnwrapped)
+            // `decodeSingleType` returns the HEAD bytes the value occupies (see its
+            // contract); the head pointer simply advances by that amount.
             consumed = consumed + consumedUnwrapped
         }
         guard toReturn.count == types.count else { return nil }
         return toReturn
     }
     
+    /// Decodes one value of `type` whose HEAD begins at `pointer` within `data`.
+    ///
+    /// Returns the value and the number of HEAD bytes it occupies — `type.memoryUsage`:
+    /// one 32-byte offset word for every dynamic type, the packed size for static
+    /// types. Callers advance their head pointer by exactly that amount and never
+    /// by anything else.
+    ///
+    /// THAT fork, 2026-09-05. Upstream returned an absolute "next element"
+    /// pointer from the dynamic-bytes, dynamic-array-of-dynamic and dynamic-tuple
+    /// arms and a byte COUNT from every other arm, and its three callers
+    /// compensated inconsistently (the tuple arm special-cased arrays and tuples,
+    /// the top-level loop nothing, the array loop assumed pointers). Net effect: a
+    /// `bytes`, a `string[]` or a dynamic tuple in any position but the LAST
+    /// shifted every later field, and a `string[]` of three or more elements
+    /// repeated its second element. Found decoding EIP-3668
+    /// `OffchainLookup(address,string[],bytes,bytes4,bytes)`; the payload is the
+    /// fixture in `Tests/Web3CoreTests/ABIDecoderHeadTailTests.swift`.
     public static func decodeSingleType(type: ABI.Element.ParameterType, data: Data, pointer: UInt64 = 0) -> (value: Any?, bytesConsumed: UInt64?) {
         let (elData, nextPtr) = followTheData(type: type, data: data, pointer: pointer)
         guard let elementItself = elData, let nextElementPointer = nextPtr else {
@@ -86,7 +105,7 @@ extension ABIDecoder {
                 let length = UInt64(BigUInt(dataSlice))
                 guard elementItself.count >= 32 + length else {break}
                 dataSlice = elementItself[startIndex + 32 ..< startIndex + 32 + length]
-                return (Data(dataSlice), nextElementPointer)
+                return (Data(dataSlice), type.memoryUsage)
             case .array(type: let subType, length: let length):
                 switch type.arraySize {
                     case .dynamicSize:
@@ -119,13 +138,11 @@ extension ABIDecoder {
                                 let (v, c) = decodeSingleType(type: subType, data: dataSlice, pointer: subpointer)
                                 guard let valueUnwrapped = v, let consumedUnwrapped = c else {break}
                                 toReturn.append(valueUnwrapped)
-                                if subType.isStatic {
-                                    subpointer = subpointer + consumedUnwrapped
-                                } else {
-                                    subpointer = consumedUnwrapped // need to go by nextElementPointer
-                                }
+                                // One head word per element, whatever the subtype.
+                                subpointer = subpointer + consumedUnwrapped
                             }
-                            return (toReturn, nextElementPointer)
+                            // The array itself is dynamic: one offset word in the parent's head.
+                            return (toReturn, type.memoryUsage)
                         }
                     case .staticSize(let staticLength):
                         guard length == staticLength else {break}
@@ -140,7 +157,8 @@ extension ABIDecoder {
                         if subType.isStatic {
                             return (toReturn, consumed)
                         } else {
-                            return (toReturn, nextElementPointer)
+                            // Dynamic elements make the array dynamic: one offset word in the parent's head.
+                            return (toReturn, type.memoryUsage)
                         }
                     case .notArray:
                         break
@@ -152,31 +170,13 @@ extension ABIDecoder {
                     let (v, c) = decodeSingleType(type: subTypes[i], data: elementItself, pointer: consumed)
                     guard let valueUnwrapped = v, let consumedUnwrapped = c else {return (nil, nil)}
                     toReturn.append(valueUnwrapped)
-                    // When decoding a tuple that is not static or an array with a subtype that is not static,
-                    // the second value in the tuple returned by decodeSignleType is a pointer to the next element,
-                    // NOT the length of the consumed element. So when decoding such an element, consumed should
-                    // be set to consumedUnwrapped, NOT incremented by consumedUnwrapped.
-                    switch subTypes[i] {
-                        case .array(type: let subType, length: _):
-                            if !subType.isStatic {
-                                consumed = consumedUnwrapped
-                            } else {
-                                consumed = consumed + consumedUnwrapped
-                            }
-                        case .tuple(types: _):
-                            if !subTypes[i].isStatic {
-                                consumed = consumedUnwrapped
-                            } else {
-                                consumed = consumed + consumedUnwrapped
-                            }
-                        default:
-                            consumed = consumed + consumedUnwrapped
-                    }
+                    consumed = consumed + consumedUnwrapped
                 }
                 if type.isStatic {
                     return (toReturn, consumed)
                 } else {
-                    return (toReturn, nextElementPointer)
+                    // A dynamic tuple occupies one offset word in its parent's head.
+                    return (toReturn, type.memoryUsage)
                 }
             case .function:
                 guard elementItself.count >= 32 else {break}
