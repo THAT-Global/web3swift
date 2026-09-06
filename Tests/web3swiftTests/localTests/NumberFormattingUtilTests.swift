@@ -10,7 +10,7 @@ import Web3Core
 
 @testable import Web3Swift
 
-class NumberFormattingUtilTests: LocalTestCase {
+class NumberFormattingUtilTests: XCTestCase {
 
     func testNumberFormattingUtil() throws {
         let balance = BigInt("-1000000000000000000")

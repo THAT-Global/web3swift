@@ -14,10 +14,12 @@ import Web3Core
 /// Contracts' ABI with this type were not decodable.
 class DecodeSolidityErrorType: XCTestCase {
 
-    func testStructuredErrorTypeDecoding() async throws {
+    func testStructuredErrorTypeDecoding() throws {
         let contractAbiWithErrorTypes = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"disallowedAddress\",\"type\":\"address\"}],\"name\":\"NotAllowedAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"bytes4\",\"name\":\"disallowedFunction\",\"type\":\"bytes4\"}],\"name\":\"NotAllowedFunction\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"permission\",\"type\":\"string\"}],\"name\":\"NotAuthorised\",\"type\":\"error\"}]"
-        let web3Instance = try await Web3.new(LocalTestCase.url)
-        let contract = Web3.Contract(web3: web3Instance, abiString: contractAbiWithErrorTypes)
-        assert(contract != nil)
+        // ENS act debt A: the ABI parser lives in Web3Core — no node, no
+        // `Web3` instance needed to prove an `error`-typed ABI decodes.
+        let contract = try EthereumContract(contractAbiWithErrorTypes)
+        XCTAssertFalse(contract.abi.isEmpty)
+        XCTAssertFalse(contract.errors.isEmpty, "the `error` elements must be parsed, not dropped")
     }
 }

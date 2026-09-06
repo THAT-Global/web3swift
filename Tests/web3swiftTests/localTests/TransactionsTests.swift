@@ -609,7 +609,12 @@ class TransactionsTests: XCTestCase {
 
     func testDirectTransaction() throws {
         do {
+            // The EIP-155 example vector (chain 1, nonce 9, 20 gwei, 21000 gas,
+            // 1 ETH to 0x3535…) is a LEGACY transaction. The THAT fork made
+            // `.eip1559` the default type (d328f913), so the vector must say so —
+            // an EIP-1559 envelope hashes differently and carries y-parity in `v`.
             var transaction = CodableTransaction(
+                type: .legacy,
                 to: EthereumAddress("0x3535353535353535353535353535353535353535")!,
                 nonce: 9, value: 1_000_000_000_000_000_000, data: Data(),
                 gasLimit: 21_000, gasPrice: 20_000_000_000,
@@ -631,46 +636,6 @@ class TransactionsTests: XCTestCase {
 
             XCTAssertEqual(transaction.v, 37, "Transaction signature failed")
             XCTAssertEqual(sender, transaction.sender)
-        } catch {
-
-            XCTFail()
-        }
-    }
-
-    func testEthSendExampleAndGetTransactionReceiptAndDetails() async {
-        do {
-            let web3 = try await Web3.new(LocalTestCase.url)
-            let sendToAddress = EthereumAddress("0xe22b8979739D724343bd002F9f432F5990879901")!
-            let allAddresses = try await web3.eth.ownedAccounts()
-            let contract = web3.contract(Web3.Utils.coldWalletABI, at: sendToAddress, abiVersion: 2)
-            let value = Utilities.parseToBigUInt("1.0", units: .ether)
-            let from = allAddresses[0]
-            let writeTX = contract!.createWriteOperation("fallback")!
-            writeTX.transaction.from = from
-            writeTX.transaction.value = value!
-            let policies = Policies(gasLimitPolicy: .manual(78423))
-            let result = try await writeTX.writeToChain(password: "", policies: policies, sendRaw: false)
-            let txHash = Data.fromHex(result.hash.stripHexPrefix())!
-
-            Thread.sleep(forTimeInterval: 1.0)
-
-            let receipt = try await web3.eth.transactionReceipt(txHash)
-
-            XCTAssert(receipt.status == .ok)
-
-            switch receipt.status {
-            case .notYetProcessed:
-                return
-            default:
-                break
-            }
-
-            let details = try await web3.eth.transactionDetails(txHash)
-
-            // FIXME: Re-enable this test.
-//            XCTAssertEqual(details.transaction.gasLimit, BigUInt(78423))
-        } catch Web3Error.nodeError(let descr) {
-            guard descr == "insufficient funds for gas * price + value" else {return XCTFail()}
         } catch {
 
             XCTFail()

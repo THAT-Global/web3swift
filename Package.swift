@@ -1,44 +1,18 @@
 // swift-tools-version: 5.9.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
-import Foundation
 import PackageDescription
 
-// THAT fork. `localTests` and `remoteTests` have not compiled since the contracts
-// rewrite: 29 files reference removed APIs (`Web3.new(url)`, `ethInstance`,
-// `InfuraGoerliWeb3`, …) and most need a local node. Porting them is owed as its
-// own act. Until then, setting WEB3SWIFT_CORE_TESTS_ONLY drops those two targets so
-// the Web3Core-only suite can build and run:
-//
-//     WEB3SWIFT_CORE_TESTS_ONLY=1 swift test --parallel --filter Web3CoreTests
-//
-// Without the variable the manifest is exactly upstream's shape plus `Web3CoreTests`.
-let coreTestsOnly = ProcessInfo.processInfo.environment["WEB3SWIFT_CORE_TESTS_ONLY"] != nil
-
-let legacyTestTargets: [Target] = [
-    .testTarget(
-        name: "localTests",
-        dependencies: ["Web3Swift"],
-        path: "Tests/web3swiftTests/localTests",
-        resources: [
-            .copy("../../../TestToken/Helpers/SafeMath/SafeMath.sol"),
-            .copy("../../../TestToken/Helpers/TokenBasics/ERC20.sol"),
-            .copy("../../../TestToken/Helpers/TokenBasics/IERC20.sol"),
-            .copy("../../../TestToken/Token/Web3SwiftToken.sol")
-        ]
-    ),
-    .testTarget(
-        name: "remoteTests",
-        dependencies: ["Web3Swift"],
-        path: "Tests/web3swiftTests/remoteTests",
-        resources: [
-            .copy("../../../TestToken/Helpers/SafeMath/SafeMath.sol"),
-            .copy("../../../TestToken/Helpers/TokenBasics/ERC20.sol"),
-            .copy("../../../TestToken/Helpers/TokenBasics/IERC20.sol"),
-            .copy("../../../TestToken/Token/Web3SwiftToken.sol")
-        ]
-    )
-]
+// THAT fork. `localTests` holds the PRIMITIVE suites upstream shipped — ABI
+// coder, keys/keystores (BIP32/39/44), signing and transactions (RLP, EIP-1559,
+// EIP-712), addresses and utilities — ported to the contracts-rewrite API
+// (ENS act debt A, that-ios ENS-SEND-FLOW-ASSESSMENT.md §10). The contract-
+// wrapper suites (ST20, ERC20 classes, EthereumContract, UserCases), the
+// parsers THAT owns elsewhere (EIP-681/67/4361) and every `remoteTests` file
+// (Infura / live networks / the retired registry-walk ENS module) were deleted
+// rather than ported: nothing THAT calls is behind them. `Web3CoreTests` holds
+// the fork's own additions. A plain `swift test` runs everything; the former
+// WEB3SWIFT_CORE_TESTS_ONLY gate is gone.
 
 let package = Package(
     name: "Web3Swift",
@@ -83,11 +57,18 @@ let package = Package(
             ]
         ),
         // THAT fork: offline tests over Web3Core alone (ABI head/tail bookkeeping,
-        // typed custom-error decoding). Runnable today via the gate above.
+        // typed custom-error decoding, the nested-tuple encoder oracle).
         .testTarget(
             name: "Web3CoreTests",
             dependencies: ["Web3Core", "BigInt", "CryptoSwift"],
             path: "Tests/Web3CoreTests"
-        )
-    ] + (coreTestsOnly ? [] : legacyTestTargets)
+        ),
+        // The ported primitive suites (see the header). No resources: the
+        // `.sol` fixtures belonged to the deleted contract-wrapper suites.
+        .testTarget(
+            name: "localTests",
+            dependencies: ["Web3Swift"],
+            path: "Tests/web3swiftTests/localTests"
+        ),
+    ]
 )

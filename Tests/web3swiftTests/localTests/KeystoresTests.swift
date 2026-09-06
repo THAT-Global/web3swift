@@ -9,7 +9,7 @@ import Web3Core
 
 @testable import Web3Swift
 
-class KeystoresTests: LocalTestCase {
+class KeystoresTests: XCTestCase {
     let mnemonic = "fruit wave dwarf banana earth journey tattoo true farm silk olive fence"
 
     func testBIP39() throws {

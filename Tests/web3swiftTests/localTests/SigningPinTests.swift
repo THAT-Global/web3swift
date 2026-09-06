@@ -40,7 +40,7 @@ final class SigningPinTests: XCTestCase {
     func testClientSigDigestKnownOutput() {
         let user = EthereumAddress("0x1111111111111111111111111111111111111111")!
         let recipient = EthereumAddress("0x2222222222222222222222222222222222222222")!
-        let amount = BigUInt("1000000000000000000")!   // 1e18
+        let amount = BigUInt(10).power(18)   // 1e18 (a string literal infers the non-optional init)
         let chainId = BigUInt(137)
         let contract = EthereumAddress("0xc55897D0285D855B2C56F202145d6FC101B1f7dC")!
 
@@ -69,7 +69,7 @@ final class SigningPinTests: XCTestCase {
 
         let user = EthereumAddress("0x1111111111111111111111111111111111111111")!
         let recipient = EthereumAddress("0x2222222222222222222222222222222222222222")!
-        let amount = BigUInt("1000000000000000000")!
+        let amount = BigUInt(10).power(18)
         let chainId = BigUInt(137)
         let contract = EthereumAddress("0xc55897D0285D855B2C56F202145d6FC101B1f7dC")!
 
