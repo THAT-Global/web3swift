@@ -50,7 +50,7 @@ extension ABIDecoder {
     /// fixture in `Tests/Web3CoreTests/ABIDecoderHeadTailTests.swift`.
     public static func decodeSingleType(type: ABI.Element.ParameterType, data: Data, pointer: UInt64 = 0) -> (value: Any?, bytesConsumed: UInt64?) {
         let (elData, nextPtr) = followTheData(type: type, data: data, pointer: pointer)
-        guard let elementItself = elData, let nextElementPointer = nextPtr else {
+        guard let elementItself = elData, nextPtr != nil else {
             return (nil, nil)
         }
         let startIndex = UInt64(elementItself.startIndex)
