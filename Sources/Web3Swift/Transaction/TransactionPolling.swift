@@ -18,6 +18,11 @@ public enum TransactionPolling {
     ///   - maxRetries: Number of retries before cancelling (default: 20).
     ///   - maxErrorRetries: Number of retries (error count) before cancelling (default: 10).
     /// - Returns: The `TransactionReceipt` if found, or `throw` if it times out.
+    /// - Throws: `CancellationError` as soon as the calling task is cancelled — checked at the
+    ///   top of every attempt and inside every wait, so a consumer that has stopped listening
+    ///   (a status stream torn down, a screen dismissed) does not keep the chain busy for the
+    ///   remaining retries. Before 13 September 2026 the waits used `try? await Task.sleep`, which
+    ///   turned cancellation into a burst of immediate retries and then a timeout error.
     public static func waitForTransaction(
         txHash: String,
         web3: Web3,
@@ -33,6 +38,7 @@ public enum TransactionPolling {
         var lastStatus: TransactionReceipt.TXStatus? = nil
         
         while Date().timeIntervalSince(startTime) < timeout && retryCount < maxRetries {
+            try Task.checkCancellation()
             do {
                 let receipt = try await web3.eth.transactionReceipt(txHash)
                 if receipt.status != .notYetProcessed {
@@ -41,7 +47,7 @@ public enum TransactionPolling {
                 
                 // Prevent unnecessary polling if status remains unchanged
                 if receipt.status == lastStatus {
-                    await sleep(interval)
+                    try await sleep(interval)
                     retryCount += 1
                     continue
                 }
@@ -56,7 +62,7 @@ public enum TransactionPolling {
             }
             
             // Delay between retries
-            await sleep(interval)
+            try await sleep(interval)
             retryCount += 1
         }
         
@@ -65,7 +71,9 @@ public enum TransactionPolling {
     
     // MARK: - Helpers
     
-    private static func sleep(_ seconds: TimeInterval) async {
-        try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+    /// Propagates cancellation: `Task.sleep` throws `CancellationError` at once when the task is
+    /// cancelled, and that is the answer the caller wants.
+    private static func sleep(_ seconds: TimeInterval) async throws {
+        try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
     }
 }
