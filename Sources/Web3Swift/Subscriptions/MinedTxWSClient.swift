@@ -31,11 +31,41 @@ public struct MinedTx: Sendable, Equatable {
     }
 }
 
+/// A log a `logs` subscription delivered, as the node sent it: the address, the topics, the data, the
+/// transaction it sits in. Raw on purpose — the fork knows no contract's event; the app that watches an
+/// EntryPoint decodes it (PAYMENT-CONNECTIONS-PLAN.md N4).
+public struct SubscribedLog: Sendable, Equatable {
+    public let address: String
+    public let topics: [String]
+    public let data: String
+    public let transactionHash: String?
+    public let blockNumber: UInt64?
+    public let removed: Bool
+
+    public init(address: String, topics: [String], data: String, transactionHash: String?, blockNumber: UInt64?, removed: Bool) {
+        self.address = address
+        self.topics = topics
+        self.data = data
+        self.transactionHash = transactionHash
+        self.blockNumber = blockNumber
+        self.removed = removed
+    }
+}
+
 public enum WSMessage: Sendable {
     case minedTxHash(_ hash: String, removed: Bool)
     case minedTx(subId: String, tx: MinedTx)
+    /// A `logs` subscription's log (N4).
+    case log(subId: String, log: SubscribedLog)
     case subscribed(kind: String, rpcID: Int, subId: String)
     case raw(Data)
+}
+
+/// What one socket subscribes to: one live subscription per kind, each with its own filter and id, all
+/// re-applied on reconnect (N4 — the EntryPoint's logs ride the same socket as the mined transactions).
+public enum SubscriptionKind: String, Sendable, Hashable, CaseIterable {
+    case minedTransactions = "alchemy_minedTransactions"
+    case logs = "logs"
 }
 
 public enum AddressFilter: Sendable, Equatable, Hashable {
@@ -131,10 +161,21 @@ public final class MinedTxWSClient: NSObject {
     private var heartbeatTask: Task<Void, Never>?
 
     private var nextRequestID = 1
-    private var subLookup: [Int: String] = [:]
-    public private(set) var currentSubscriptionId: String?
-    private var lastCanonicalKey: String?
-    private var lastFilterDict: [String: Any]?
+    /// A subscribe request in flight, by its JSON-RPC id, to the kind it is for.
+    private var pendingSubscribe: [Int: SubscriptionKind] = [:]
+    /// One subscription per kind: its filter (re-applied on reconnect), the key that dedupes a repeat, and
+    /// the node's id once it answered.
+    private struct Subscription {
+        var filter: [String: Any]
+        var canonicalKey: String
+        var subId: String?
+    }
+    private var subscriptions: [SubscriptionKind: Subscription] = [:]
+
+    /// The mined-transactions subscription's id — the one the client had before N4 gave it a second kind.
+    public var currentSubscriptionId: String? { subscriptions[.minedTransactions]?.subId }
+    /// A kind's live subscription id, nil until the node answered (or after a reconnect, until it does again).
+    public func subscriptionId(for kind: SubscriptionKind) -> String? { subscriptions[kind]?.subId }
 
     public var subIdMeta: [String: Any] = [:]
 
@@ -181,8 +222,10 @@ public final class MinedTxWSClient: NSObject {
         listen()
         startHeartbeat()
         delegate?.minedTxWS(self, didChange: true)
-        if let filter = lastFilterDict {
-            _ = internalSubscribe(kind: "alchemy_minedTransactions", filter: filter)
+        // Every kind's filter goes back on the new socket; the ids are the node's to answer again.
+        for kind in SubscriptionKind.allCases where subscriptions[kind] != nil {
+            subscriptions[kind]?.subId = nil
+            _ = internalSubscribe(kind)
         }
     }
 
@@ -199,7 +242,8 @@ public final class MinedTxWSClient: NSObject {
         session?.invalidateAndCancel()
         session = nil
         hasActiveReceive = false
-        currentSubscriptionId = nil
+        for kind in SubscriptionKind.allCases { subscriptions[kind]?.subId = nil }
+        pendingSubscribe = [:]
 
         let delay = min(backoff, 30.0)
         backoff = min(backoff * 2, 30.0)
@@ -262,13 +306,16 @@ public final class MinedTxWSClient: NSObject {
 
     // MARK: Parse / Dispatch
 
-    private func handle(_ data: Data) {
+    /// One frame from the node: a subscribe reply (the kind's id, by the request's id) or a notification,
+    /// dispatched by the subscription id it names — a log to `.log`, a mined transaction to `.minedTx` /
+    /// `.minedTxHash`, anything else to `.raw`. Internal, so the dispatch cells can feed it frames.
+    func handle(_ data: Data) {
         if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
            let id = obj["id"] as? Int,
            let subId = obj["result"] as? String,
-           let kind = subLookup.removeValue(forKey: id) {
-            currentSubscriptionId = subId
-            delegate?.minedTxWS(self, didReceive: .subscribed(kind: kind, rpcID: id, subId: subId))
+           let kind = pendingSubscribe.removeValue(forKey: id) {
+            subscriptions[kind]?.subId = subId
+            delegate?.minedTxWS(self, didReceive: .subscribed(kind: kind.rawValue, rpcID: id, subId: subId))
             return
         }
 
@@ -284,6 +331,23 @@ public final class MinedTxWSClient: NSObject {
         }
 
         let removed = (result["removed"] as? Bool) ?? false
+
+        if subId == subscriptions[.logs]?.subId {
+            guard let address = result["address"] as? String,
+                  let topics = result["topics"] as? [String],
+                  let logData = result["data"] as? String
+            else {
+                delegate?.minedTxWS(self, didReceive: .raw(data))
+                return
+            }
+            let blockNumber = (result["blockNumber"] as? String).flatMap { UInt64($0.stripHexPrefix(), radix: 16) }
+            let log = SubscribedLog(
+                address: address, topics: topics, data: logData,
+                transactionHash: result["transactionHash"] as? String, blockNumber: blockNumber, removed: removed
+            )
+            delegate?.minedTxWS(self, didReceive: .log(subId: subId, log: log))
+            return
+        }
 
         if let tx = result["transaction"] as? [String: Any],
            let hash = tx["hash"] as? String,
@@ -333,38 +397,64 @@ public final class MinedTxWSClient: NSObject {
             "addresses:[\(capped.map { $0.canon }.sorted().joined(separator: ","))]"
         ].joined(separator: "|")
 
-        if canonKey == lastCanonicalKey { return nil }
-
         var filter: [String: Any] = [
             "addresses": capped.map { $0.dict },
             "hashesOnly": hashesOnly
         ]
         if includeRemoved { filter["includeRemoved"] = true }
 
-        lastCanonicalKey = canonKey
-        lastFilterDict = filter
+        return subscribe(.minedTransactions, filter: filter, canonicalKey: canonKey)
+    }
 
+    /// `eth_subscribe("logs", filter)` (N4): the node's logs at `address` whose topics match — a position's
+    /// nil is any value, a set is any of its values. One logs subscription per socket; a different filter
+    /// replaces it, the same one is a no-op.
+    public func subscribeLogs(address: String, topics: [Set<String>?]) -> Int? {
+        let address = address.lowercased()
+        let normalized: [Set<String>?] = topics.map { $0.map { Set($0.map { $0.lowercased() }) } }
+        let canonKey = "logs|address:\(address)|topics:" + normalized.map { set in
+            set.map { $0.sorted().joined(separator: ",") } ?? "*"
+        }.joined(separator: ";")
+        let topicsJSON: [Any] = normalized.map { set -> Any in
+            guard let set else { return NSNull() }
+            return set.count == 1 ? set.first! : Array(set).sorted()
+        }
+        let filter: [String: Any] = ["address": address, "topics": topicsJSON]
+        return subscribe(.logs, filter: filter, canonicalKey: canonKey)
+    }
+
+    /// Records the kind's filter — it goes on every socket from now on — and sends it when the socket is
+    /// open. A repeat of the same filter is a no-op; a different one replaces the kind's subscription.
+    @discardableResult
+    private func subscribe(_ kind: SubscriptionKind, filter: [String: Any], canonicalKey: String) -> Int? {
+        if subscriptions[kind]?.canonicalKey == canonicalKey { return nil }
+        let previousId = subscriptions[kind]?.subId
+        subscriptions[kind] = Subscription(filter: filter, canonicalKey: canonicalKey, subId: nil)
         guard isOpen else { return nil }
-        return internalSubscribe(kind: "alchemy_minedTransactions", filter: filter)
+        if let previousId { sendUnsubscribe(subId: previousId) }
+        return internalSubscribe(kind)
+    }
+
+    /// Ends a kind's subscription: unsubscribed on the socket when it has an id, and gone from the filters
+    /// a reconnect would re-apply.
+    public func unsubscribe(_ kind: SubscriptionKind) {
+        guard let subscription = subscriptions.removeValue(forKey: kind) else { return }
+        if let subId = subscription.subId { sendUnsubscribe(subId: subId) }
     }
 
     // MARK: Internals
 
     @discardableResult
-    private func internalSubscribe(kind: String, filter: [String: Any]) -> Int? {
-        if let currentSubscriptionId {
-            sendUnsubscribe(subId: currentSubscriptionId)
-            self.currentSubscriptionId = nil
-        }
-
+    private func internalSubscribe(_ kind: SubscriptionKind) -> Int? {
+        guard let subscription = subscriptions[kind] else { return nil }
         let id = nextID()
-        subLookup[id] = kind
+        pendingSubscribe[id] = kind
 
         let body: [String: Any] = [
             "jsonrpc": "2.0",
             "id": id,
             "method": "eth_subscribe",
-            "params": [kind, filter]
+            "params": [kind.rawValue, subscription.filter]
         ]
 
         guard let data = try? JSONSerialization.data(withJSONObject: body) else { return nil }
@@ -373,11 +463,7 @@ public final class MinedTxWSClient: NSObject {
     }
 
     public func unsubscribeCurrent() {
-        guard let subId = currentSubscriptionId else { return }
-        sendUnsubscribe(subId: subId)
-        currentSubscriptionId = nil
-        lastCanonicalKey = nil
-        lastFilterDict = nil
+        unsubscribe(.minedTransactions)
     }
 
     private func sendUnsubscribe(subId: String) {

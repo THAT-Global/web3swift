@@ -50,6 +50,16 @@ public final class ChainSubscriptionRegistry {
 
     public func center(chainId: Int) -> ChainLiveCenter? { centers[chainId] }
 
+    /// The app left the foreground (N4): every center's socket closes, its watches kept.
+    public func suspendAll() {
+        for center in centers.values { center.suspend() }
+    }
+
+    /// Back in the foreground: every suspended center reconnects and re-applies its watches.
+    public func resumeAll() {
+        for center in centers.values { center.resume() }
+    }
+
     public func mirrorKeys() -> [Int] { Array(centers.keys) }
 
     public func remove(chainId: Int) {
