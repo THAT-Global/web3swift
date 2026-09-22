@@ -23,6 +23,9 @@ public enum TransactionPolling {
     ///   (a status stream torn down, a screen dismissed) does not keep the chain busy for the
     ///   remaining retries. Before 13 September 2026 the waits used `try? await Task.sleep`, which
     ///   turned cancellation into a burst of immediate retries and then a timeout error.
+    /// The shortest interval a poll runs at, whatever it asks for.
+    public static let minimumInterval: TimeInterval = 1
+
     public static func waitForTransaction(
         txHash: String,
         web3: Web3,
@@ -31,7 +34,9 @@ public enum TransactionPolling {
         maxRetries: Int = 20,
         maxErrorRetries: Int = 10
     ) async throws -> TransactionReceipt {
-        let interval = max(pollingInterval, 2) // min 2-second delay
+        // The floor is a block's cadence on Polygon (PAYMENT-CONNECTIONS-PLAN.md N4): a receipt backstop may
+        // poll at block speed. It was two seconds — a guard against hammering — which the cadence now bounds.
+        let interval = max(pollingInterval, Self.minimumInterval)
         let startTime = Date()
         var retryCount = 0
         var errorCount = 0 // Occurs when transaction is not yet indexed

@@ -110,27 +110,30 @@ extension APIRequest {
         try await send(call.call, parameters: call.parameters, with: provider)
     }
     
-    static func setupRequest(for body: RequestBody, with url: URL) -> URLRequest {
+    static func setupRequest(for body: RequestBody, with url: URL, headers: [String: String] = [:]) -> URLRequest {
         var urlRequest = URLRequest(url: url, cachePolicy: .reloadIgnoringCacheData)
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
+        // The provider's own headers — its credentials — on the request, never on the session (R-C5).
+        for (field, value) in headers { urlRequest.setValue(value, forHTTPHeaderField: field) }
         urlRequest.httpMethod = "POST"
         urlRequest.httpBody = body.encodedBody
         return urlRequest
     }
     
     public static func send<Result>(_ method: String, parameters: [Encodable], with provider: Web3Provider) async throws -> APIResponse<Result> {
-        try await send(method, parameters: parameters, to: provider.url, session: provider.session)
+        try await send(method, parameters: parameters, to: provider.url, session: provider.session, headers: provider.requestHeaders)
     }
     
     public static func send<Result>(
         _ method: String,
         parameters: [Encodable],
         to url: URL,
-        session: URLSession
+        session: URLSession,
+        headers: [String: String] = [:]
     ) async throws -> APIResponse<Result> {
         let body = RequestBody(method: method, params: parameters)
-        let uRLRequest = setupRequest(for: body, with: url)
+        let uRLRequest = setupRequest(for: body, with: url, headers: headers)
         
         let data: Data
         do {
