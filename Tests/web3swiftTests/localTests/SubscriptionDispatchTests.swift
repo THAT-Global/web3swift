@@ -144,3 +144,62 @@ struct ChainLiveCenterWatchTests {
         #expect(center.isWatching(from: "0xabc"))
     }
 }
+
+/// V4.4.0-RELEASE-AUDIT-3-FINDINGS.md A — what a wait adds to the mined-transactions subscription. The app arms every
+/// sender before its send (`ReceiptWatcher.arm`), so the sender is already watched when a send's wait begins; a `.to`
+/// added then was the ERC-20's CONTRACT — every mined transfer of the token, from anyone, for the length of the wait.
+@MainActor
+@Suite("ChainLiveCenter.waitForMinedHash — a watched sender needs no recipient filter (audit 3, A)")
+struct ChainLiveCenterWaitFilterTests {
+    static let wss = URL(string: "wss://127.0.0.1:9/ws")!
+    static let hash = "0x" + String(repeating: "ab", count: 32)
+
+    /// The filters the center subscribes with, read the way the node's subscribe reply records them: the center stamps
+    /// its whole watch set on the client that delivered the reply (`subIdMeta`).
+    static func watchSet(of center: ChainLiveCenter) -> Set<AddressFilter> {
+        let probe = MinedTxWSClient(chainId: 137, wssURL: wss)
+        center.minedTxWS(probe, didReceive: .subscribed(kind: "alchemy_minedTransactions", rpcID: 0, subId: "probe"))
+        return Set((probe.subIdMeta["probe"] as? [AddressFilter]) ?? [])
+    }
+
+    /// Starts the wait, lets its hook register on the actor, reads the watch set mid-wait, then ends the wait with its
+    /// own hash — the socket's push — and answers what the wait subscribed with and what it saw.
+    static func midWait(_ center: ChainLiveCenter, from: String?, to: String?) async -> (during: Set<AddressFilter>, seen: Bool) {
+        let waiter = Task { await center.waitForMinedHash(hash, from: from, to: to, timeout: 5) }
+        try? await Task.sleep(for: .milliseconds(200))
+        let during = watchSet(of: center)
+        center.minedTxWS(MinedTxWSClient(chainId: 137, wssURL: wss), didReceive: .minedTxHash(hash, removed: false))
+        return (during, await waiter.value)
+    }
+
+    @Test("a wait whose sender is already watched adds no `.to` — the token contract of an ERC-20 send is never subscribed to (RED at 8dc2ab65: the watched sender let the `.to` through)")
+    func watchedSenderAddsNoRecipient() async {
+        let center = ChainLiveCenter(chainId: 137, wssURL: Self.wss)
+        defer { center.stop() }
+        center.addAddressWatch(from: "0xAbC")   // the executor's arm, before the send
+        let (during, seen) = await Self.midWait(center, from: "0xabc", to: "0xT0kenContract")
+        #expect(during == [.from("0xabc")], "the wait widened the subscription: \(during)")
+        #expect(seen)
+        #expect(Self.watchSet(of: center) == [.from("0xabc")], "the arm's watch stays")
+    }
+
+    @Test("a wait whose sender is not watched adds the sender alone, for the wait")
+    func unwatchedSenderAddsTheSender() async {
+        let center = ChainLiveCenter(chainId: 137, wssURL: Self.wss)
+        defer { center.stop() }
+        let (during, seen) = await Self.midWait(center, from: "0xAbC", to: "0xT0kenContract")
+        #expect(during == [.from("0xabc")], "\(during)")
+        #expect(seen)
+        #expect(Self.watchSet(of: center).isEmpty, "the wait's own filter goes with it")
+    }
+
+    @Test("a wait that names no sender watches its recipient, for the wait")
+    func noSenderWatchesTheRecipient() async {
+        let center = ChainLiveCenter(chainId: 137, wssURL: Self.wss)
+        defer { center.stop() }
+        let (during, seen) = await Self.midWait(center, from: nil, to: "0xRecipient")
+        #expect(during == [.to("0xrecipient")], "\(during)")
+        #expect(seen)
+        #expect(Self.watchSet(of: center).isEmpty)
+    }
+}
