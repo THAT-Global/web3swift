@@ -207,11 +207,15 @@ public final class ChainLiveCenter: NSObject, MinedTxWSClientDelegate {
         let target = hash.lowercased()
         start()
 
+        // The sender's filter matches the send. A `.to` filter is the wait's only when it names no sender — never
+        // because the sender is already watched (V4.4.0-RELEASE-AUDIT-3-FINDINGS.md A): the app arms every sender
+        // before its send, and an ERC-20 send's `to` is the token's CONTRACT, so the `.to` added then subscribed the
+        // socket to every mined transfer of the token, from anyone, for the length of the wait — and replaced the
+        // subscription twice. A watched sender needs nothing added.
         var tempAdded: AddressFilter?
-        if let f = from, let nf = AddressFilter.from(f).normalized, !watchSet.contains(nf) {
-            watchSet.insert(nf); tempAdded = nf
-        }
-        if tempAdded == nil, let t = to, let nt = AddressFilter.to(t).normalized, !watchSet.contains(nt) {
+        if let nf = from.flatMap({ AddressFilter.from($0).normalized }) {
+            if !watchSet.contains(nf) { watchSet.insert(nf); tempAdded = nf }
+        } else if let nt = to.flatMap({ AddressFilter.to($0).normalized }), !watchSet.contains(nt) {
             watchSet.insert(nt); tempAdded = nt
         }
         if tempAdded != nil { rebuildDerivedSets(); applySubscriptionIfNeeded() }
