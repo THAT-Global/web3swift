@@ -164,7 +164,7 @@ public actor Web3ClientService {
 
         var lastError: Error = Web3ClientServiceError.unrecoverableRPCError
         for (index, endpoint) in endpoints.enumerated() {
-            Self.log.debug("Trying endpoint[\(index)]: \(endpoint)")
+            Self.log.debug("Trying endpoint[\(index)] \(Self.logLabel(endpoint))")
             do {
                 let web3 = try await web3Client(for: network, endpoint: endpoint, keystoreManager: keystoreManager, credentials: credentials)
                 let result = try await task(web3)
@@ -173,15 +173,24 @@ public actor Web3ClientService {
             } catch {
                 lastError = error
                 if Self.isDeterministicError(error) {
-                    Self.log.error("Deterministic failure on endpoint: \(endpoint). Error: \(error.localizedDescription)")
+                    Self.log.error("Deterministic failure on endpoint[\(index)] \(Self.logLabel(endpoint)). Error: \(error.localizedDescription)")
                     throw error
                 }
-                Self.log.warning("RPC call failed on endpoint: \(endpoint). Error: \(error.localizedDescription)")
+                Self.log.warning("RPC call failed on endpoint[\(index)] \(Self.logLabel(endpoint)). Error: \(error.localizedDescription)")
                 continue
             }
         }
 
         throw lastError
+    }
+
+    /// An endpoint as a log line names it: its host, beside its index in the walk (that-ios V440-CHECKPOINT-PROGRAMME.md
+    /// A-01). The endpoint whole carried a provider's key — Alchemy's `/v2/<key>`, Infura's `/v3/<key>`, Moralis's
+    /// `/<chain>/<key>`, a key in the query — into every Debug console, test log and session transcript; the host and the
+    /// index still say which endpoint of the ladder answered. The app's redaction rule lives in payments-core, which
+    /// depends on this package, so it cannot be used here.
+    static func logLabel(_ endpoint: String) -> String {
+        URL(string: endpoint)?.host ?? "<no host>"
     }
 
     // MARK: - Cache

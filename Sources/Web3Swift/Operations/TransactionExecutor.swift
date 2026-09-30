@@ -82,7 +82,8 @@ public enum TransactionExecutor {
         print("XXX Max Fee Per Gas : \(transaction.maxFeePerGas ?? 0)")
         print("XXX Max Priority Fee Per Gas: \(transaction.maxPriorityFeePerGas ?? 0)")
         print("XXX Data: \(transaction.data.toHexString().prefix(50))...") // Log first 50 chars
-        print("XXX Broadcasting: \(transactionData.toHexString().prefix(20))... via \(web3.provider.url)")
+        // The host alone: the provider's URL carries its key (that-ios V440-CHECKPOINT-PROGRAMME.md A-01).
+        print("XXX Broadcasting: \(transactionData.toHexString().prefix(20))... via \(web3.provider.url.host ?? "<no host>")")
         // === TODO: Submitting ===
 #endif
         

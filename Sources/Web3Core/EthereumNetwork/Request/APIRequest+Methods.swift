@@ -18,6 +18,13 @@ func checkError(method: String, error: JsonRpcErrorObject.RpcError) throws -> St
         if let result = spelunkData(value: error) {
             return result.data
         }
+        // The fixed wording below says "reverted", so it is for code 3 alone — geth's revert, here without data to hand
+        // back (that-ios V440-CHECKPOINT-PROGRAMME.md A-01, from A-12c's review). Every JSON-RPC code outside the ranges
+        // `JsonRpcErrorCode` classifies reaches this line, and the wording dropped its code: a provider's 429 answered
+        // inside an HTTP 200 read as the contract's revert to every caller — a zero operator fee, a permit or allowance
+        // read's refusal, a token with no metadata — and the endpoint walk stopped on it. Any other code is rethrown as
+        // it came, its code kept, for the caller to classify.
+        guard error.code == 3 else { throw Web3Error.rpcError(error) }
         throw Web3Error.nodeError(desc: "Error data decoding failed: missing revert data in exception; Transaction reverted without a reason string.")
     }
 
