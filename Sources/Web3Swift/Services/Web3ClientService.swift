@@ -171,6 +171,14 @@ public actor Web3ClientService {
                 await endpointManager.setPreferred(for: network, endpoint: endpoint)
                 return RPCExecutionResult(result: result, endpointUsed: endpoint, web3Used: web3)
             } catch {
+                // A cancelled read is the caller's, not the endpoint's: the next endpoint would be asked a question
+                // nobody is waiting for (that-ios RUNTIME-SCALE-AUDIT-FINDINGS.md F-07 — a screen left early sent each
+                // of its cancelled reads on to Infura and Moralis). The cancellation goes back as it came, and the
+                // preference is left where it was.
+                if Self.isCancellation(error) {
+                    Self.log.debug("Cancelled on endpoint[\(index)] \(Self.logLabel(endpoint)); the walk stops")
+                    throw error
+                }
                 lastError = error
                 if Self.isDeterministicError(error) {
                     Self.log.error("Deterministic failure on endpoint[\(index)] \(Self.logLabel(endpoint)). Error: \(error.localizedDescription)")
@@ -213,6 +221,16 @@ public actor Web3ClientService {
     }
 
     // MARK: - Error classification
+
+    /// The read was cancelled, not refused: Swift's `CancellationError`, URLSession's `.cancelled` (what a cancelled
+    /// task's `data(for:)` throws), or any failure at all once the calling task is cancelled — a cancelled task's
+    /// failure says nothing about the endpoint, and asking the next one would only repeat it.
+    static func isCancellation(_ error: Error) -> Bool {
+        if Task.isCancelled { return true }
+        if error is CancellationError { return true }
+        if let urlError = error as? URLError, urlError.code == .cancelled { return true }
+        return false
+    }
 
     private static func isDeterministicError(_ error: Error) -> Bool {
         if let web3Error = error as? Web3Error {

@@ -117,6 +117,137 @@ struct Web3HttpProviderSessionTests {
         #expect(again.endpointUsed == a, "the list's own order once the preference is stale")
         #expect(RecordingRPCProtocol.seen.map { $0.url?.host } == [URL(string: a)?.host])
     }
+
+    // MARK: F-07 — a cancelled read stops the walk (RUNTIME-SCALE-AUDIT-FINDINGS.md F-07, N3)
+
+    /// The real shape: the calling task is cancelled while the first endpoint's request is on the wire. URLSession
+    /// stops the request and throws `.cancelled`; the walk used to take that for the endpoint's failure and ask the
+    /// next two. Counted at the protocol: one request reached a node, and the second endpoint was never asked.
+    @Test("a task cancelled mid-request asks no further endpoint, and the preference stays")
+    func cancelledMidRequestStopsTheWalk() async throws {
+        Web3ClientService.resetInstalledSessionForTesting()
+        defer { Web3ClientService.resetInstalledSessionForTesting() }
+        Web3ClientService.installSession(HangingRPCProtocol.session())
+        HangingRPCProtocol.reset()
+        let network = Web3ClientServicePreferenceTests.network(880_010)
+        let a = Web3ClientServicePreferenceTests.endpoint("a"), b = Web3ClientServicePreferenceTests.endpoint("b"), c = Web3ClientServicePreferenceTests.endpoint("c")
+        let service = Web3ClientService.shared
+        await service.registerEndpoints([a, b, c], for: network)
+        let read = Task { try await service.performWithRPCFallback(for: network) { web3 in try await web3.eth.blockNumber() } }
+        // Bounded: the request reaches the protocol within milliseconds; 2 s of 10 ms polls is the ceiling.
+        for _ in 0..<200 where HangingRPCProtocol.seen.isEmpty { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(HangingRPCProtocol.seen.map { $0.url?.host } == [URL(string: a)?.host], "the first endpoint is on the wire")
+        read.cancel()
+        let outcome = await read.result
+        guard case .failure(let error) = outcome else { Issue.record("a cancelled read returned a result"); return }
+        #expect(Web3ClientService.isCancellation(error) || (error as? URLError)?.code == .cancelled, "the cancellation goes back as it came: \(error)")
+        // Long enough for a walk to have reached the second endpoint, had it continued.
+        try await Task.sleep(for: .milliseconds(300))
+        #expect(HangingRPCProtocol.seen.count == 1, "no fallback endpoint was asked after the cancel")
+        #expect(await service.preferredEndpoint(for: network) == a, "a cancellation moves no preference")
+    }
+
+    /// Each cancellation shape, thrown by the read itself with the calling task NOT cancelled, stops the walk at one
+    /// attempt; a timeout — an endpoint's failure — still walks on (the positive control).
+    @Test("CancellationError and URLError.cancelled stop at one attempt; a timeout still walks to the next endpoint")
+    func cancellationShapesStopTimeoutsWalk() async throws {
+        Web3ClientService.resetInstalledSessionForTesting()
+        defer { Web3ClientService.resetInstalledSessionForTesting() }
+        Web3ClientService.installSession(RecordingRPCProtocol.session())
+        let service = Web3ClientService.shared
+        let cases: [(UInt, Error, Int)] = [
+            (880_011, CancellationError(), 1),
+            (880_012, URLError(.cancelled), 1),
+            (880_013, URLError(.timedOut), 3),
+        ]
+        for (id, thrown, expectedAttempts) in cases {
+            let network = Web3ClientServicePreferenceTests.network(id)
+            let endpoints = ["a", "b", "c"].map(Web3ClientServicePreferenceTests.endpoint)
+            await service.registerEndpoints(endpoints, for: network)
+            let attempts = AttemptCounter()
+            do {
+                _ = try await service.performWithRPCFallback(for: network) { web3 -> Int in
+                    attempts.note(web3.provider.url.host)
+                    throw thrown
+                }
+                Issue.record("every attempt threw, so the walk must throw")
+            } catch {
+                #expect(ObjectIdentifier(type(of: error)) == ObjectIdentifier(type(of: thrown)), "the last error comes back: \(error)")
+            }
+            #expect(attempts.hosts.count == expectedAttempts, "\(thrown): \(attempts.hosts.count) attempts")
+            #expect(attempts.hosts.first == URL(string: endpoints[0])?.host)
+        }
+    }
+
+    /// The calling task is cancelled and the read fails with something that is not a cancellation (a server's 503
+    /// that raced the cancel): the failure says nothing about the endpoint once nobody is waiting, so the walk stops.
+    @Test("any failure once the calling task is cancelled stops the walk at one attempt")
+    func failureAfterTaskCancelStops() async throws {
+        Web3ClientService.resetInstalledSessionForTesting()
+        defer { Web3ClientService.resetInstalledSessionForTesting() }
+        Web3ClientService.installSession(RecordingRPCProtocol.session())
+        let service = Web3ClientService.shared
+        let network = Web3ClientServicePreferenceTests.network(880_014)
+        let endpoints = ["a", "b", "c"].map(Web3ClientServicePreferenceTests.endpoint)
+        await service.registerEndpoints(endpoints, for: network)
+        let attempts = AttemptCounter()
+        let gate = AsyncGate()
+        let read = Task {
+            try await service.performWithRPCFallback(for: network) { web3 -> Int in
+                attempts.note(web3.provider.url.host)
+                await gate.wait()
+                throw Web3Error.serverError(code: 503)
+            }
+        }
+        for _ in 0..<200 where attempts.hosts.isEmpty { try await Task.sleep(for: .milliseconds(10)) }
+        read.cancel()
+        await gate.open()
+        _ = await read.result
+        #expect(attempts.hosts.count == 1, "one attempt, then the walk stopped: \(attempts.hosts.count)")
+    }
+}
+
+/// Attempts the walk made, by host.
+final class AttemptCounter: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _hosts: [String?] = []
+    var hosts: [String?] { lock.withLock { _hosts } }
+    func note(_ host: String?) { lock.withLock { _hosts.append(host) } }
+}
+
+/// Holds a read until the test lets it go.
+actor AsyncGate {
+    private var isOpen = false
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+    func wait() async {
+        if isOpen { return }
+        await withCheckedContinuation { waiters.append($0) }
+    }
+    func open() {
+        isOpen = true
+        waiters.forEach { $0.resume() }
+        waiters = []
+    }
+}
+
+/// A node that takes the request and never answers: the only way out is the caller's cancel, which URLSession turns
+/// into `stopLoading` and a `.cancelled` failure.
+final class HangingRPCProtocol: URLProtocol {
+    private static let lock = NSLock()
+    nonisolated(unsafe) private static var _seen: [URLRequest] = []
+    static var seen: [URLRequest] { lock.withLock { _seen } }
+    static func reset() { lock.withLock { _seen = [] } }
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() { Self.lock.withLock { Self._seen.append(request) } }
+    override func stopLoading() {}
+
+    static func session() -> URLSession {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [HangingRPCProtocol.self]
+        return URLSession(configuration: configuration)
+    }
 }
 
 @Suite("Web3ClientService endpoint preference (N3)", .serialized)
