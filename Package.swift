@@ -48,10 +48,12 @@ let package = Package(
         ),
         .target(
             name: "Web3Swift",
+            // No `libsecp256k1` here: only Web3Core calls the C API. With a second dependent target, Xcode turns the
+            // C-only product into a framework of its own wherever Web3Core and Web3Swift land in two binaries, and that
+            // framework fails to link under code coverage (no profile runtime) — every package suite's default.
             dependencies: [
                 "BigInt",
                 "Web3Core",
-                .product(name: "libsecp256k1", package: "swift-secp256k1"),
             ],
             resources: [
                 .copy("./Browser/browser.js"),
