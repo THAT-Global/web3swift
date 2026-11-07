@@ -43,7 +43,11 @@ let package = Package(
             dependencies: [
                 "BigInt", 
                 "CryptoSwift",
-                .product(name: "libsecp256k1", package: "swift-secp256k1"),
+                // The Swift product, though Web3Core calls only the C API (`import libsecp256k1`): P256K carries the C
+                // target, and a product with Swift in it is what Xcode may promote to a framework of its own — linked by
+                // Swift's driver, so it takes the profile runtime under code coverage. The C-only `libsecp256k1` product,
+                // promoted the same way, fails to link under coverage (every package suite's default).
+                .product(name: "P256K", package: "swift-secp256k1"),
             ]
         ),
         .target(
