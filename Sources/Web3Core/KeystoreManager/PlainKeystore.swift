@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import libsecp256k1
+import secp256k1
 
 // `@unchecked Sendable` — see the rationale on
 // `KeystoreManager: @unchecked Sendable`. Properties are `var` but
