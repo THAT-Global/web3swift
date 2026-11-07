@@ -29,8 +29,11 @@ let package = Package(
         .library(name: "Web3Core", targets: ["Web3Core"])
     ],
     dependencies: [
-        // pin secp256k1 (used by web3swift & solana-swift)
-        .package(url: "https://github.com/21-DOT-DEV/swift-secp256k1.git", exact: "0.10.0"),
+        // The major-version mode (that-ios BITCOIN-PLAN.md B-O4): a 0.x requirement admits later minors, so the
+        // committed Package.resolved of whoever builds holds the line and only a reviewed resolve moves it. It resolves
+        // at a tag, so the package's development dependencies stay out. `libsecp256k1` is its C module; its default
+        // traits compile the recovery, Schnorr and extrakeys modules. The signing vectors pin every output.
+        .package(url: "https://github.com/21-DOT-DEV/swift-secp256k1.git", from: "0.24.0"),
         .package(url: "https://github.com/attaswift/BigInt.git", from: "5.7.0"),
         .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.5.1"),
     ],
@@ -40,7 +43,7 @@ let package = Package(
             dependencies: [
                 "BigInt", 
                 "CryptoSwift",
-                .product(name: "secp256k1", package: "swift-secp256k1"),
+                .product(name: "libsecp256k1", package: "swift-secp256k1"),
             ]
         ),
         .target(
@@ -48,7 +51,7 @@ let package = Package(
             dependencies: [
                 "BigInt",
                 "Web3Core",
-                .product(name: "secp256k1", package: "swift-secp256k1"),
+                .product(name: "libsecp256k1", package: "swift-secp256k1"),
             ],
             resources: [
                 .copy("./Browser/browser.js"),
