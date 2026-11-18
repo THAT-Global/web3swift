@@ -62,20 +62,34 @@ public final class ChainLiveCenter: NSObject, MinedTxWSClientDelegate {
 
     // MARK: Init
 
-    public init(chainId: Int, wssURL: URL, hashesOnly: Bool = true, includeRemoved: Bool = false) {
-        self.chainId = chainId
-        self.wssURL = wssURL
+    public convenience init(chainId: Int, wssURL: URL, hashesOnly: Bool = true, includeRemoved: Bool = false) {
+        self.init(hashesOnly: hashesOnly, includeRemoved: includeRemoved, client: MinedTxWSClient(chainId: chainId, wssURL: wssURL))
+    }
+
+    /// The center over a given client: the reconnect cells' seam.
+    init(hashesOnly: Bool = true, includeRemoved: Bool = false, client: MinedTxWSClient) {
+        self.chainId = client.chainId
+        self.wssURL = client.wssURL
         self.hashesOnly = hashesOnly
         self.includeRemoved = includeRemoved
-        self.client = MinedTxWSClient(chainId: chainId, wssURL: wssURL)
+        self.client = client
         super.init()
         self.client.delegate = self
     }
 
+    /// The socket stopped reconnecting after its attempts in a row never opened (`MinedTxWSClient.hasGivenUp`); the
+    /// next `start` — an arming, a wait, a return to the foreground — begins again. The watches are kept.
+    public var socketHasGivenUp: Bool { client.hasGivenUp }
+
     // MARK: Lifecycle
 
     public func start() {
-        guard !started else { return }
+        guard !started else {
+            // Started, and the socket gave up: this start is the ask that begins again. A socket that is up, in
+            // flight or waiting out its back-off is left as it is.
+            if client.hasGivenUp { client.connect() }
+            return
+        }
         started = true
         client.connect()
         if !watchSet.isEmpty { applySubscriptionIfNeeded() }
@@ -101,9 +115,11 @@ public final class ChainLiveCenter: NSObject, MinedTxWSClientDelegate {
         client.disconnect()
     }
 
-    /// Back to the foreground: reconnect, and every watch the center holds goes back on the socket.
+    /// Back to the foreground: reconnect, and every watch the center holds goes back on the socket. A center that was
+    /// never suspended (the app went inactive, not to the background) restarts only a socket that gave up.
     public func resume() {
-        guard !started, !watchSet.isEmpty || logWatch != nil else { return }
+        guard !started else { start(); return }
+        guard !watchSet.isEmpty || logWatch != nil else { return }
         start()
         applySubscriptionIfNeeded()
         applyLogSubscriptionIfNeeded()

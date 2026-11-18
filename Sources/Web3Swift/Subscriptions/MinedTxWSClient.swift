@@ -127,19 +127,46 @@ public final class WeakBox<T: AnyObject>: @unchecked Sendable {
 
 public final class MinedTxWSDelegateProxy: NSObject, URLSessionWebSocketDelegate, @unchecked Sendable {
     weak var owner: MinedTxWSClient?
-    public init(owner: MinedTxWSClient) { self.owner = owner }
+    /// The client's socket attempt this proxy serves: its events reach the client checked against the attempt the
+    /// client is on, so an earlier socket's late close never tears down a newer one. Nil for a proxy made outside the
+    /// client, whose open and close reach it unchecked, as they always did.
+    let attempt: UInt64?
+
+    public init(owner: MinedTxWSClient) {
+        self.owner = owner
+        self.attempt = nil
+    }
+
+    init(owner: MinedTxWSClient, attempt: UInt64) {
+        self.owner = owner
+        self.attempt = attempt
+    }
 
     public func urlSession(_ session: URLSession,
                            webSocketTask: URLSessionWebSocketTask,
                            didOpenWithProtocol proto: String?) {
-        Task { @MainActor [weak owner] in owner?.handleDidOpen() }
+        Task { @MainActor [weak owner, attempt] in
+            guard let owner else { return }
+            if let attempt { owner.socketDidOpen(attempt: attempt) } else { owner.handleDidOpen() }
+        }
     }
 
     public func urlSession(_ session: URLSession,
                            webSocketTask: URLSessionWebSocketTask,
                            didCloseWith closeCode: URLSessionWebSocketTask.CloseCode,
                            reason: Data?) {
-        Task { @MainActor [weak owner] in owner?.handleDidClose() }
+        Task { @MainActor [weak owner, attempt] in
+            guard let owner else { return }
+            if let attempt { owner.socketDidEnd(attempt: attempt) } else { owner.handleDidClose() }
+        }
+    }
+
+    /// The task finished. A refused handshake (401 for a rotated key, 429 for a plan cap) arrives here and nowhere
+    /// else: no open, no close, so before the bounded reconnect it left the client holding a dead socket. A socket
+    /// that opened ends here too, after its close; the client has handled that attempt by then and ignores this.
+    public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        guard let attempt else { return }
+        Task { @MainActor [weak owner] in owner?.socketDidEnd(attempt: attempt) }
     }
 }
 
@@ -160,9 +187,36 @@ public final class MinedTxWSClient: NSObject {
     private var backoff: TimeInterval = 1.0
     private var heartbeatTask: Task<Void, Never>?
 
+    // MARK: Bounded reconnect
+
+    /// Attempts in a row that may end before their socket opens before the client stops reconnecting: 5 is the
+    /// back-off's 1, 2, 4, 8 s after a refused start (16 s more after a drop), about half a minute.
+    nonisolated public static let defaultMaxConsecutiveFailures = 5
+    public let maxConsecutiveFailures: Int
+    /// Attempts in a row that ended before their socket opened; an open puts it back to zero.
+    private(set) var consecutiveFailures = 0
+    /// The client stopped reconnecting: `maxConsecutiveFailures` attempts in a row never opened. It stays closed until
+    /// `connect()` asks again, which begins afresh; the subscriptions are kept and go on the next socket that opens.
+    public private(set) var hasGivenUp = false
+    /// The back-off's wait for the next attempt, while one is pending. An explicit `connect()` or `disconnect()`
+    /// cancels it, and a wait that wakes cancelled stands down.
+    private(set) var reconnectTask: Task<Void, Never>?
+    /// The socket attempt in flight or open, counted from 1; nil when there is none. Every socket event names the
+    /// attempt it came from, and one that is not this attempt's is stale.
+    private(set) var currentAttempt: UInt64?
+    private var attemptCount: UInt64 = 0
+
+    /// Opens one attempt's socket with the proxy as its delegate and answers its session and task. A seam for the
+    /// reconnect cells, whose opener records the attempt and answers nil, then drives its events itself.
+    typealias SocketOpener = @MainActor (_ url: URL, _ delegate: MinedTxWSDelegateProxy) -> (URLSession, URLSessionWebSocketTask)?
+    /// The back-off's wait. A seam for the reconnect cells' virtual clock.
+    typealias Sleeper = @Sendable (_ seconds: TimeInterval) async -> Void
+    private let openSocket: SocketOpener
+    private let backoffSleep: Sleeper
+
     private var nextRequestID = 1
     /// A subscribe request in flight, by its JSON-RPC id, to the kind it is for.
-    private var pendingSubscribe: [Int: SubscriptionKind] = [:]
+    private(set) var pendingSubscribe: [Int: SubscriptionKind] = [:]
     /// One subscription per kind: its filter (re-applied on reconnect), the key that dedupes a repeat, and
     /// the node's id once it answered.
     private struct Subscription {
@@ -179,46 +233,97 @@ public final class MinedTxWSClient: NSObject {
 
     public var subIdMeta: [String: Any] = [:]
 
-    public init(chainId: Int, wssURL: URL) {
+    public convenience init(chainId: Int, wssURL: URL, maxConsecutiveFailures: Int = MinedTxWSClient.defaultMaxConsecutiveFailures) {
+        self.init(chainId: chainId, wssURL: wssURL, maxConsecutiveFailures: maxConsecutiveFailures,
+                  openSocket: MinedTxWSClient.urlSessionSocket, sleep: MinedTxWSClient.taskSleep)
+    }
+
+    init(chainId: Int, wssURL: URL, maxConsecutiveFailures: Int, openSocket: @escaping SocketOpener, sleep: @escaping Sleeper) {
         self.chainId = chainId
         self.wssURL = wssURL
+        self.maxConsecutiveFailures = max(1, maxConsecutiveFailures)
+        self.openSocket = openSocket
+        self.backoffSleep = sleep
         super.init()
+    }
+
+    static func urlSessionSocket(_ url: URL, _ delegate: MinedTxWSDelegateProxy) -> (URLSession, URLSessionWebSocketTask)? {
+        let cfg = URLSessionConfiguration.default
+        cfg.waitsForConnectivity = true
+        let session = URLSession(configuration: cfg, delegate: delegate, delegateQueue: nil)
+        let task = session.webSocketTask(with: url)
+        task.resume()
+        return (session, task)
+    }
+
+    static let taskSleep: Sleeper = { seconds in
+        try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
     }
 
     // MARK: Lifecycle
 
+    /// An explicit start, and a fresh one: a pending back-off stands down, the count of attempts that never opened
+    /// and the back-off begin again — so a client that gave up tries again — and an attempt opens now unless one is
+    /// in flight or open.
     public func connect() {
-        guard ws == nil else { return }
+        reconnectTask?.cancel()
+        reconnectTask = nil
+        consecutiveFailures = 0
+        hasGivenUp = false
+        backoff = 1.0
         isClosing = false
+        guard currentAttempt == nil else { return }
+        beginAttempt()
+    }
 
-        let cfg = URLSessionConfiguration.default
-        cfg.waitsForConnectivity = true
-
-        let proxy = MinedTxWSDelegateProxy(owner: self)
+    /// One socket attempt: the explicit start's, or the back-off's.
+    private func beginAttempt() {
+        attemptCount &+= 1
+        let attempt = attemptCount
+        currentAttempt = attempt
+        let proxy = MinedTxWSDelegateProxy(owner: self, attempt: attempt)
         delegateProxy = proxy
-
-        let session = URLSession(configuration: cfg, delegate: proxy, delegateQueue: nil)
-        self.session = session
-
-        let task = session.webSocketTask(with: wssURL)
-        ws = task
-        task.resume()
+        guard let socket = openSocket(wssURL, proxy) else { return }
+        session = socket.0
+        ws = socket.1
     }
 
     public func disconnect() {
         isClosing = true
+        reconnectTask?.cancel()
+        reconnectTask = nil
+        hasGivenUp = false
         stopHeartbeat()
         ws?.cancel(with: .goingAway, reason: nil)
         ws = nil
         session?.invalidateAndCancel()
         session = nil
         hasActiveReceive = false
+        // The cancelled socket's own close no longer reaches the client (it names an attempt that has ended): the
+        // state it set is set here.
+        currentAttempt = nil
+        isOpen = false
         delegate?.minedTxWS(self, didChange: false)
+    }
+
+    /// The socket of the attempt the client is on opened; an earlier attempt's open is stale.
+    func socketDidOpen(attempt: UInt64) {
+        guard attempt == currentAttempt else { return }
+        handleDidOpen()
+    }
+
+    /// The socket of the attempt the client is on ended — closed, dropped, or refused before it opened. An attempt
+    /// ends once: its later events (a close's completion, the receive that failed with it) are stale.
+    func socketDidEnd(attempt: UInt64) {
+        guard attempt == currentAttempt else { return }
+        handleDidClose()
     }
 
     public func handleDidOpen() {
         isOpen = true
         backoff = 1.0
+        consecutiveFailures = 0
+        hasGivenUp = false
         listen()
         startHeartbeat()
         delegate?.minedTxWS(self, didChange: true)
@@ -230,11 +335,15 @@ public final class MinedTxWSClient: NSObject {
     }
 
     public func handleDidClose() {
+        let opened = isOpen
         isOpen = false
-        scheduleReconnect()
+        scheduleReconnect(afterOpen: opened)
     }
 
-    private func scheduleReconnect() {
+    /// The socket ended: it goes, and the next attempt waits the back-off — unless `maxConsecutiveFailures` attempts
+    /// in a row have now ended without opening, and the client gives up until an explicit `connect()`. A socket that
+    /// had opened is a drop, not a failure: its reconnects count from zero.
+    private func scheduleReconnect(afterOpen opened: Bool) {
         guard !isClosing else { return }
         stopHeartbeat()
         ws?.cancel(with: .goingAway, reason: nil)
@@ -242,16 +351,25 @@ public final class MinedTxWSClient: NSObject {
         session?.invalidateAndCancel()
         session = nil
         hasActiveReceive = false
+        currentAttempt = nil
         for kind in SubscriptionKind.allCases { subscriptions[kind]?.subId = nil }
         pendingSubscribe = [:]
+
+        if !opened { consecutiveFailures += 1 }
+        guard consecutiveFailures < maxConsecutiveFailures else {
+            hasGivenUp = true
+            return
+        }
 
         let delay = min(backoff, 30.0)
         backoff = min(backoff * 2, 30.0)
 
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-            guard !self.isClosing else { return }
-            self.connect()
+        reconnectTask?.cancel()
+        reconnectTask = Task { @MainActor [weak self, backoffSleep = self.backoffSleep] in
+            await backoffSleep(delay)
+            guard !Task.isCancelled, let self, !self.isClosing, self.currentAttempt == nil else { return }
+            self.reconnectTask = nil
+            self.beginAttempt()
         }
     }
 
@@ -280,9 +398,11 @@ public final class MinedTxWSClient: NSObject {
         hasActiveReceive = true
 
         let box = WeakBox(self)
+        let attempt = currentAttempt
         ws.receive { result in
             Task { @MainActor in
-                guard let owner = box.value else { return }
+                // A socket that has gone fails its receive as it goes: the attempt it named has ended.
+                guard let owner = box.value, owner.currentAttempt == attempt else { return }
                 owner.hasActiveReceive = false
                 owner.handleReceive(result)
             }
@@ -292,7 +412,7 @@ public final class MinedTxWSClient: NSObject {
     private func handleReceive(_ result: Result<URLSessionWebSocketTask.Message, Error>) {
         switch result {
         case .failure:
-            scheduleReconnect()
+            handleDidClose()
 
         case .success(let msg):
             switch msg {
