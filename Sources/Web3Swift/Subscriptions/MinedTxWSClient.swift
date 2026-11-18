@@ -189,14 +189,20 @@ public final class MinedTxWSClient: NSObject {
 
     // MARK: Bounded reconnect
 
-    /// Attempts in a row that may end before their socket opens before the client stops reconnecting: 5 is the
-    /// back-off's 1, 2, 4, 8 s after a refused start (16 s more after a drop), about half a minute.
+    /// Attempts in a row that may end before the node answers on them before the client stops reconnecting. An attempt
+    /// is answered by the first frame its socket delivers — in practice the reply to the subscribe its open sends — so
+    /// an endpoint that refuses the handshake and one that accepts it and then closes are both failures; an open alone
+    /// proves the upgrade, not that the node serves us. 5 is the back-off's 1, 2, 4, 8 s after a start (about 15 s),
+    /// and 1, 2, 4, 8, 16 s after an answered socket drops (about 31 s).
     nonisolated public static let defaultMaxConsecutiveFailures = 5
     public let maxConsecutiveFailures: Int
-    /// Attempts in a row that ended before their socket opened; an open puts it back to zero.
+    /// Attempts in a row that ended before the node answered on them; the first frame on an attempt puts it back to zero.
     private(set) var consecutiveFailures = 0
-    /// The client stopped reconnecting: `maxConsecutiveFailures` attempts in a row never opened. It stays closed until
-    /// `connect()` asks again, which begins afresh; the subscriptions are kept and go on the next socket that opens.
+    /// Whether the node has answered on the current attempt: its first frame came in.
+    private(set) var currentAttemptAnswered = false
+    /// The client stopped reconnecting: `maxConsecutiveFailures` attempts in a row ended unanswered. It stays closed
+    /// until `connect()` asks again, which begins afresh; the subscriptions are kept and go on the next socket that opens.
+    /// While it is set there is no attempt and no back-off wait: only `connect()` begins one again.
     public private(set) var hasGivenUp = false
     /// The back-off's wait for the next attempt, while one is pending. An explicit `connect()` or `disconnect()`
     /// cancels it, and a wait that wakes cancelled stands down.
@@ -262,7 +268,7 @@ public final class MinedTxWSClient: NSObject {
 
     // MARK: Lifecycle
 
-    /// An explicit start, and a fresh one: a pending back-off stands down, the count of attempts that never opened
+    /// An explicit start, and a fresh one: a pending back-off stands down, the count of attempts that ended unanswered
     /// and the back-off begin again — so a client that gave up tries again — and an attempt opens now unless one is
     /// in flight or open.
     public func connect() {
@@ -281,6 +287,7 @@ public final class MinedTxWSClient: NSObject {
         attemptCount &+= 1
         let attempt = attemptCount
         currentAttempt = attempt
+        currentAttemptAnswered = false
         let proxy = MinedTxWSDelegateProxy(owner: self, attempt: attempt)
         delegateProxy = proxy
         guard let socket = openSocket(wssURL, proxy) else { return }
@@ -302,6 +309,7 @@ public final class MinedTxWSClient: NSObject {
         // The cancelled socket's own close no longer reaches the client (it names an attempt that has ended): the
         // state it set is set here.
         currentAttempt = nil
+        currentAttemptAnswered = false
         isOpen = false
         delegate?.minedTxWS(self, didChange: false)
     }
@@ -319,11 +327,19 @@ public final class MinedTxWSClient: NSObject {
         handleDidClose()
     }
 
+    /// A receive on an attempt's socket completed: a frame, or the failure its socket ended with. One on an attempt
+    /// that has ended is stale — a socket that has gone fails its receive as it goes.
+    func socketDidReceive(_ result: Result<URLSessionWebSocketTask.Message, Error>, attempt: UInt64) {
+        guard attempt == currentAttempt else { return }
+        hasActiveReceive = false
+        handleReceive(result)
+    }
+
+    /// The socket is open. Not yet a success: the count and the back-off wait for the node's first frame on the
+    /// attempt (the reply to the subscribe sent here). A socket with nothing to subscribe stays open uncounted; only
+    /// its end, unanswered, counts.
     public func handleDidOpen() {
         isOpen = true
-        backoff = 1.0
-        consecutiveFailures = 0
-        hasGivenUp = false
         listen()
         startHeartbeat()
         delegate?.minedTxWS(self, didChange: true)
@@ -335,15 +351,14 @@ public final class MinedTxWSClient: NSObject {
     }
 
     public func handleDidClose() {
-        let opened = isOpen
         isOpen = false
-        scheduleReconnect(afterOpen: opened)
+        scheduleReconnect(answered: currentAttemptAnswered)
     }
 
     /// The socket ended: it goes, and the next attempt waits the back-off — unless `maxConsecutiveFailures` attempts
-    /// in a row have now ended without opening, and the client gives up until an explicit `connect()`. A socket that
-    /// had opened is a drop, not a failure: its reconnects count from zero.
-    private func scheduleReconnect(afterOpen opened: Bool) {
+    /// in a row have now ended unanswered, and the client gives up until an explicit `connect()`. An attempt the node
+    /// answered on is a drop, not a failure: its reconnects count from zero, the first after 1 s.
+    private func scheduleReconnect(answered: Bool) {
         guard !isClosing else { return }
         stopHeartbeat()
         ws?.cancel(with: .goingAway, reason: nil)
@@ -352,10 +367,13 @@ public final class MinedTxWSClient: NSObject {
         session = nil
         hasActiveReceive = false
         currentAttempt = nil
+        currentAttemptAnswered = false
         for kind in SubscriptionKind.allCases { subscriptions[kind]?.subId = nil }
         pendingSubscribe = [:]
+        reconnectTask?.cancel()
+        reconnectTask = nil
 
-        if !opened { consecutiveFailures += 1 }
+        if !answered { consecutiveFailures += 1 }
         guard consecutiveFailures < maxConsecutiveFailures else {
             hasGivenUp = true
             return
@@ -364,7 +382,6 @@ public final class MinedTxWSClient: NSObject {
         let delay = min(backoff, 30.0)
         backoff = min(backoff * 2, 30.0)
 
-        reconnectTask?.cancel()
         reconnectTask = Task { @MainActor [weak self, backoffSleep = self.backoffSleep] in
             await backoffSleep(delay)
             guard !Task.isCancelled, let self, !self.isClosing, self.currentAttempt == nil else { return }
@@ -394,18 +411,13 @@ public final class MinedTxWSClient: NSObject {
     // MARK: Receive loop
 
     private func listen() {
-        guard let ws, !hasActiveReceive else { return }
+        // A socket is always an attempt's: `ws` is set and cleared with `currentAttempt`.
+        guard let ws, let attempt = currentAttempt, !hasActiveReceive else { return }
         hasActiveReceive = true
 
         let box = WeakBox(self)
-        let attempt = currentAttempt
         ws.receive { result in
-            Task { @MainActor in
-                // A socket that has gone fails its receive as it goes: the attempt it named has ended.
-                guard let owner = box.value, owner.currentAttempt == attempt else { return }
-                owner.hasActiveReceive = false
-                owner.handleReceive(result)
-            }
+            Task { @MainActor in box.value?.socketDidReceive(result, attempt: attempt) }
         }
     }
 
@@ -415,6 +427,12 @@ public final class MinedTxWSClient: NSObject {
             handleDidClose()
 
         case .success(let msg):
+            if !currentAttemptAnswered {
+                // The node answered on this attempt: it serves us, and the reconnect count and back-off start again.
+                currentAttemptAnswered = true
+                consecutiveFailures = 0
+                backoff = 1.0
+            }
             switch msg {
             case .data(let data):  handle(data)
             case .string(let str): handle(Data(str.utf8))

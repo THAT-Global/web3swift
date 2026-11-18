@@ -77,8 +77,9 @@ public final class ChainLiveCenter: NSObject, MinedTxWSClientDelegate {
         self.client.delegate = self
     }
 
-    /// The socket stopped reconnecting after its attempts in a row never opened (`MinedTxWSClient.hasGivenUp`); the
-    /// next `start` — an arming, a wait, a return to the foreground — begins again. The watches are kept.
+    /// The socket stopped reconnecting after its attempts in a row ended before the node answered on them
+    /// (`MinedTxWSClient.hasGivenUp`); the next `start` — an arming, a watch added, a wait, a return to the foreground —
+    /// begins again. The watches are kept.
     public var socketHasGivenUp: Bool { client.hasGivenUp }
 
     // MARK: Lifecycle

@@ -3,14 +3,15 @@
 //  localTests
 //
 //  The 4.8.0 performance pass, finding 16 (the fork half): a mined-transactions socket reconnects with a bounded
-//  back-off. After `maxConsecutiveFailures` attempts in a row that never opened (a refused handshake — a rotated key's
-//  401, a plan cap's 429 — completes the task and nothing else) the client stops and stays closed until an explicit
-//  `connect()`, which begins afresh; an open puts the count back to zero, so a socket that worked and dropped
-//  reconnects as it always did. The watches survive giving up and go on the next socket that opens.
+//  back-off. After `maxConsecutiveFailures` attempts in a row that ended before the node answered on them — a refused
+//  handshake (a rotated key's 401, a plan cap's 429 completes the task and nothing else), or an upgrade accepted and
+//  then closed — the client stops and stays closed until an explicit `connect()`, which begins afresh. The node's first
+//  frame on an attempt puts the count back to zero, so a socket that served and dropped reconnects as it always did;
+//  an open alone does not. The watches survive giving up and go on the next socket that opens.
 //
 //  No socket and no real time: the client's opener records each attempt and answers nil, the cells drive the attempt's
-//  events (`socketDidOpen` / `socketDidEnd`, what the delegate proxy calls), and the back-off waits on a virtual clock
-//  that either passes at once or holds until the cell advances it.
+//  events (`socketDidOpen` / `socketDidReceive` / `socketDidEnd`, what the delegate proxy and the receive loop call),
+//  and the back-off waits on a virtual clock that either passes at once or holds until the cell advances it.
 //
 
 import Foundation
@@ -77,16 +78,19 @@ struct ReconnectHarness {
 
     var attempts: Int { opener.attempts.count }
 
-    /// The attempt in flight is refused before it opens — its task completes, nothing else — and, on a clock that
-    /// passes at once, the back-off's wait runs to its end (the next attempt, or none once the client gave up).
-    func refuse() async {
+    /// The attempt in flight ends — refused before it opened, or closed — and, on a clock that passes at once, the
+    /// back-off's wait runs to its end (the next attempt, or none once the client gave up).
+    func end() async {
         guard let attempt = client.currentAttempt else {
-            Issue.record("no attempt in flight to refuse")
+            Issue.record("no attempt in flight to end")
             return
         }
         client.socketDidEnd(attempt: attempt)
         await client.reconnectTask?.value
     }
+
+    /// The attempt in flight is refused before it opens: its task completes, nothing else.
+    func refuse() async { await end() }
 
     /// The attempt in flight opens.
     func open() {
@@ -95,6 +99,15 @@ struct ReconnectHarness {
             return
         }
         client.socketDidOpen(attempt: attempt)
+    }
+
+    /// A frame from the node on `attempt` (the one in flight when nil): what the receive loop delivers.
+    func frame(on attempt: UInt64? = nil) {
+        guard let attempt = attempt ?? client.currentAttempt else {
+            Issue.record("no attempt for the frame")
+            return
+        }
+        client.socketDidReceive(.success(.string(#"{"jsonrpc":"2.0","id":0,"result":"0xS"}"#)), attempt: attempt)
     }
 
     /// Lets the main actor run what is queued until `done`, a bounded number of turns: never a hang.
@@ -128,21 +141,88 @@ struct MinedTxWSReconnectCapTests {
         h.client.disconnect()
     }
 
-    @Test("an open before the cap puts the count back to zero: a drop reconnects at 1 s, and its refusals get the full cap, waits 1, 2, 4, 8, 16 s")
-    func anOpenResetsTheCount() async {
+    @Test("an endpoint that accepts the upgrade and then closes gets exactly `cap` attempts — waits 1, 2, 4, 8 s at the default — then none: an open is not an answer", arguments: [1, 3, 5])
+    func acceptThenCloseStopsAtTheCap(cap: Int) async {
+        let h = ReconnectHarness(cap: cap)
+        h.client.connect()
+        for _ in 0..<cap {
+            h.open()
+            await h.end()
+        }
+        #expect(h.attempts == cap, "attempts: \(h.opener.attempts)")
+        #expect(h.clock.waits == Array([1.0, 2, 4, 8, 16].prefix(cap - 1)), "waits: \(h.clock.waits)")
+        #expect(h.client.hasGivenUp && h.client.reconnectTask == nil && h.client.currentAttempt == nil)
+        _ = await h.settle { false }
+        #expect(h.attempts == cap)
+        h.client.disconnect()
+    }
+
+    @Test("the node's first frame on an attempt puts the count back to zero, the open alone does not: a served socket's drop reconnects at 1 s, and its refusals get the full cap, waits 1, 2, 4, 8, 16 s")
+    func aFrameResetsTheCount() async {
         let h = ReconnectHarness()
         h.client.connect()
         for _ in 0..<3 { await h.refuse() }
         #expect(h.attempts == 4 && h.client.consecutiveFailures == 3 && !h.client.hasGivenUp)
         h.open()
-        #expect(h.client.consecutiveFailures == 0)
-        // The socket worked and dropped: a drop is not a failure, and the back-off starts again from 1 s.
-        await h.refuse()
+        #expect(h.client.consecutiveFailures == 3, "open, unanswered: the count stands")
+        h.frame()
+        #expect(h.client.consecutiveFailures == 0 && h.client.currentAttemptAnswered)
+        // The socket served and dropped: a drop is not a failure, and the back-off starts again from 1 s.
+        await h.end()
         #expect(h.attempts == 5 && h.client.consecutiveFailures == 0)
         for _ in 0..<5 { await h.refuse() }
         #expect(h.attempts == 9, "the drop's reconnects: five more attempts — \(h.opener.attempts)")
         #expect(h.clock.waits == [1, 2, 4, 1, 2, 4, 8, 16], "waits: \(h.clock.waits)")
         #expect(h.client.hasGivenUp)
+        h.client.disconnect()
+    }
+
+    @Test("a socket that opens, is answered and drops, again and again, never gives up, and each reconnect waits 1 s")
+    func servedSocketsNeverGiveUp() async {
+        let h = ReconnectHarness()
+        h.client.connect()
+        for _ in 0..<12 {
+            h.open()
+            h.frame()
+            await h.end()
+        }
+        #expect(h.attempts == 13, "attempts: \(h.opener.attempts)")
+        #expect(h.clock.waits == Array(repeating: 1.0, count: 12), "waits: \(h.clock.waits)")
+        #expect(!h.client.hasGivenUp && h.client.consecutiveFailures == 0)
+        h.client.disconnect()
+    }
+
+    @Test("a socket open with nothing to subscribe — no request, so no frame — stays open and is not counted; only its end, unanswered, counts")
+    func openWithoutAFrameIsNotCounted() async {
+        let h = ReconnectHarness()
+        h.client.connect()
+        for _ in 0..<2 { await h.refuse() }
+        h.open()
+        #expect(h.client.pendingSubscribe.isEmpty, "nothing to subscribe: nothing asked, nothing to answer")
+        _ = await h.settle { false }
+        #expect(h.client.currentAttempt == 3 && h.client.reconnectTask == nil, "not torn down")
+        #expect(h.client.consecutiveFailures == 2 && !h.client.currentAttemptAnswered, "neither counted nor reset")
+        await h.end()
+        #expect(h.client.consecutiveFailures == 3 && h.clock.waits == [1, 2, 4], "its unanswered end counted: \(h.clock.waits)")
+        h.client.disconnect()
+    }
+
+    @Test("a frame on an attempt that has ended is stale: it does not reset the count")
+    func aStaleFrameDoesNotResetTheCount() async {
+        let h = ReconnectHarness()
+        h.client.connect()
+        h.open()
+        await h.end()
+        await h.refuse()
+        #expect(h.attempts == 3 && h.client.consecutiveFailures == 2)
+        h.frame(on: 1)
+        h.frame(on: 2)
+        #expect(h.client.consecutiveFailures == 2 && !h.client.currentAttemptAnswered)
+        h.open()
+        h.frame(on: 2)
+        #expect(h.client.consecutiveFailures == 2 && !h.client.currentAttemptAnswered, "the open attempt is 3")
+        await h.end()
+        #expect(h.client.consecutiveFailures == 3 && h.clock.waits == [1, 2, 4], "waits: \(h.clock.waits)")
         h.client.disconnect()
     }
 
@@ -213,17 +293,18 @@ struct MinedTxWSReconnectCapTests {
         #expect(h.client.subscribeLogs(address: "0xE", topics: [nil]) == nil, "not open: the filter is recorded, nothing sent")
     }
 
-    @Test("an attempt ends once: a dropped socket's later events (its close's completion, the failed receive) and an old socket's open are stale")
+    @Test("an attempt ends once: a closed socket's later events (its close's completion, the failed receive) and an old socket's open are stale")
     func anAttemptEndsOnce() async {
         let h = ReconnectHarness()
         h.client.connect()
         h.open()
-        await h.refuse()   // the drop: the close
+        await h.end()   // the close, unanswered: one failure
         #expect(h.attempts == 2 && h.client.currentAttempt == 2)
-        // The same socket's completion arrives after its close, as URLSession sends it.
+        // The same socket's completion and its failed receive arrive after its close, as URLSession sends them.
         h.client.socketDidEnd(attempt: 1)
-        #expect(h.client.reconnectTask == nil && h.client.currentAttempt == 2 && h.client.consecutiveFailures == 0)
-        #expect(h.clock.waits == [1], "one reconnect for one drop: \(h.clock.waits)")
+        h.client.socketDidReceive(.failure(URLError(.networkConnectionLost)), attempt: 1)
+        #expect(h.client.reconnectTask == nil && h.client.currentAttempt == 2 && h.client.consecutiveFailures == 1)
+        #expect(h.clock.waits == [1], "one reconnect for one close: \(h.clock.waits)")
         h.client.socketDidOpen(attempt: 1)
         #expect(h.client.subscribeLogs(address: "0xE", topics: [nil]) == nil, "an old socket's open does not open the client")
         h.client.disconnect()
@@ -306,7 +387,7 @@ struct ChainLiveCenterReconnectCapTests {
         #expect(Set(h.client.pendingSubscribe.values) == [.minedTransactions, .logs], "both watches on the new socket")
     }
 
-    @Test("a wait's start begins again on a socket that gave up")
+    @Test("a wait's start — for a log, for a mined hash — begins again on a socket that gave up")
     func waitRevivesAGivenUpSocket() async {
         let h = ReconnectHarness(cap: 1)
         let center = ChainLiveCenter(client: h.client)
@@ -316,6 +397,36 @@ struct ChainLiveCenterReconnectCapTests {
         #expect(center.socketHasGivenUp && h.attempts == 1)
         _ = await center.waitForLog(timeout: 0.05) { _ in true }
         #expect(h.attempts == 2 && !center.socketHasGivenUp)
+        await h.refuse()
+        #expect(center.socketHasGivenUp)
+        _ = await center.waitForMinedHash("0x" + String(repeating: "ab", count: 32), from: "0xAbC", timeout: 0.05)
+        #expect(h.attempts == 3 && !center.socketHasGivenUp)
+    }
+
+    @Test("a center with no watches: its open socket asks nothing and is not counted; five unanswered closes in a row give up, and a watch added begins again")
+    func idleCenterGivesUpAndAWatchRevivesIt() async throws {
+        let h = ReconnectHarness()
+        let center = ChainLiveCenter(client: h.client)
+        defer { center.stop() }
+        center.start()
+        h.open()
+        #expect(h.client.pendingSubscribe.isEmpty, "no watch: no request, no frame to come")
+        _ = await h.settle { false }
+        #expect(h.client.currentAttempt == 1 && h.client.consecutiveFailures == 0 && !center.socketHasGivenUp, "open and idle: left as it is")
+        await h.end()
+        for _ in 0..<4 {
+            h.open()
+            await h.end()
+        }
+        #expect(center.socketHasGivenUp && h.attempts == 5 && h.clock.waits == [1, 2, 4, 8], "waits: \(h.clock.waits)")
+
+        center.addAddressWatch(from: "0xAbC")
+        #expect(h.attempts == 6 && !center.socketHasGivenUp, "the watch added began again")
+        h.open()
+        let (id, kind) = try #require(h.client.pendingSubscribe.first)
+        #expect(kind == .minedTransactions && h.client.pendingSubscribe.count == 1)
+        h.client.socketDidReceive(.success(.string(#"{"jsonrpc":"2.0","id":\#(id),"result":"0xM"}"#)), attempt: 6)
+        #expect(h.client.currentAttemptAnswered && h.client.consecutiveFailures == 0 && h.client.currentSubscriptionId == "0xM")
     }
 
     @Test("resume on a center never suspended restarts only a socket that gave up; a suspension during the back-off schedules nothing, and resume begins afresh")
