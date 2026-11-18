@@ -101,13 +101,22 @@ struct ReconnectHarness {
         client.socketDidOpen(attempt: attempt)
     }
 
-    /// A frame from the node on `attempt` (the one in flight when nil): what the receive loop delivers.
-    func frame(on attempt: UInt64? = nil) {
+    /// A reply that shows the node serving us.
+    nonisolated static let resultFrame = #"{"jsonrpc":"2.0","id":0,"result":"0xS"}"#
+    /// A gateway's error reply, the kind it sends before it closes.
+    nonisolated static let errorFrame = #"{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"capacity exceeded"}}"#
+
+    /// A text frame from the node on `attempt` (the one in flight when nil): what the receive loop delivers.
+    func frame(_ text: String = ReconnectHarness.resultFrame, on attempt: UInt64? = nil) {
+        deliver(.string(text), on: attempt)
+    }
+
+    func deliver(_ message: URLSessionWebSocketTask.Message, on attempt: UInt64? = nil) {
         guard let attempt = attempt ?? client.currentAttempt else {
             Issue.record("no attempt for the frame")
             return
         }
-        client.socketDidReceive(.success(.string(#"{"jsonrpc":"2.0","id":0,"result":"0xS"}"#)), attempt: attempt)
+        client.socketDidReceive(.success(message), attempt: attempt)
     }
 
     /// Lets the main actor run what is queued until `done`, a bounded number of turns: never a hang.
@@ -223,6 +232,80 @@ struct MinedTxWSReconnectCapTests {
         #expect(h.client.consecutiveFailures == 2 && !h.client.currentAttemptAnswered, "the open attempt is 3")
         await h.end()
         #expect(h.client.consecutiveFailures == 3 && h.clock.waits == [1, 2, 4], "waits: \(h.clock.waits)")
+        h.client.disconnect()
+    }
+
+    @Test("an endpoint that replies with an error and then closes gets exactly `cap` attempts — waits 1, 2, 4, 8 s at the default — then none: an error is not an answer", arguments: [1, 3, 5])
+    func errorThenCloseStopsAtTheCap(cap: Int) async {
+        let h = ReconnectHarness(cap: cap)
+        h.client.connect()
+        for _ in 0..<cap {
+            h.open()
+            h.frame(ReconnectHarness.errorFrame)
+            await h.end()
+        }
+        #expect(h.attempts == cap, "attempts: \(h.opener.attempts)")
+        #expect(h.clock.waits == Array([1.0, 2, 4, 8, 16].prefix(cap - 1)), "waits: \(h.clock.waits)")
+        #expect(h.client.hasGivenUp && h.client.reconnectTask == nil && h.client.currentAttempt == nil)
+        _ = await h.settle { false }
+        #expect(h.attempts == cap)
+        h.client.disconnect()
+    }
+
+    @Test("an error reply leaves the attempt unanswered and its socket open; one kind's subscribe erring and the other's succeeding answers it — the drop reconnects at 1 s, count 0 — and each frame is dispatched as before")
+    func errorThenResultOnTheSameAttemptAnswers() async throws {
+        let h = ReconnectHarness()
+        let delegate = RecordingWSDelegate()
+        h.client.delegate = delegate
+        _ = h.client.subscribeMinedTransactions(filters: [.from("0xAbC")])
+        _ = h.client.subscribeLogs(address: "0xEntry", topics: [["0xsig"], nil, ["0xsender"]])
+        h.client.connect()
+        for _ in 0..<2 { await h.refuse() }
+        h.open()
+        #expect(h.client.currentAttempt == 3)
+        let logsId = try #require(h.client.pendingSubscribe.first { $0.value == .logs }?.key)
+        let minedId = try #require(h.client.pendingSubscribe.first { $0.value == .minedTransactions }?.key)
+
+        h.frame(#"{"jsonrpc":"2.0","id":\#(logsId),"error":{"code":-32000,"message":"capacity exceeded"}}"#)
+        #expect(!h.client.currentAttemptAnswered && h.client.consecutiveFailures == 2, "an error is no answer")
+        #expect(h.client.currentAttempt == 3 && h.client.reconnectTask == nil, "and the socket is left open")
+        h.frame(#"{"jsonrpc":"2.0","id":\#(minedId),"result":"0xM"}"#)
+        #expect(h.client.currentAttemptAnswered && h.client.consecutiveFailures == 0, "the other kind's result answers")
+        #expect(h.client.currentSubscriptionId == "0xM" && h.client.subscriptionId(for: .logs) == nil)
+
+        #expect(delegate.messages.count == 2)
+        if delegate.messages.count == 2 {
+            guard case .raw = delegate.messages[0] else { Issue.record("the error reply: \(delegate.messages[0])"); return }
+            guard case .subscribed(let kind, let rpcID, let subId) = delegate.messages[1] else { Issue.record("\(delegate.messages[1])"); return }
+            #expect(kind == "alchemy_minedTransactions" && rpcID == minedId && subId == "0xM")
+        }
+
+        await h.end()
+        #expect(h.attempts == 4 && h.client.consecutiveFailures == 0, "a drop, not a failure")
+        #expect(h.clock.waits == [1, 2, 1], "the answer reset the back-off: \(h.clock.waits)")
+        h.client.disconnect()
+    }
+
+    @Test("a frame that is not a JSON object — text, bytes, an array — answers nothing and is dispatched as before; a null `error` beside a result is no error")
+    func aFrameThatIsNotJSONDoesNotAnswer() async {
+        let h = ReconnectHarness()
+        let delegate = RecordingWSDelegate()
+        h.client.delegate = delegate
+        h.client.connect()
+        await h.refuse()
+        h.open()
+        h.frame("not json")
+        h.deliver(.data(Data([0xff, 0x00, 0x13])))
+        h.frame("[1,2]")
+        #expect(!h.client.currentAttemptAnswered && h.client.consecutiveFailures == 1)
+        let raw = delegate.messages.filter { if case .raw = $0 { return true }; return false }
+        #expect(delegate.messages.count == 3 && raw.count == 3, "each to .raw, as before: \(delegate.messages)")
+        await h.end()
+        #expect(h.client.consecutiveFailures == 2 && h.clock.waits == [1, 2], "waits: \(h.clock.waits)")
+
+        h.open()
+        h.frame(#"{"jsonrpc":"1.0","id":7,"result":"0x1","error":null}"#)
+        #expect(h.client.currentAttemptAnswered && h.client.consecutiveFailures == 0)
         h.client.disconnect()
     }
 

@@ -190,15 +190,17 @@ public final class MinedTxWSClient: NSObject {
     // MARK: Bounded reconnect
 
     /// Attempts in a row that may end before the node answers on them before the client stops reconnecting. An attempt
-    /// is answered by the first frame its socket delivers — in practice the reply to the subscribe its open sends — so
-    /// an endpoint that refuses the handshake and one that accepts it and then closes are both failures; an open alone
-    /// proves the upgrade, not that the node serves us. 5 is the back-off's 1, 2, 4, 8 s after a start (about 15 s),
-    /// and 1, 2, 4, 8, 16 s after an answered socket drops (about 31 s).
+    /// is answered by the first frame that shows the node serving us (`showsService`) — in practice the reply to the
+    /// subscribe its open sends — so an endpoint that refuses the handshake, one that accepts it and then closes, and
+    /// one that replies with an error and then closes are all failures; an open alone proves the upgrade, not that the
+    /// node serves us. 5 is the back-off's 1, 2, 4, 8 s after a start (about 15 s), and 1, 2, 4, 8, 16 s after an
+    /// answered socket drops (about 31 s).
     nonisolated public static let defaultMaxConsecutiveFailures = 5
     public let maxConsecutiveFailures: Int
-    /// Attempts in a row that ended before the node answered on them; the first frame on an attempt puts it back to zero.
+    /// Attempts in a row that ended before the node answered on them; the first serving frame on an attempt puts it
+    /// back to zero.
     private(set) var consecutiveFailures = 0
-    /// Whether the node has answered on the current attempt: its first frame came in.
+    /// Whether the node has answered on the current attempt: a frame that shows it serving us came in.
     private(set) var currentAttemptAnswered = false
     /// The client stopped reconnecting: `maxConsecutiveFailures` attempts in a row ended unanswered. It stays closed
     /// until `connect()` asks again, which begins afresh; the subscriptions are kept and go on the next socket that opens.
@@ -335,8 +337,8 @@ public final class MinedTxWSClient: NSObject {
         handleReceive(result)
     }
 
-    /// The socket is open. Not yet a success: the count and the back-off wait for the node's first frame on the
-    /// attempt (the reply to the subscribe sent here). A socket with nothing to subscribe stays open uncounted; only
+    /// The socket is open. Not yet a success: the count and the back-off wait for the node's first serving frame on
+    /// the attempt (the reply to the subscribe sent here; an error reply is not one). A socket with nothing to subscribe stays open uncounted; only
     /// its end, unanswered, counts.
     public func handleDidOpen() {
         isOpen = true
@@ -427,28 +429,52 @@ public final class MinedTxWSClient: NSObject {
             handleDidClose()
 
         case .success(let msg):
-            if !currentAttemptAnswered {
+            let data: Data
+            switch msg {
+            case .data(let bytes): data = bytes
+            case .string(let str): data = Data(str.utf8)
+            @unknown default:
+                listen()
+                return
+            }
+            let object = Self.jsonObject(data)
+            if !currentAttemptAnswered, Self.showsService(object) {
                 // The node answered on this attempt: it serves us, and the reconnect count and back-off start again.
                 currentAttemptAnswered = true
                 consecutiveFailures = 0
                 backoff = 1.0
             }
-            switch msg {
-            case .data(let data):  handle(data)
-            case .string(let str): handle(Data(str.utf8))
-            @unknown default: break
-            }
+            handle(data, object: object)
             listen()
         }
     }
 
     // MARK: Parse / Dispatch
 
+    /// A frame as the JSON object the node sends: every reply and notification is one. Nil for anything else.
+    static func jsonObject(_ data: Data) -> [String: Any]? {
+        try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+    }
+
+    /// Whether a frame shows the node serving us, and so answers its attempt: a JSON object with no top-level `error`
+    /// (a subscribe or unsubscribe `result`, an `eth_subscription` notification). An error reply — a gateway's
+    /// "capacity exceeded" or "unauthorised" before it closes — proves nothing, nor does a frame that is not JSON. A
+    /// null `error` beside a result (JSON-RPC 1.0's form) is no error.
+    static func showsService(_ object: [String: Any]?) -> Bool {
+        guard let object else { return false }
+        return object["error"] == nil || object["error"] is NSNull
+    }
+
     /// One frame from the node: a subscribe reply (the kind's id, by the request's id) or a notification,
     /// dispatched by the subscription id it names — a log to `.log`, a mined transaction to `.minedTx` /
     /// `.minedTxHash`, anything else to `.raw`. Internal, so the dispatch cells can feed it frames.
     func handle(_ data: Data) {
-        if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+        handle(data, object: Self.jsonObject(data))
+    }
+
+    /// `handle(_:)` over the frame's JSON object, parsed once.
+    private func handle(_ data: Data, object: [String: Any]?) {
+        if let obj = object,
            let id = obj["id"] as? Int,
            let subId = obj["result"] as? String,
            let kind = pendingSubscribe.removeValue(forKey: id) {
@@ -458,7 +484,7 @@ public final class MinedTxWSClient: NSObject {
         }
 
         guard
-            let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let obj = object,
             let method = obj["method"] as? String, method == "eth_subscription",
             let params = obj["params"] as? [String: Any],
             let subId = params["subscription"] as? String,
