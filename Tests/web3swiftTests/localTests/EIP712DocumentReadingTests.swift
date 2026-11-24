@@ -154,17 +154,14 @@ struct EIP712DocumentReadingTests {
                               ("fixed128x18", "1"), ("uint ", "1"), ("Uint", "1")] {
             #expect(Self.refused(Self.typedData(type: type, value: value), reading), "\(type)")
         }
-        // `uint` and `int`: for the phone, eth-sig-util's and the old web3swift's abbreviations of uint256 and int256,
-        // their text kept in the type hash (ethers writes uint256 there: the readers disagree, and the phone keeps what
-        // it signed before). Not types in the strict reading.
+        // `uint` and `int`: eth-sig-util hashes them under their own text, ethers as uint256/int256, and the old
+        // web3swift refused them. Readers disagree: refused by both readings.
         for (type, value) in [("uint", "1"), ("int", "-1"), ("uint[]", #"[1, "2"]"#), ("int[2]", "[0, 1]")] {
-            #expect(Self.refused(Self.typedData(type: type, value: value), reading) == (reading == .strict), "\(type)")
+            #expect(throws: EIP712DocumentError.self, "\(type)") { try Self.read(Self.typedData(type: type, value: value), reading) }
         }
-        if reading == .signTypedDataV4, let alias = try? Self.read(Self.typedData(type: "uint[]", value: "[1]"), reading) {
-            #expect(try alias.encodeType(of: "T") == "T(uint[] a)")
-            #expect(alias.definition(of: "T")?.fields.first?.type == .array(root: .alias("uint"), levels: [nil]))
-            #expect(Self.refused(Self.typedData(type: "uint", value: "-1"), reading))
-            #expect(Self.refused(Self.typedData(type: "uint8", value: "1", extraTypes: #", "uint": []"#), reading))
+        // A struct of that name is a struct, as it is to eth-sig-util and the old web3swift.
+        #expect(throws: Never.self) {
+            try Self.read(Self.typedData(type: "uint", value: #"{"n": 1}"#, extraTypes: #", "uint": [{"name": "n", "type": "uint8"}]"#), reading)
         }
         #expect(!Self.refused(Self.typedData(type: "uint8[0]", value: "[]"), reading))
         // The domain as the primary type: eth-sig-util hashes the domain alone; EIP-712 defines no such digest.
@@ -246,6 +243,21 @@ struct EIP712DocumentReadingTests {
         #expect(strict.types.map(\.name) == ["EIP712Domain", "T"])
     }
 
+    /// Leading zeros at any length take time in proportion to the text (each was once a shift of the whole number).
+    @Test(.timeLimit(.minutes(1)))
+    func leadingZerosAtAnyLengthAreReadInLinearTime() throws {
+        let zeros = String(repeating: "0", count: 300_000)
+        let one = try Self.read(Self.typedData(type: "uint256", value: #""1""#), .signTypedDataV4)
+        for value in ["0.\(zeros)1e300001", #""0x\#(zeros)1""#, #""\#(zeros)1""#] {
+            let started = Date()
+            let document = try Self.read(Self.typedData(type: "uint256", value: value), .signTypedDataV4)
+            #expect(document.signingDigest == one.signingDigest, "\(value.prefix(12))…")
+            #expect(Date().timeIntervalSince(started) < 20, "\(value.prefix(12))… took \(Date().timeIntervalSince(started)) s")
+        }
+        let zero = try Self.read(Self.typedData(type: "bytes32", value: "0.\(zeros)"), .signTypedDataV4)
+        #expect(zero.signingDigest == (try Self.read(Self.typedData(type: "bytes32", value: "0"), .signTypedDataV4)).signingDigest)
+    }
+
     @Test func aBoolIsTrueOrFalseForThePhoneAndAlsoZeroOrOneInTheStrictReading() throws {
         for value in ["1", "0", #""1""#, #""true""#, #""false""#] {
             #expect(Self.refused(Self.typedData(type: "bool", value: value), .signTypedDataV4), "\(value)")
@@ -301,8 +313,8 @@ struct EIP712DocumentReadingTests {
     @Test func aStructNameEthSigUtilWouldReadAnotherWayIsRefusedForThePhone() {
         // eth-sig-util finds a field's struct by the leading word characters of its type, looks a type up before it
         // asks whether it is atomic, and looks it up as a JavaScript property.
-        for (name, field) in [("My-Type", "My-Type"), ("uint256", "uint256"), ("uint", "uint"), ("int", "int[]"), ("toString", "toString"),
-                              ("__proto__", "__proto__"), ("Caf\u{e9}", "Caf\u{e9}")] {
+        for (name, field) in [("My-Type", "My-Type"), ("uint256", "uint256"), ("toString", "toString"), ("__proto__", "__proto__"),
+                              ("Caf\u{e9}", "Caf\u{e9}")] {
             let json = Self.typedData(type: "U", value: "{}", extraTypes: #", "U": [{"name": "x", "type": "\#(field)"}], "\#(name)": []"#)
             #expect(Self.refused(json, .signTypedDataV4), "\(name)")
         }

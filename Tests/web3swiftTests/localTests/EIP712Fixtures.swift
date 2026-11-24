@@ -12,7 +12,7 @@
 //    with its own secp256k1, and emulates eth-sig-util to show each refusal is of something eth-sig-util signs or throws on.
 //  - `independent-references.json`: digests from @metamask/eth-sig-util 4.0.1 and ethers 6.17.0 as installed on this
 //    machine (25 Nov 2026), for the 29 vectors and for rows of the phone-key reading (numbers, short and odd bytes,
-//    trimmed strings, aliases), each row's verdict beside them.
+//    trimmed strings, the `uint` abbreviation), each row's verdict beside them.
 //
 
 import CryptoSwift

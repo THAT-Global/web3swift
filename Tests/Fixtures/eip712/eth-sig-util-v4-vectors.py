@@ -120,9 +120,11 @@ def root(t):
 OBJECT_PROTOTYPE = {'constructor', 'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable', 'toLocaleString', 'toString',
                     'valueOf', '__defineGetter__', '__defineSetter__', '__lookupGetter__', '__lookupSetter__', '__proto__'}
 SAFE = 2 ** 53 - 1
-# What both the old web3swift (.whitespacesAndNewlines) and JavaScript's BigInt trim from a number string.
+# What both the old web3swift (.whitespacesAndNewlines) and JavaScript's BigInt trim from a number string: the 24 scalars
+# EIP712Reader.trimmedOfSpace trims. JavaScript's BigInt trims these and U+FEFF (JS_SPACE, for the emulation below).
 SPACE = '\t\n\x0b\x0c\r\u2028\u2029' + ''.join(chr(c) for c in [0x20, 0xA0, 0x1680, *range(0x2000, 0x200B), 0x202F, 0x205F, 0x3000])
-ALIASES = {'uint': ('uint', 256), 'int': ('int', 256)}  # eth-sig-util's and the old web3swift's; the text kept as written
+JS_SPACE = SPACE + '\ufeff'
+assert len(SPACE) == 24
 
 def exact_double_integer(text):
     """A JSON number's value when it is a whole number an IEEE-754 double holds exactly; else Refused."""
@@ -152,7 +154,7 @@ def read_types(d):
             if f['name'] in seen: raise Refused('a field twice')
             seen.add(f['name'])
         if not re.fullmatch(r'[A-Za-z0-9_]+', name): raise Refused('a type name outside [A-Za-z0-9_]')
-        if primitive(name) or name in ALIASES: raise Refused('a type named as an atomic type')
+        if primitive(name): raise Refused('a type named as an atomic type')
         if name in OBJECT_PROTOTYPE: raise Refused('a type named as a member every JavaScript object has')
         T[name] = [(f['name'], f['type']) for f in fields]
     return T
@@ -197,7 +199,7 @@ def phone(text):
     if primary == 'EIP712Domain': raise Refused('the domain as the primary type')
     def struct_root(t):
         k = root(t)
-        return k[1] if k[0] == 'struct' and k[1] not in ALIASES else None
+        return k[1] if k[0] == 'struct' else None
     if any(struct_root(t) for _, t in T['EIP712Domain']): raise Refused('a domain field of a struct type')
     # Every struct a reached type names is defined, whether or not a value reaches it (an empty array never does).
     reached, todo = set(), [primary, 'EIP712Domain']
@@ -251,7 +253,6 @@ def phone(text):
     def value(t, v, depth, field_absent=False, field_name=None):
         if depth > 32: raise Refused('nested too deep')
         k = parse_type(t)
-        if k[0] == 'struct' and k[1] in ALIASES: k = ('prim', ALIASES[k[1]])
         if k[0] == 'struct':
             if k[1] not in T: raise Refused('an undefined type')
             if field_absent:
@@ -301,7 +302,7 @@ def metamask(text, only_type=False):
         if isinstance(v, float):
             if v != int(v): raise ValueError('fraction')
             return int(v)
-        s = v.strip()
+        s = v.strip(JS_SPACE)
         if s == '': return 0
         if re.fullmatch(r'0[xX][0-9a-fA-F]+', s): return int(s, 16)
         if re.fullmatch(r'[+-]?[0-9]+', s): return int(s)

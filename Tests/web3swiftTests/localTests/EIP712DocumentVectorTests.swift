@@ -67,8 +67,8 @@ struct EIP712DocumentMetaMaskTests {
     @Test func everyCaseIsRead() {
         #expect(EIP712Fixtures.metaMaskCommit == "9e0cdc2be912415e0cc9159b52d26db76ffe99b0")
         #expect(EIP712Fixtures.metaMaskCases.count == 248)
-        #expect(EIP712Fixtures.metaMaskCases.filter(\.isRead).count == 135)
-        #expect(EIP712Fixtures.metaMaskCases.filter { $0.v4 == "refused" }.count == 113)
+        #expect(EIP712Fixtures.metaMaskCases.filter(\.isRead).count == 113)
+        #expect(EIP712Fixtures.metaMaskCases.filter { $0.v4 == "refused" }.count == 135)
         #expect(Self.key.count == 32)
     }
 

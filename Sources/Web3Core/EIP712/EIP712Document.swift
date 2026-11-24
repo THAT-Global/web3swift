@@ -11,9 +11,9 @@
 //    hashes, this reading gives the digest eth-sig-util gives, or refuses: never another digest. Where the old
 //    web3swift hasher and eth-sig-util signed one document to one digest, this reading signs it too (a phone wallet
 //    keeps what it signed before): so a struct-typed field that is null or left out is 32 zero bytes, a short `bytesN`
-//    is padded, a JSON number a double holds exactly is read (`1e18`, `137.0`), and `uint`/`int` are `uint256`/`int256`.
-//    What eth-sig-util reads loosely and no contract can check, or the old code refused, is refused: a number for an
-//    address, "false" or 1 for a bool, a JSON number JavaScript rounds, an `int8` of 255.
+//    is padded, and a JSON number a double holds exactly is read (`1e18`, `137.0`). What eth-sig-util reads loosely and
+//    no contract can check, what the old code refused, and what readers disagree on is refused: a number for an
+//    address, "false" or 1 for a bool, a JSON number JavaScript rounds, an `int8` of 255, the abbreviation `uint`.
 //  - `strict`, for a hardware signer: what ledger-core's reader accepts (it adds the device's wire limits itself).
 //
 //  Both readings keep exactness: a number is read from its text, never through a floating-point value; a key written
@@ -34,15 +34,14 @@ public struct EIP712Document: Hashable, Sendable {
         /// bytes); a JSON number with a fraction or an exponent whose value is a whole number a double holds exactly;
         /// a number string with ASCII space, tab, CR or LF around it, or more than 80 (decimal) or 64 (hex) digits of
         /// which the extra are leading zeros; a `bytesN` shorter than N (padded on the right) or an odd count of hex
-        /// digits in `bytes` or `bytesN` (a leading zero added); a JSON 0 or 1 for a `bytesN`; `uint` and `int` as
-        /// `uint256` and `int256`, their text kept in the type hash.
+        /// digits in `bytes` or `bytesN` (a leading zero added); a JSON 0 or 1 for a `bytesN`.
         ///
         /// Refused here and read in ``strict``: no `EIP712Domain` type (eth-sig-util hashes an empty one; ethers one
         /// made from the domain's keys); a bool written as a number; a JSON number a double does not hold exactly
         /// (JavaScript rounds it); a `0X` prefix. Also refused here: a struct name outside `A-Z a-z 0-9 _`
-        /// (eth-sig-util finds a field's struct by the name's leading word characters), named as an atomic type or an
-        /// alias, or named as a member every JavaScript object inherits; a domain type with a struct-typed field
-        /// (eth-sig-util cannot hash one).
+        /// (eth-sig-util finds a field's struct by the name's leading word characters), named as an atomic type, or
+        /// named as a member every JavaScript object inherits; a domain type with a struct-typed field (eth-sig-util
+        /// cannot hash one). Both readings refuse `uint` and `int` (eth-sig-util and ethers hash them differently).
         case signTypedDataV4
         /// For a hardware signer: every struct value present and an object; no rounding, no defaults beyond the
         /// domain type a document leaves out, which is made from the standard fields its domain carries (EIP-712's

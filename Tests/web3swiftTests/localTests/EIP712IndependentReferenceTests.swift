@@ -20,7 +20,7 @@ struct EIP712IndependentReferenceTests {
     @Test func everyReferenceIsRead() {
         #expect(EIP712Fixtures.referenceVectors.count == 29)
         #expect(EIP712Fixtures.referenceRows.count == 40)
-        #expect(EIP712Fixtures.referenceRows.filter(\.isRead).count == 28)
+        #expect(EIP712Fixtures.referenceRows.filter(\.isRead).count == 25)
     }
 
     @Test func eachVectorIsEthSigUtilsAndEthersDigest() throws {

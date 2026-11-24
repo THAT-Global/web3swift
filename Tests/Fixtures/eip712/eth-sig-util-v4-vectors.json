@@ -984,7 +984,8 @@
     "hashStruct": "7152867e6c08ec6c73e80791694b4c9c29630ce5203d52d4a2a00e551f8fd673"
    },
    "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
-   "v4": "same"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "hashStruct int 0 (string)",
@@ -995,7 +996,8 @@
     "hashStruct": "7152867e6c08ec6c73e80791694b4c9c29630ce5203d52d4a2a00e551f8fd673"
    },
    "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
-   "v4": "same"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "hashStruct int 0x0 (string)",
@@ -1006,7 +1008,8 @@
     "hashStruct": "7152867e6c08ec6c73e80791694b4c9c29630ce5203d52d4a2a00e551f8fd673"
    },
    "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
-   "v4": "same"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "hashStruct int 9007199254740991 (number)",
@@ -1017,7 +1020,8 @@
     "hashStruct": "58688562012b128b5b702e46276e9ee8815955345556708ae7d25e49a9717eb5"
    },
    "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
-   "v4": "same"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "hashStruct int -9007199254740991 (number)",
@@ -1028,7 +1032,8 @@
     "hashStruct": "828639b34ed68e48e9c6938edb70f9bbe9aaf716df431a47cfef19e66959c6b0"
    },
    "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
-   "v4": "same"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "hashStruct int[] of every example",
@@ -1039,7 +1044,8 @@
     "hashStruct": "d16177fae6110a0f8b8f527d47c595bbb7174f8b7eaef8f1867bb87827834f5c"
    },
    "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
-   "v4": "same"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "hashStruct uint 0 (number)",
@@ -1050,7 +1056,8 @@
     "hashStruct": "865464863c9a46afbad30a6c25cabcba74a7f1b80b7e48ab1b00206d2c074caf"
    },
    "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
-   "v4": "same"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "hashStruct uint 0 (string)",
@@ -1061,7 +1068,8 @@
     "hashStruct": "865464863c9a46afbad30a6c25cabcba74a7f1b80b7e48ab1b00206d2c074caf"
    },
    "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
-   "v4": "same"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "hashStruct uint 0x0 (string)",
@@ -1072,7 +1080,8 @@
     "hashStruct": "865464863c9a46afbad30a6c25cabcba74a7f1b80b7e48ab1b00206d2c074caf"
    },
    "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
-   "v4": "same"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "hashStruct uint 9007199254740991 (number)",
@@ -1083,7 +1092,8 @@
     "hashStruct": "a9213a44af227656d5a7d16228d7082862c94eb0ae84491f42e74cee35a5e202"
    },
    "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
-   "v4": "same"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "hashStruct uint -1 (number) fails",
@@ -1095,7 +1105,7 @@
    },
    "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
    "v4": "refused",
-   "why": "a number out of its type's range"
+   "why": "an undefined type"
   },
   {
    "name": "hashStruct uint[] of every example",
@@ -1106,7 +1116,8 @@
     "hashStruct": "420e09236f286bb5a68736a7848e26108542d57c2b0030693eea99f41ef92125"
    },
    "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
-   "v4": "same"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "hashStruct Mail",
@@ -2212,8 +2223,8 @@
    "ethSigUtil": {
     "signature": "0xdd409db970cab27303fc5d09b7b97787724cb3b4c3bc702a50cc14aa3105df83129123f4e10ef9f1962d5ef2f4976dd2d25c63580a2421d4d2f37819c76313681b"
    },
-   "v4": "same",
-   "digest": "568805c7c1dfba0456f71db9fdf1cd4fd9533e35ad4a2fa9991f72f51835ecec"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "signTypedData int 0 (string)",
@@ -2223,8 +2234,8 @@
    "ethSigUtil": {
     "signature": "0xdd409db970cab27303fc5d09b7b97787724cb3b4c3bc702a50cc14aa3105df83129123f4e10ef9f1962d5ef2f4976dd2d25c63580a2421d4d2f37819c76313681b"
    },
-   "v4": "same",
-   "digest": "568805c7c1dfba0456f71db9fdf1cd4fd9533e35ad4a2fa9991f72f51835ecec"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "signTypedData int 0x0 (string)",
@@ -2234,8 +2245,8 @@
    "ethSigUtil": {
     "signature": "0xdd409db970cab27303fc5d09b7b97787724cb3b4c3bc702a50cc14aa3105df83129123f4e10ef9f1962d5ef2f4976dd2d25c63580a2421d4d2f37819c76313681b"
    },
-   "v4": "same",
-   "digest": "568805c7c1dfba0456f71db9fdf1cd4fd9533e35ad4a2fa9991f72f51835ecec"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "signTypedData int 9007199254740991 (number)",
@@ -2245,8 +2256,8 @@
    "ethSigUtil": {
     "signature": "0x8189a5ff41daf78340d0590eff0d567e230d159276bffe9b7fd471213a49a45831c3f27eb34eef73321b9df64792b494f12e8553c1d6f6976833b3f46319c2301b"
    },
-   "v4": "same",
-   "digest": "cb95a2a4f27ac580a1bf1fb3f45d2be6c7970628a2b07e1ab87574663e774bfb"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "signTypedData int -9007199254740991 (number)",
@@ -2256,8 +2267,8 @@
    "ethSigUtil": {
     "signature": "0xa6c3a7fe6d30fea7b7cb53c6b7e06bd2c84f1b8f08997117ed54ac84f0fca14501409d2a4874a257b18979e4c7a7138dd78a798ea1be74038323148bf02506911b"
    },
-   "v4": "same",
-   "digest": "86560cb1ab660692e7ee701bd0b33943f944ab4ae89d2c6fcae604a461b963bd"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "signTypedData int[] of every example",
@@ -2267,8 +2278,8 @@
    "ethSigUtil": {
     "signature": "0x9b81e7c4ae04c72bf1f5377a8b26ee3d4ee66350b27739979e573aadd56967d04a784dcf0dce36fb1a6e7401c47ca3e53f2bcb392321f795a6794c061654e40a1c"
    },
-   "v4": "same",
-   "digest": "f4b1d4b5fc8b7160202dfc098df6dbed567a58a41116a090aae0fb28ad8ad37d"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "signTypedData uint 0 (number)",
@@ -2278,8 +2289,8 @@
    "ethSigUtil": {
     "signature": "0xd6d0b9b316f88918183ee25189a415bcb8c090cfd9fcce595b26536554aad47f09d7a4852c92cd4b139e8f0df5128e7d0216eb2042342a4ec9bd5de83ce4ce501b"
    },
-   "v4": "same",
-   "digest": "87f6ab1bdef9709887644e33a6d8f182f8142ffffbcb86adc475f08091230d2b"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "signTypedData uint 0 (string)",
@@ -2289,8 +2300,8 @@
    "ethSigUtil": {
     "signature": "0xd6d0b9b316f88918183ee25189a415bcb8c090cfd9fcce595b26536554aad47f09d7a4852c92cd4b139e8f0df5128e7d0216eb2042342a4ec9bd5de83ce4ce501b"
    },
-   "v4": "same",
-   "digest": "87f6ab1bdef9709887644e33a6d8f182f8142ffffbcb86adc475f08091230d2b"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "signTypedData uint 0x0 (string)",
@@ -2300,8 +2311,8 @@
    "ethSigUtil": {
     "signature": "0xd6d0b9b316f88918183ee25189a415bcb8c090cfd9fcce595b26536554aad47f09d7a4852c92cd4b139e8f0df5128e7d0216eb2042342a4ec9bd5de83ce4ce501b"
    },
-   "v4": "same",
-   "digest": "87f6ab1bdef9709887644e33a6d8f182f8142ffffbcb86adc475f08091230d2b"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "signTypedData uint 9007199254740991 (number)",
@@ -2311,8 +2322,8 @@
    "ethSigUtil": {
     "signature": "0x53ac6b18696c9ef1eb82e260aee09adef15d3434bdf96223d0fdbe94f208dd0b69283474f3c46477f46e550fc1581f99145ede1946e7781922f240ecac6217011b"
    },
-   "v4": "same",
-   "digest": "b18269d75687e38d57e24b93a8b5b384b6002ea173e0044d20a281c9eff32e72"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "signTypedData uint -1 (number) fails",
@@ -2323,7 +2334,7 @@
     "throws": "Value must be a non-negative bigint."
    },
    "v4": "refused",
-   "why": "a number out of its type's range"
+   "why": "an undefined type"
   },
   {
    "name": "signTypedData uint[] of every example",
@@ -2333,8 +2344,8 @@
    "ethSigUtil": {
     "signature": "0x99fb8010d8b14617ae76b74c413c9ce9038ba97d47d13af4fbb742a5a5fa511342c7f3386ac463259567e492543e274b91e8aebedf14217907c01e9a501faa551b"
    },
-   "v4": "same",
-   "digest": "babda5f97132c34f661d6dd91d9e7d2fa8e770011771bd90aaf3130b0d661d3b"
+   "v4": "refused",
+   "why": "an undefined type"
   },
   {
    "name": "signTypedData Mail",

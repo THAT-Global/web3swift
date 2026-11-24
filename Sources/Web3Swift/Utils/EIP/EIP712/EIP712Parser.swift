@@ -250,11 +250,12 @@ public struct EIP712TypedData {
     /// EIP-712's `encodeData` of `data` as a value of `type`, with the document's types.
     ///
     /// `data` is written back to JSON and read with the ``EIP712Document/Reading/signTypedDataV4`` reading whatever
-    /// the document's: Foundation holds a number past 38 digits rounded (2^128 comes back ending `…211450`), and that
-    /// reading refuses every number a double does not hold exactly, so a rounded number is refused, never hashed. A
-    /// value JSON cannot carry (`Data`, `BigUInt`) is refused too. A rounded number that was an exact double is never
-    /// one again (the rounding is far finer than the spacing of doubles at its size); one that was not can only come
-    /// from a document read with the strict reading, so for such a document this refuses outright.
+    /// the document's: Foundation keeps an integer exactly below 2^128 and truncates a larger one to 38 digits, and
+    /// that reading takes only numbers a double holds exactly. A phone-key document's numbers all were exact doubles,
+    /// and a truncation of one (a relative change under 10^-37, far finer than the spacing of doubles) is no other
+    /// double, so it is refused, never hashed as another value. A strictly read document can hold a number that is not
+    /// a double, whose truncation can land on one, so for such a document this refuses outright. A value JSON cannot
+    /// carry (`Data`, `BigUInt`) is refused too.
     public func encodeData(_ type: String, data: [String : AnyObject]) throws -> Data {
         let document = try readDocument()
         guard document.reading == .signTypedDataV4 else {

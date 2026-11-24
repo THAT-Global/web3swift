@@ -58,7 +58,7 @@ struct EIP712Reader {
                 guard name.utf8.allSatisfy(Self.isWordCharacter) else {
                     throw Self.refused("the type name \"\(name)\" has a character outside A-Z, a-z, 0-9 and _")
                 }
-                guard Document.Primitive(parsing: name) == nil, Document.RootType.aliases[name] == nil else {
+                guard Document.Primitive(parsing: name) == nil else {
                     throw Self.refused("a struct named \(name), as an atomic type is")
                 }
                 guard !Self.javaScriptObjectMembers.contains(name) else {
@@ -74,10 +74,10 @@ struct EIP712Reader {
                     throw Self.refused("a field of \(name) without a name and a type")
                 }
                 guard names.insert(fieldName).inserted else { throw Self.refused("the field \(name).\(fieldName) twice") }
-                // The phone-key reading reads `uint` and `int` as eth-sig-util and the old web3swift did (no struct can
-                // have those names in it).
-                let fieldType = Document.FieldType(parsing: type)
-                fields.append(Document.Field(name: fieldName, type: reading == .signTypedDataV4 ? fieldType.aliasingItsRoot : fieldType))
+                // `uint` and `int` are not types here, in either reading: eth-sig-util hashes them under their own text,
+                // ethers as `uint256`/`int256`, and the old web3swift refused them. Read as struct names, they are refused
+                // as undefined.
+                fields.append(Document.Field(name: fieldName, type: Document.FieldType(parsing: type)))
             }
             definitions.append(Document.StructDefinition(name: name, fields: fields))
         }
@@ -186,9 +186,6 @@ struct EIP712Reader {
             }
         case .root(.primitive(let primitive)):
             return try primitiveValue(value, as: primitive, path: path)
-        case .root(.alias(let name)):
-            guard let primitive = Document.RootType.aliases[name] else { throw Self.refused("\(path) has the unknown type \(name)") }
-            return try primitiveValue(value, as: primitive, path: path)
         case .array(_, let levels):
             guard let value else { throw Self.refused("\(path) is missing") }
             guard let elements = value.elements else { throw Self.refused("\(path) is not an array") }
@@ -262,7 +259,8 @@ struct EIP712Reader {
     /// eth-sig-util is the only reading: an odd count of digits gains a leading zero (`0x5` is the byte 05), and a
     /// `bytesN` shorter than N is padded with zero bytes on the right (`bytes32` `0x10`, a 3-byte salt). Longer than N,
     /// text that is not hex, and an address that is not 40 digits are refused (eth-sig-util reads other text as UTF-8,
-    /// or an address digit by digit).
+    /// or an address digit by digit). A `bytesN` given as `0x` is all zeros: the old web3swift and eth-sig-util 4.0.1
+    /// agree; eth-sig-util 9's answer for it is unconfirmed.
     private func hexBytes(_ value: EIP712JSON, size: Int?, isAddress: Bool) throws -> Data {
         guard case .string(let text) = value else { throw Self.refused("bytes that are not 0x-prefixed hex") }
         var digits = Array(text.utf8)
@@ -300,7 +298,12 @@ struct EIP712Reader {
                 guard !digits.isEmpty, digits.allSatisfy({ EIP712Hex.digit($0) != nil }) else {
                     throw Self.refused("a number that is not hex")
                 }
-                if isPhone { while digits.count > 1, digits.first == UInt8(ascii: "0") { digits.removeFirst() } }
+                // Leading zeros dropped as one slice (linear at any length).
+                if isPhone, let first = digits.firstIndex(where: { $0 != UInt8(ascii: "0") }) {
+                    digits = Array(digits[first...])
+                } else if isPhone {
+                    digits = [UInt8(ascii: "0")]
+                }
                 guard digits.count <= 64 else { throw Self.refused("a number that is not hex") }
                 if !digits.count.isMultiple(of: 2) { digits.insert(UInt8(ascii: "0"), at: 0) }
                 magnitude = [UInt8](EIP712Hex.bytes(digits) ?? Data())
@@ -323,7 +326,7 @@ struct EIP712Reader {
         default:
             throw Self.refused("a number that is not a number")
         }
-        while magnitude.count > 1, magnitude[0] == 0 { magnitude.removeFirst() }
+        magnitude = Array(magnitude.drop { $0 == 0 })
         if magnitude.isEmpty { magnitude = [0] }
         let isZero = magnitude == [0]
         let bitLength = Self.bitLength(magnitude)
@@ -373,9 +376,12 @@ struct EIP712Reader {
     /// JavaScript rounds, so the text and the dapp disagree).
     ///
     /// Decided from the text with exact arithmetic: digits × 10^exponent must be whole, below 2^1024, and below 2^53
-    /// once its trailing zero bits are gone. No cap below that is needed: text that has passed through Foundation (as
-    /// dapp-core's re-serialised typed data has) is perturbed by far less than the spacing of doubles at its size, so a
-    /// perturbed number is never an exact double: it is refused, never read as another value.
+    /// once its trailing zero bits are gone. No cap below that is needed. Text that has passed through Foundation (as
+    /// dapp-core's re-serialised typed data has) keeps an integer exactly up to 2^128 and beyond that is truncated to
+    /// 38 digits, a relative change under 10^-37. A truncated number can be an exact double (Foundation writes
+    /// `4253529586511730793292182592897102643201` as `…643200`, which is one); but an exact double that close to the
+    /// original is the double nearest to it, which is the value JavaScript's `JSON.parse` gives for the original. So
+    /// it is read as the value the dapp's own wallet library hashes, never as another.
     ///
     /// - Returns: the sign and the big-endian magnitude (`[0]` for zero).
     static func exactDoubleInteger(_ text: String) throws -> (isNegative: Bool, magnitude: [UInt8]) {
@@ -408,8 +414,9 @@ struct EIP712Reader {
         }
         guard index == bytes.count, !digits.isEmpty else { throw refused("a number that is not a number") }
         var scale = exponent - fractionCount
-        while let first = digits.first, first == UInt8(ascii: "0") { digits.removeFirst() }
-        guard !digits.isEmpty else { return (isNegative, [0]) }
+        // Leading zeros dropped as one slice (linear at any length).
+        guard let firstSignificant = digits.firstIndex(where: { $0 != UInt8(ascii: "0") }) else { return (isNegative, [0]) }
+        digits = Array(digits[firstSignificant...])
         while let last = digits.last, last == UInt8(ascii: "0") {
             digits.removeLast()
             scale += 1

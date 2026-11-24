@@ -84,21 +84,11 @@ extension EIP712Document {
         case primitive(Primitive)
         /// A struct type, by name.
         case structure(String)
-        /// `uint` or `int` (see ``aliases``): the abbreviation eth-sig-util and the old web3swift hashed, its value a
-        /// `uint256` or `int256` and its type text kept as written. Only the ``EIP712Document/Reading/signTypedDataV4``
-        /// reading makes one; ``FieldType/init(parsing:)`` reads the text as a struct's name.
-        case alias(String)
-
-        /// The abbreviations the phone-key reading takes, and the primitive each stands for. (ethers writes them as
-        /// `uint256`/`int256` in the type hash, eth-sig-util and the old web3swift as written: they disagree, and the
-        /// phone-key reading keeps what a phone wallet signed before.)
-        public static let aliases: [String: Primitive] = ["uint": .uint(32), "int": .int(32)]
 
         public var text: String {
             switch self {
             case .primitive(let primitive): return primitive.text
             case .structure(let name): return name
-            case .alias(let name): return name
             }
         }
     }
@@ -160,15 +150,6 @@ extension EIP712Document {
             switch self {
             case .root(let root): return root
             case .array(let root, _): return root
-            }
-        }
-
-        /// The same type with a ``RootType/alias(_:)`` where its root is a struct name that is one of the aliases.
-        var aliasingItsRoot: FieldType {
-            switch self {
-            case .root(.structure(let name)) where RootType.aliases[name] != nil: return .root(.alias(name))
-            case .array(.structure(let name), let levels) where RootType.aliases[name] != nil: return .array(root: .alias(name), levels: levels)
-            default: return self
             }
         }
 

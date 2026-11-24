@@ -586,34 +586,28 @@
    "ethSigUtil9Emulated": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e"
   },
   {
-   "name": "uint 5 (an alias)",
+   "name": "uint 5 (an abbreviation readers hash two ways)",
    "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":5}}",
-   "phoneKeyReading": "read",
+   "phoneKeyReading": "refused: an undefined type",
    "ethSigUtil401": "08f7f210b996d1b8209114d003cf59b76289488357ad9c54a639f351eafd9e44",
    "ethers617": "21984713cdd741a4785cd4158e710c36c27dbcf4c23d1c1d5cef6ec42d578ec0",
-   "ethSigUtil9Emulated": "08f7f210b996d1b8209114d003cf59b76289488357ad9c54a639f351eafd9e44",
-   "digest": "08f7f210b996d1b8209114d003cf59b76289488357ad9c54a639f351eafd9e44",
-   "reference": "08f7f210b996d1b8209114d003cf59b76289488357ad9c54a639f351eafd9e44"
+   "ethSigUtil9Emulated": "08f7f210b996d1b8209114d003cf59b76289488357ad9c54a639f351eafd9e44"
   },
   {
-   "name": "int -5 (an alias)",
+   "name": "int -5 (an abbreviation readers hash two ways)",
    "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"int\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":-5}}",
-   "phoneKeyReading": "read",
+   "phoneKeyReading": "refused: an undefined type",
    "ethSigUtil401": "f84282d81222f254427bd3ef1c63b36e048a632fde54e891ddf499466d1d5fcb",
    "ethers617": "f72165032608176eab3d38816b75b0df0e8604bb2dffecfb8810f2e529436e05",
-   "ethSigUtil9Emulated": "f84282d81222f254427bd3ef1c63b36e048a632fde54e891ddf499466d1d5fcb",
-   "digest": "f84282d81222f254427bd3ef1c63b36e048a632fde54e891ddf499466d1d5fcb",
-   "reference": "f84282d81222f254427bd3ef1c63b36e048a632fde54e891ddf499466d1d5fcb"
+   "ethSigUtil9Emulated": "f84282d81222f254427bd3ef1c63b36e048a632fde54e891ddf499466d1d5fcb"
   },
   {
-   "name": "uint[] [1, \"2\"] (an alias)",
+   "name": "uint[] [1, \"2\"] (an abbreviation readers hash two ways)",
    "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint[]\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":[1,\"2\"]}}",
-   "phoneKeyReading": "read",
+   "phoneKeyReading": "refused: an undefined type",
    "ethSigUtil401": "bb18b56445400af8f83613663ef9c740503f15a365d70f861a14104c1a9e0cf2",
    "ethers617": "181983ac37d0d318b4aa4e2d5a33c32d0bc83d4908d3f6e358f2c22aae9616c0",
-   "ethSigUtil9Emulated": "bb18b56445400af8f83613663ef9c740503f15a365d70f861a14104c1a9e0cf2",
-   "digest": "bb18b56445400af8f83613663ef9c740503f15a365d70f861a14104c1a9e0cf2",
-   "reference": "bb18b56445400af8f83613663ef9c740503f15a365d70f861a14104c1a9e0cf2"
+   "ethSigUtil9Emulated": "bb18b56445400af8f83613663ef9c740503f15a365d70f861a14104c1a9e0cf2"
   },
   {
    "name": "bool 1",
