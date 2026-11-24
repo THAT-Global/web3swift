@@ -11,7 +11,28 @@ import Web3Core
 
 public actor EndpointManager {
     private var registeredEndpoints: [UInt: [String]] = [:]
-    private var preferredEndpoint: [UInt: String] = [:]
+    /// Each chain's preferred endpoint, and when the manager moved to it.
+    private var preferredEndpoint: [UInt: (endpoint: String, since: Date)] = [:]
+
+    /// How long a preference for an endpoint that is NOT the registered first holds — a fall-back — counted from when
+    /// the manager fell back to it; nil: until another endpoint answers (the rule before it, and the default).
+    /// that-ios decision 14g (25 Nov 2026): EVM returns to its first endpoint fifteen minutes after falling back, as
+    /// Solana's ladder does (provider-kit `RPCEndpointLadder.returnToFirstAfter`) — without it a read or a send that
+    /// fell back once to a secondary provider kept using it until it failed or the app restarted. A lazy check when the
+    /// preference is asked for: no timer.
+    public private(set) var returnToFirstAfter: TimeInterval?
+    private var now: @Sendable () -> Date
+
+    public init(returnToFirstAfter: TimeInterval? = nil, now: @escaping @Sendable () -> Date = { Date() }) {
+        self.returnToFirstAfter = returnToFirstAfter
+        self.now = now
+    }
+
+    /// Sets the window a fall-back holds (nil: until another endpoint answers), and the clock it is read by.
+    public func configure(returnToFirstAfter: TimeInterval?, now: @escaping @Sendable () -> Date = { Date() }) {
+        self.returnToFirstAfter = returnToFirstAfter
+        self.now = now
+    }
 
     public func register(for network: Network, endpoints: [String]) {
         registeredEndpoints[network.chainIDAsUInt] = endpoints
@@ -23,23 +44,41 @@ public actor EndpointManager {
 
     /// The endpoint to try first: the one that last succeeded, while it is still registered — a preference
     /// for an endpoint the list no longer holds (a rotated key) is ignored, as payments-core's send ladder
-    /// ignores one (PAYMENT-CONNECTIONS-PLAN.md N3) — else the first registered.
+    /// ignores one (PAYMENT-CONNECTIONS-PLAN.md N3) — and, for a fall-back, while its window holds; else the first
+    /// registered.
     public func preferred(for network: Network) -> String? {
-        let registered = registeredEndpoints[network.chainIDAsUInt] ?? []
-        if let pref = preferredEndpoint[network.chainIDAsUInt], registered.contains(pref) { return pref }
-        return registered.first
+        held(for: network.chainIDAsUInt) ?? registeredEndpoints[network.chainIDAsUInt]?.first
     }
 
+    /// An endpoint answered: it goes first next time. The window counts from the fall-back, not from the latest answer:
+    /// an endpoint already preferred keeps its time (provider-kit's rule).
     public func setPreferred(for network: Network, endpoint: String) {
-        preferredEndpoint[network.chainIDAsUInt] = endpoint
+        let chain = network.chainIDAsUInt
+        if preferredEndpoint[chain]?.endpoint == endpoint { return }
+        preferredEndpoint[chain] = (endpoint, now())
     }
 
     func orderedEndpoints(for network: Network) -> [String] {
         let all = endpoints(for: network)
-        if let pref = preferredEndpoint[network.chainIDAsUInt], all.contains(pref) {
+        if let pref = held(for: network.chainIDAsUInt) {
             return [pref] + all.filter { $0 != pref }
         }
         return all
+    }
+
+    /// The preference that still holds for `chain`: none when the registered list no longer holds it, and none once a
+    /// fall-back's window has passed — then it is forgotten, so a fall-back that follows starts a window of its own.
+    private func held(for chain: UInt) -> String? {
+        guard let held = preferredEndpoint[chain] else { return nil }
+        let registered = registeredEndpoints[chain] ?? []
+        guard registered.contains(held.endpoint) else { return nil }
+        // The registered first: nothing has fallen back, nothing to lapse.
+        guard held.endpoint != registered.first else { return held.endpoint }
+        if let window = returnToFirstAfter, now().timeIntervalSince(held.since) >= window {
+            preferredEndpoint[chain] = nil
+            return nil
+        }
+        return held.endpoint
     }
 }
 
@@ -110,6 +149,17 @@ public actor Web3ClientService {
 
     public func setPreferredEndpoint(_ endpoint: String, for network: Network) async {
         await endpointManager.setPreferred(for: network, endpoint: endpoint)
+    }
+
+    /// How long a fall-back preference holds before the first registered endpoint goes first again (nil: until another
+    /// endpoint answers, the default). that-ios sets fifteen minutes (decision 14g); a cell hands its own clock.
+    public func configureEndpointReturn(after window: TimeInterval?, now: @escaping @Sendable () -> Date = { Date() }) async {
+        await endpointManager.configure(returnToFirstAfter: window, now: now)
+    }
+
+    /// The window a fall-back holds, as configured.
+    public var endpointReturnWindow: TimeInterval? {
+        get async { await endpointManager.returnToFirstAfter }
     }
 
     public func web3Client(
