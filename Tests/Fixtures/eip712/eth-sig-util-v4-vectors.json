@@ -1,0 +1,2800 @@
+{
+ "source": {
+  "repository": "https://github.com/MetaMask/eth-sig-util",
+  "commit": "9e0cdc2be912415e0cc9159b52d26db76ffe99b0",
+  "files": [
+   "src/sign-typed-data.test.ts",
+   "src/__snapshots__/sign-typed-data.test.ts.snap"
+  ],
+  "what": "MetaMask eth-sig-util's own V4 test cases for TypedDataUtils.hashStruct, TypedDataUtils.encodeType, TypedDataUtils.eip712Hash, signTypedData and recoverTypedSignature, and its bool-encoding cases. Each case names the test line and, where its expectation is a snapshot, the snapshot key it was read from.",
+  "transcription": "A hashStruct case is written as a whole document: its types with \"EIP712Domain\": [] added, its primary type, domain {} and its message; the message hash is eth-sig-util's hashStruct. A JavaScript undefined is a key left out. Buffer inputs are not JSON and are left out (the bytes, bytes1 and bytes32 Buffer examples, and the arrays that hold them). The salt Buffer.from(new Int32Array([1, 2, 3])) is the three bytes 01 02 03, written as hex. An encodeType case's message is the transcriber's (encodeType never reads it).",
+  "privateKey": "the test file's own key (line 26), a published test constant: 4af1bceebf7f3634ec3cff8a2c38e51178d5d4ce585c52d6043e5e2cc3418bb0",
+  "checker": "eth-sig-util-v4-vectors.py beside this file re-derives every hash and signature the phone-key reading accepts, with its own Keccak-256, EIP-712 and secp256k1, and adds each \"v4\" verdict and \"digest\"."
+ },
+ "cases": [
+  {
+   "name": "hashStruct bytes 10 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes\" should hash \"10\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":10}}",
+   "ethSigUtil": {
+    "hashStruct": "b6976a8d3ca85d894db066bed9dd1eac9a3ac6b0e87155e28e958215cd078f1b"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "hashStruct bytes 10 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes\" should hash \"10\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"10\"}}",
+   "ethSigUtil": {
+    "hashStruct": "7223320363eca5bb181c12017960acf7bdbb70a05b684bf42bb31f422a19ed0c"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "hashStruct bytes 0x10 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes\" should hash \"0x10\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x10\"}}",
+   "ethSigUtil": {
+    "hashStruct": "724dca4470f2d466424cc9f6ee09f55034659518ef5426fde3af846aa6fefcd6"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes 0x101 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes\" should hash \"0x101\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x101\"}}",
+   "ethSigUtil": {
+    "hashStruct": "9ec9530996ac7e6e69e8451f8ce9b3b76292a29f8b63af77c328bc95d921a044"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes 0xa22cb465000000000000000000000000a9079d872d10185b54c5db2c36cc978cbd3f72b70000000000000000000000000000000000000000000000000000000000000001 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes\" should hash \"0xa22cb465000000000000000000000000a9079d872d10185b54c5db2c36cc978cbd3f72b70000000000000000000000000000000000000000000000000000000000000001\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0xa22cb465000000000000000000000000a9079d872d10185b54c5db2c36cc978cbd3f72b70000000000000000000000000000000000000000000000000000000000000001\"}}",
+   "ethSigUtil": {
+    "hashStruct": "262fae6268b3ee84a3870ced869fddd7b881ea50983994601c1dfdb2f61d9dce"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes 0x1fffffffffffff (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes\" should hash \"0x1fffffffffffff\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff\"}}",
+   "ethSigUtil": {
+    "hashStruct": "be212bfc47a5e65c8c62da853610adabd6aee8a456f44d8bcdb8a73bc616fcd1"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes 0x1fffffffffffff1 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes\" should hash \"0x1fffffffffffff1\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff1\"}}",
+   "ethSigUtil": {
+    "hashStruct": "e6bf385c2ea0f2fd64ac08d631849bbdda8c331bed289d7537498cd86fd01c48"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes 0x (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes\" should hash \"0x\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x\"}}",
+   "ethSigUtil": {
+    "hashStruct": "84b16210669f991d43a594d6851da4c5d1b77604564452ba4fff8d8e30b215b3"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes\" should hash \"0x0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "1147b9fbe4a69376834040b69853378407505c5ba890ce4074005c0b94aefb9d"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct string Hello! (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"string\" should hash \"Hello!\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"Hello!\"}}",
+   "ethSigUtil": {
+    "hashStruct": "15d2c54cdaa22a6a3a8dbd89086b2ffcf0853857db9bcf1541765a8f769a63ba"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct string 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"string\" should hash \"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"}}",
+   "ethSigUtil": {
+    "hashStruct": "214632528de591d75e17abdeb0ccae3dab34a3be73b696af781a227af8070309"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct string 0xabcd (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"string\" should hash \"0xabcd\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0xabcd\"}}",
+   "ethSigUtil": {
+    "hashStruct": "4560af2575aabbf895509b931fce6f2d9699df2aff56c44f768cd887c755a826"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct string 0xabcde (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"string\" should hash \"0xabcde\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0xabcde\"}}",
+   "ethSigUtil": {
+    "hashStruct": "22e06ed78df41415b1e92f43745402333a817415e34013beca15a80219936a3d"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct string 😁 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"string\" should hash \"😁\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"😁\"}}",
+   "ethSigUtil": {
+    "hashStruct": "ca0bd988509ebbefdabd88aba786ff9825dbdaf2532339957ca3ea4e44fc183a"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct string 10 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"string\" should hash \"10\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":10}}",
+   "ethSigUtil": {
+    "hashStruct": "df09ff353f47aae6eb9a7c188daaa88a55d3469a603a1c35e86793f248b59958"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a string that is not text"
+  },
+  {
+   "name": "hashStruct string 0x1fffffffffffff (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"string\" should hash \"0x1fffffffffffff\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff\"}}",
+   "ethSigUtil": {
+    "hashStruct": "8bfd532fa2caaf4b6f1b3cdf6bfc4f290f8cc063edea47b4c5d3707f7627ea25"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct string 0x1fffffffffffff1 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"string\" should hash \"0x1fffffffffffff1\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff1\"}}",
+   "ethSigUtil": {
+    "hashStruct": "3cae6800bacc6160dd0f85acdb34e07c4847b0850d06f5aecd396b3d18943aa3"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct string[] of every example",
+   "source": "src/sign-typed-data.test.ts:2332; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"string\" should hash array of all string example data 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[\"Hello!\",\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\",\"0xabcd\",\"0xabcde\",\"😁\",10,\"0x1fffffffffffff\",\"0x1fffffffffffff1\"]}}",
+   "ethSigUtil": {
+    "hashStruct": "cf75a845fb5513eb8f1b1dff77108b4a36d123a8b6ea0ec1e19c81245d90f859"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a string that is not text"
+  },
+  {
+   "name": "hashStruct address 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"address\" should hash \"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"}}",
+   "ethSigUtil": {
+    "hashStruct": "ab14541443c6f456616e472ecca6d4fc887f862760d3a056b348441a9e0fd1c6"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct address 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"address\" should hash \"0x0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "c93aa5d5f1b1efece209c34fceee0aeb33da38ea34dbdd4df854e9708a636fea"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex of whole bytes"
+  },
+  {
+   "name": "hashStruct address 0x10 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"address\" should hash \"0x10\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x10\"}}",
+   "ethSigUtil": {
+    "hashStruct": "894a63b658fa6d5bb6c952ee75b45769ba7239f339da816a60bb94c32657b31b"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes of the wrong length"
+  },
+  {
+   "name": "hashStruct address 10 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"address\" should hash \"10\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":10}}",
+   "ethSigUtil": {
+    "hashStruct": "ce14e365ba45aa306d169b4cd22bd4a4dd45b07f68948757788cd974302272b9"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "hashStruct address bBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"address\" should hash \"bBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"bBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"}}",
+   "ethSigUtil": {
+    "hashStruct": "4d9b02d96f7647b8d3acfafc97b2faa65ef7b442ea647f8c8f6f606d4d794d34"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "hashStruct address 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"address\" should hash \"9007199254740991\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "hashStruct": "edb736a49622b7860bcec9c56c2b0346870f5bf02b7e516722c51be85c740bd3"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "hashStruct address 0x1fffffffffffff (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"address\" should hash \"0x1fffffffffffff\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff\"}}",
+   "ethSigUtil": {
+    "hashStruct": "edb736a49622b7860bcec9c56c2b0346870f5bf02b7e516722c51be85c740bd3"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes of the wrong length"
+  },
+  {
+   "name": "hashStruct address 0x1fffffffffffff1 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"address\" should hash \"0x1fffffffffffff1\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff1\"}}",
+   "ethSigUtil": {
+    "hashStruct": "de987a2d2d32026fc996b901c82d405a4ce60ef64f96c8f35735b71fb1e5b618"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex of whole bytes"
+  },
+  {
+   "name": "hashStruct address 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB0 (string) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB0\"}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid address value. Expected address to be 20 bytes long, but received 21 bytes."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex of whole bytes"
+  },
+  {
+   "name": "hashStruct address[] of every example",
+   "source": "src/sign-typed-data.test.ts:2332; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"address\" should hash array of all address example data 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\",\"0x0\",\"0x10\",10,\"bBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\",9007199254740991,\"0x1fffffffffffff\",\"0x1fffffffffffff1\"]}}",
+   "ethSigUtil": {
+    "hashStruct": "d714a2e5e9f4db8583cd86e447c95fdbb86e6fe7a8fdc576197c3f0805d1a693"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex of whole bytes"
+  },
+  {
+   "name": "hashStruct bool true (boolean)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bool\" should hash \"true\" (type \"boolean\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":true}}",
+   "ethSigUtil": {
+    "hashStruct": "df410941012cfe7070ec9abfdb367531856dda97faaa5134e46c313058e8415e"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bool false (boolean)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bool\" should hash \"false\" (type \"boolean\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":false}}",
+   "ethSigUtil": {
+    "hashStruct": "8015e06ae558f4ef85aa3a10a88e0530c81d4c6437ea005773d0ae01fa87e98f"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bool true (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bool\" should hash \"true\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"true\"}}",
+   "ethSigUtil": {
+    "hashStruct": "df410941012cfe7070ec9abfdb367531856dda97faaa5134e46c313058e8415e"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "hashStruct bool false (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bool\" should hash \"false\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"false\"}}",
+   "ethSigUtil": {
+    "hashStruct": "8015e06ae558f4ef85aa3a10a88e0530c81d4c6437ea005773d0ae01fa87e98f"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "hashStruct bool 0 (number) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"0\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "hashStruct bool 1 (number) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":1}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"1\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "hashStruct bool -1 (number) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"-1\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "hashStruct bool 9007199254740991 (number) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"9007199254740991\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "hashStruct bool[] of every example",
+   "source": "src/sign-typed-data.test.ts:2332; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bool\" should hash array of all bool example data 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[true,false,\"true\",\"false\"]}}",
+   "ethSigUtil": {
+    "hashStruct": "f0293441c16b32ae4358b655530e7c7cc1b31769e075028fdd5f6c3767fd675f"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "hashStruct bytes1 0x10 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes1\" should hash \"0x10\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x10\"}}",
+   "ethSigUtil": {
+    "hashStruct": "e900d48fde06ac14ab54c8c9246180736dffaafbd702b4448d95266e515c698f"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes1 0x101 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes1\" should hash \"0x101\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x101\"}}",
+   "ethSigUtil": {
+    "hashStruct": "0e420dd3df84078c08390c3a36a193fa17df1b1dccfbba341ad7ec3c9f6c28ff"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes of the wrong length"
+  },
+  {
+   "name": "hashStruct bytes1 10 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes1\" should hash \"10\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":10}}",
+   "ethSigUtil": {
+    "hashStruct": "042571d85305b5304f1ec048ee522d52f7750cd802c2a56783abdb1d4dbfa207"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number in place of bytes, other than 0 or 1"
+  },
+  {
+   "name": "hashStruct bytes1 0 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes1\" should hash \"0\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "hashStruct": "7ac24420f34ed860bcaeeeaa671447f3d4830177fa06022e6f7424ca2a482041"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes1 1 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes1\" should hash \"1\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":1}}",
+   "ethSigUtil": {
+    "hashStruct": "c84c962fe80560aae67c8b46cc1d901abf65728d1fccce809a93435e1ff053dc"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes1 -1 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes1\" should hash \"-1\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "hashStruct": "7ac24420f34ed860bcaeeeaa671447f3d4830177fa06022e6f7424ca2a482041"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number in place of bytes, other than 0 or 1"
+  },
+  {
+   "name": "hashStruct bytes1 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes1\" should hash \"9007199254740991\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "hashStruct": "224aa7830e89b97cde54f24a6e6f189ae53303bc371a9937e78437b172ca1b45"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number in place of bytes, other than 0 or 1"
+  },
+  {
+   "name": "hashStruct bytes1 0x1fffffffffffff (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes1\" should hash \"0x1fffffffffffff\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff\"}}",
+   "ethSigUtil": {
+    "hashStruct": "224aa7830e89b97cde54f24a6e6f189ae53303bc371a9937e78437b172ca1b45"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes of the wrong length"
+  },
+  {
+   "name": "hashStruct bytes1 0x1fffffffffffff1 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes1\" should hash \"0x1fffffffffffff1\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff1\"}}",
+   "ethSigUtil": {
+    "hashStruct": "11e27f592c5976bf03793effbe06fe3bb3459605a7c0c44f27cd783a55df1ff7"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes of the wrong length"
+  },
+  {
+   "name": "hashStruct bytes1 a (string) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"a\"}}",
+   "ethSigUtil": {
+    "throws": "An unexpected error occurred: Expected a bytes-like value, got \"a\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "hashStruct bytes1 test (string) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"test\"}}",
+   "ethSigUtil": {
+    "throws": "An unexpected error occurred: Expected a bytes-like value, got \"test\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "hashStruct bytes32 0x10 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes32\" should hash \"0x10\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x10\"}}",
+   "ethSigUtil": {
+    "hashStruct": "e12c668b2a048da24f2cbefcaebf992a22406fc4fb16e93881c41ec30760077a"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes32 0x101 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes32\" should hash \"0x101\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x101\"}}",
+   "ethSigUtil": {
+    "hashStruct": "0c67e90b39d59d1377f22428814bb1ebac7787309c002b02044490264bde0655"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes32 10 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes32\" should hash \"10\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":10}}",
+   "ethSigUtil": {
+    "hashStruct": "88f9527b959d7651b65276b40513cd46e3f41d791b727a44278721a2a36809b4"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number in place of bytes, other than 0 or 1"
+  },
+  {
+   "name": "hashStruct bytes32 0 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes32\" should hash \"0\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "hashStruct": "724c93ad5b90d8174128477a263c7409b5e04b404e41f29f2ab4ec85706a8adf"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes32 1 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes32\" should hash \"1\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":1}}",
+   "ethSigUtil": {
+    "hashStruct": "c1e60a5b178f07e19a88d6ba804fd66454da16b0ef30544efaf05e9166a5ce77"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes32 -1 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes32\" should hash \"-1\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "hashStruct": "724c93ad5b90d8174128477a263c7409b5e04b404e41f29f2ab4ec85706a8adf"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number in place of bytes, other than 0 or 1"
+  },
+  {
+   "name": "hashStruct bytes32 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes32\" should hash \"9007199254740991\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "hashStruct": "df80d4e7982c6aae5b1f697b9da4811ae768d198aba8aea8470d4658d0dc5625"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number in place of bytes, other than 0 or 1"
+  },
+  {
+   "name": "hashStruct bytes32 0x1fffffffffffff (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes32\" should hash \"0x1fffffffffffff\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff\"}}",
+   "ethSigUtil": {
+    "hashStruct": "df80d4e7982c6aae5b1f697b9da4811ae768d198aba8aea8470d4658d0dc5625"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes32 0x1fffffffffffff1 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"bytes32\" should hash \"0x1fffffffffffff1\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff1\"}}",
+   "ethSigUtil": {
+    "hashStruct": "05c60279ef5dbb2b8503c966a0a5760eed3ea130b3d52a8c0fd2ff8b7c0c94fa"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct bytes32 a (string) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"a\"}}",
+   "ethSigUtil": {
+    "throws": "An unexpected error occurred: Expected a bytes-like value, got \"a\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "hashStruct bytes32 test (string) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"test\"}}",
+   "ethSigUtil": {
+    "throws": "An unexpected error occurred: Expected a bytes-like value, got \"test\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "hashStruct int8 0 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int8\" should hash \"0\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "hashStruct": "7e41c54c3c21ff362622f9159b9b1566b4d9d883fe397da923f8415f1f2d1b89"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int8 0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int8\" should hash \"0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "7e41c54c3c21ff362622f9159b9b1566b4d9d883fe397da923f8415f1f2d1b89"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int8 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int8\" should hash \"0x0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "7e41c54c3c21ff362622f9159b9b1566b4d9d883fe397da923f8415f1f2d1b89"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int8 255 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int8\" should hash \"255\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":255}}",
+   "ethSigUtil": {
+    "hashStruct": "6af1c0206f5eca44c09a657cc0e5b0492c3c50fdac13b4d0f9230629cb4a5524"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "hashStruct int8 -255 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int8\" should hash \"-255\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-255}}",
+   "ethSigUtil": {
+    "hashStruct": "5176307b3ebcc216e0c74964fab1ffc6aea9af022f5e1ff5218e8c8f271308a5"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "hashStruct int8 256 (string) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"256\"}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Number \"256\" is out of range for type \"int8\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "hashStruct int8[] of every example",
+   "source": "src/sign-typed-data.test.ts:2332; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int8\" should hash array of all int8 example data 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[0,\"0\",\"0x0\",255,-255]}}",
+   "ethSigUtil": {
+    "hashStruct": "526b53feebd1ecdce33c443de5f84c56fa0a1b9c449906c922375307fc038014"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "hashStruct int256 0 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int256\" should hash \"0\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "hashStruct": "ccf20a1de5e96bc817d94d9d27528918348beb21127fd4b077789d4ba83aaf18"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int256 0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int256\" should hash \"0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "ccf20a1de5e96bc817d94d9d27528918348beb21127fd4b077789d4ba83aaf18"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int256 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int256\" should hash \"0x0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "ccf20a1de5e96bc817d94d9d27528918348beb21127fd4b077789d4ba83aaf18"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int256 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int256\" should hash \"9007199254740991\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "hashStruct": "bab9169a0079a42c1cd2d180095cf08a1dd0429496b1aeb69fced72472812876"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int256 -9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int256\" should hash \"-9007199254740991\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-9007199254740991}}",
+   "ethSigUtil": {
+    "hashStruct": "ca8549280a9bd8667b6bdbf0d0eba01c9088d221db3836601e47d90351cba5ec"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int256[] of every example",
+   "source": "src/sign-typed-data.test.ts:2332; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int256\" should hash array of all int256 example data 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int256[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[0,\"0\",\"0x0\",9007199254740991,-9007199254740991]}}",
+   "ethSigUtil": {
+    "hashStruct": "85f9609b0fa0359c908f0d1effd2ca69a1bd1a983f473c142e26acdef6eb7ff1"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint8 0 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint8\" should hash \"0\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "hashStruct": "73ee3fc1fa9dc8c99c59fcb1d9d8c9fe181510086128e4763618d7c6b2208361"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint8 0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint8\" should hash \"0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "73ee3fc1fa9dc8c99c59fcb1d9d8c9fe181510086128e4763618d7c6b2208361"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint8 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint8\" should hash \"0x0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "73ee3fc1fa9dc8c99c59fcb1d9d8c9fe181510086128e4763618d7c6b2208361"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint8 255 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint8\" should hash \"255\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":255}}",
+   "ethSigUtil": {
+    "hashStruct": "30b2c001d2daa96e91576d1019a1842f75d983de5f89934671dc02074971b850"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint8 -1 (number) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "throws": "Value must be a non-negative bigint."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "hashStruct uint8[] of every example",
+   "source": "src/sign-typed-data.test.ts:2332; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint8\" should hash array of all uint8 example data 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint8[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[0,\"0\",\"0x0\",255]}}",
+   "ethSigUtil": {
+    "hashStruct": "66db87ae5c12bcea050f54891a0ceb924753764a4b1ead83ae8692d752a2a26a"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint256 0 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint256\" should hash \"0\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "hashStruct": "c4adc42f66c4586eb979042b897a75bc2bd4c8fb866531c44100a22168cdcdbc"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint256 0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint256\" should hash \"0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "c4adc42f66c4586eb979042b897a75bc2bd4c8fb866531c44100a22168cdcdbc"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint256 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint256\" should hash \"0x0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "c4adc42f66c4586eb979042b897a75bc2bd4c8fb866531c44100a22168cdcdbc"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint256 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint256\" should hash \"9007199254740991\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "hashStruct": "3cfc99947ae18942816da1e3a94b479043b95f4de5851660ce9d53fe5f29b686"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint256 -1 (number) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "throws": "Value must be a non-negative bigint."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "hashStruct uint256[] of every example",
+   "source": "src/sign-typed-data.test.ts:2332; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint256\" should hash array of all uint256 example data 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint256[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[0,\"0\",\"0x0\",9007199254740991]}}",
+   "ethSigUtil": {
+    "hashStruct": "f44a78e7f58e62916b00244626970fb046c4e6495bd453c83298686c00d8e9f0"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int 0 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int\" should hash \"0\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "hashStruct": "7152867e6c08ec6c73e80791694b4c9c29630ce5203d52d4a2a00e551f8fd673"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int 0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int\" should hash \"0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "7152867e6c08ec6c73e80791694b4c9c29630ce5203d52d4a2a00e551f8fd673"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int\" should hash \"0x0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "7152867e6c08ec6c73e80791694b4c9c29630ce5203d52d4a2a00e551f8fd673"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int\" should hash \"9007199254740991\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "hashStruct": "58688562012b128b5b702e46276e9ee8815955345556708ae7d25e49a9717eb5"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int -9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int\" should hash \"-9007199254740991\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-9007199254740991}}",
+   "ethSigUtil": {
+    "hashStruct": "828639b34ed68e48e9c6938edb70f9bbe9aaf716df431a47cfef19e66959c6b0"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct int[] of every example",
+   "source": "src/sign-typed-data.test.ts:2332; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"int\" should hash array of all int example data 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[0,\"0\",\"0x0\",9007199254740991,-9007199254740991]}}",
+   "ethSigUtil": {
+    "hashStruct": "d16177fae6110a0f8b8f527d47c595bbb7174f8b7eaef8f1867bb87827834f5c"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint 0 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint\" should hash \"0\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "hashStruct": "865464863c9a46afbad30a6c25cabcba74a7f1b80b7e48ab1b00206d2c074caf"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint 0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint\" should hash \"0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "865464863c9a46afbad30a6c25cabcba74a7f1b80b7e48ab1b00206d2c074caf"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint\" should hash \"0x0\" (type \"string\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "hashStruct": "865464863c9a46afbad30a6c25cabcba74a7f1b80b7e48ab1b00206d2c074caf"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:2294; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint\" should hash \"9007199254740991\" (type \"number\") 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "hashStruct": "a9213a44af227656d5a7d16228d7082862c94eb0ae84491f42e74cee35a5e202"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct uint -1 (number) fails",
+   "source": "src/sign-typed-data.test.ts:2315",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "throws": "Value must be a non-negative bigint."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "hashStruct uint[] of every example",
+   "source": "src/sign-typed-data.test.ts:2332; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 example data type \"uint\" should hash array of all uint example data 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[0,\"0\",\"0x0\",9007199254740991]}}",
+   "ethSigUtil": {
+    "hashStruct": "420e09236f286bb5a68736a7848e26108542d57c2b0030693eea99f41ef92125"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct Mail",
+   "source": "src/sign-typed-data.test.ts:2350; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 should hash data with custom type 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":\"Hello, Bob!\"}}",
+   "ethSigUtil": {
+    "hashStruct": "c52c0ee5d84264471806290a3f2c4cecfc5490626bf912d01f240d7a274b371e"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct Mail with a replyTo Mail",
+   "source": "src/sign-typed-data.test.ts:2385; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 should hash data with a recursive data type 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"},{\"name\":\"replyTo\",\"type\":\"Mail\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":\"Hello, Bob!\",\"replyTo\":{\"to\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"from\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":\"Hello!\"}}}",
+   "ethSigUtil": {
+    "hashStruct": "098a3fdba6dae9a89a220b7adbe1f38cf5d2aeabd94657aea65bb8aeef44f02e"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct Mail with Person[] and address[]",
+   "source": "src/sign-typed-data.test.ts:2432; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 should hash data with a custom data type array 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address[]\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person[]\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":[\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\",\"0xDD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"]},\"to\":[{\"name\":\"Bob\",\"wallet\":[\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"]}],\"contents\":\"Hello, Bob!\"}}",
+   "ethSigUtil": {
+    "hashStruct": "ac26cc7aa2cb9a8a445fae4e48b33f978b558da9b16e26381c53814d3317f541"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct Mail with an extra message property",
+   "source": "src/sign-typed-data.test.ts:2472 (asserts equality with the custom-type case)",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":\"Hello, Bob!\",\"foo\":\"bar\"}}",
+   "ethSigUtil": {
+    "hashStruct": "c52c0ee5d84264471806290a3f2c4cecfc5490626bf912d01f240d7a274b371e"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct an int32 set to null",
+   "source": "src/sign-typed-data.test.ts:2514",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"},{\"name\":\"length\",\"type\":\"int32\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":\"Hello!\",\"length\":null}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid number. Expected a valid number value, but received \"null\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "null where a value is due"
+  },
+  {
+   "name": "hashStruct an int32 left out (undefined)",
+   "source": "src/sign-typed-data.test.ts:2553",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"},{\"name\":\"length\",\"type\":\"int32\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":\"Hello!\"}}",
+   "ethSigUtil": {
+    "throws": "missing value for field length of type int32"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a field left out"
+  },
+  {
+   "name": "hashStruct a string set to null",
+   "source": "src/sign-typed-data.test.ts:2590; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 should hash data with a dynamic property set to null 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":null}}",
+   "ethSigUtil": {
+    "hashStruct": "d2a1810699ec28c0c42814956e9f333a82abe619c42a5610e568c2c4c21af66e"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "null where a value is due"
+  },
+  {
+   "name": "hashStruct a string left out (undefined)",
+   "source": "src/sign-typed-data.test.ts:2625",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"}}}",
+   "ethSigUtil": {
+    "throws": "missing value for field contents of type string"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a field left out"
+  },
+  {
+   "name": "hashStruct a struct set to null",
+   "source": "src/sign-typed-data.test.ts:2660; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 should hash data with a custom type property set to null 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"to\":null,\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"contents\":\"Hello, Bob!\"}}",
+   "ethSigUtil": {
+    "hashStruct": "fdecfae63c304f6fc7795188607e3838f5bf6798e47f147efdb2c71fcec1335e"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct a struct left out (undefined)",
+   "source": "src/sign-typed-data.test.ts:2692; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 should hash data with a custom type property set to undefined 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"contents\":\"Hello, Bob!\"}}",
+   "ethSigUtil": {
+    "hashStruct": "fdecfae63c304f6fc7795188607e3838f5bf6798e47f147efdb2c71fcec1335e"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct a function",
+   "source": "src/sign-typed-data.test.ts:2724",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"function\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"test\"}}",
+   "ethSigUtil": {
+    "throws": "Unsupported or invalid type: \"function\""
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "an undefined type"
+  },
+  {
+   "name": "hashStruct a primary type with no definition",
+   "source": "src/sign-typed-data.test.ts:2740",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"test\"}}",
+   "ethSigUtil": {
+    "throws": "No type definition specified: Message"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "the primary type is not defined"
+  },
+  {
+   "name": "hashStruct an unrecognised type",
+   "source": "src/sign-typed-data.test.ts:2754",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"foo\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"test\"}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: The type \"foo\" is not supported."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "an undefined type"
+  },
+  {
+   "name": "hashStruct extraneous types",
+   "source": "src/sign-typed-data.test.ts:2770; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 should hash data when given extraneous types 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}],\"Extra\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"Hello!\"}}",
+   "ethSigUtil": {
+    "hashStruct": "15d2c54cdaa22a6a3a8dbd89086b2ffcf0853857db9bcf1541765a8f769a63ba"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "hashStruct called unbound",
+   "source": "src/sign-typed-data.test.ts:2787; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.hashStruct V4 should hash data when called unbound 1`",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"Hello!\"}}",
+   "ethSigUtil": {
+    "hashStruct": "15d2c54cdaa22a6a3a8dbd89086b2ffcf0853857db9bcf1541765a8f769a63ba"
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "same"
+  },
+  {
+   "name": "signTypedData bytes 10 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes\" should sign \"10\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":10}}",
+   "ethSigUtil": {
+    "signature": "0x3d21aa6434df45520cd508b0a5ebbf237cce369518fa6c2b7d18919af55f2d67328ac8634cd92f8530422e47f6feaa7310eb8b661160c3123f224ce981b05eff1b"
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "signTypedData bytes 10 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes\" should sign \"10\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"10\"}}",
+   "ethSigUtil": {
+    "signature": "0xb1db198b7d92bf4cf766276d7a7998a770cb16f8adeaae5f0ac4a0c3372ec75b27d8e5514fcf3ea8cf7b57041792a018dcc31b02f5696500d742618b48bb7f8f1c"
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "signTypedData bytes 0x10 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes\" should sign \"0x10\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x10\"}}",
+   "ethSigUtil": {
+    "signature": "0x3de701e25bff8626c535c0b630b5d5cce8230965ef5cd21b894daef9c3fe15b7042ea68ebbe272a50d1d69dc1df1a3e5a5a16ca570cee8df43d251d4835b808f1b"
+   },
+   "v4": "same",
+   "digest": "25ad3f774dcda3efb64c6e698bd437c35958651ff189aa555c223bc9567d328b"
+  },
+  {
+   "name": "signTypedData bytes 0x101 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes\" should sign \"0x101\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x101\"}}",
+   "ethSigUtil": {
+    "signature": "0x821516d637520e4fc33b1493648fba6e90966cc0831f2a5b388d4772e76b8c1c47d0f0346a42c153a56d3144087de5933e10d2c3a1c458a48dd1343d05b03e4b1b"
+   },
+   "v4": "same",
+   "digest": "b0d60385d5f09165633afe54ed944c96a3212bf4c4f00204dad28b5128a189d0"
+  },
+  {
+   "name": "signTypedData bytes 0xa22cb465000000000000000000000000a9079d872d10185b54c5db2c36cc978cbd3f72b70000000000000000000000000000000000000000000000000000000000000001 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes\" should sign \"0xa22cb465000000000000000000000000a9079d872d10185b54c5db2c36cc978cbd3f72b70000000000000000000000000000000000000000000000000000000000000001\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0xa22cb465000000000000000000000000a9079d872d10185b54c5db2c36cc978cbd3f72b70000000000000000000000000000000000000000000000000000000000000001\"}}",
+   "ethSigUtil": {
+    "signature": "0x82533d24d72d06740288f8276a45cd67271a2cf48e0a48bf4782467edabaa3b726aa6e912ccbbe808dd7cd17f4aa018edcc655f0b639661178a823c9869cf1de1c"
+   },
+   "v4": "same",
+   "digest": "be2aa81446c2326083088c83f31923f7802027f4fb8d36d9d13e5f82d0bdfabf"
+  },
+  {
+   "name": "signTypedData bytes 0x1fffffffffffff (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes\" should sign \"0x1fffffffffffff\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff\"}}",
+   "ethSigUtil": {
+    "signature": "0x75341a7f0040dd85926f3b5d9282216eb7bbd417cdbf6847442714583d5e4e50669f0e257be2ccb503b5b5012984976a4eb827e6a348823c1f2890575491b7e71b"
+   },
+   "v4": "same",
+   "digest": "938410830a67186a4dcf385a1fa4884cc962bc21575a6b543d2adaed76601c37"
+  },
+  {
+   "name": "signTypedData bytes 0x1fffffffffffff1 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes\" should sign \"0x1fffffffffffff1\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff1\"}}",
+   "ethSigUtil": {
+    "signature": "0xf02dac48072faa6e8ca381848bd9d448720e87a93221f1334e14d0757379be7b612cfed4cc2e1da6ee9bcae7d4819d2c0eca4b8132445b8c310c70eb8438349f1c"
+   },
+   "v4": "same",
+   "digest": "74d6c9bd581947b8900e94bb977115d40f6b20262dcdec15ee13226ebf33d91c"
+  },
+  {
+   "name": "signTypedData bytes 0x (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes\" should sign \"0x\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x\"}}",
+   "ethSigUtil": {
+    "signature": "0xfd9fdcd8d428bdcf00d760e9f984f4c8ec1703fc5503e5f02bf00292d6ce65e71175fe5666983a14ca41dba4b2b81c9b384bae97d8ec3ba84c7de4d4b79ab72d1c"
+   },
+   "v4": "same",
+   "digest": "4604c7f966935dd09b24a07ce19f705d4c09ffcf36f6df8da0fad871fed7c8ec"
+  },
+  {
+   "name": "signTypedData bytes 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes\" should sign \"0x0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "signature": "0xe39c5f814e5f99475bd4548104bd5ce8129b3ecf4c689360f325e4aa48a5c7d846cd729e86deb9fc35338a1d3262ee0a25945658708e037dd8ab72f0fa0aaba21b"
+   },
+   "v4": "same",
+   "digest": "712a7e186c856d496dbb9fe58b87a4a9bb99600341f9f7b743f8b0569deb869c"
+  },
+  {
+   "name": "signTypedData string Hello! (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"string\" should sign \"Hello!\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"Hello!\"}}",
+   "ethSigUtil": {
+    "signature": "0x9809571f17ee150687932fb7b993f4437b05caf9c8e64818ab4356b33992f3796636c18e88ba9c6dc140f39f95d8ae5770ad2f17070af208690c82d33f3bc8701c"
+   },
+   "v4": "same",
+   "digest": "7b1563126d74808124cc8d7bde5183024f2274f0bacd7858ba1524489709ef78"
+  },
+  {
+   "name": "signTypedData string 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"string\" should sign \"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"}}",
+   "ethSigUtil": {
+    "signature": "0x3aec2d7f64634830ad9ef09550595bd1010e9317e10d4a46223669ac9368ef9868d2b03881c1abf9d4b9da9301ad631d29d14670c8e02e9e005108ba76ed46931b"
+   },
+   "v4": "same",
+   "digest": "c56f31de0215929f5c791f1a3ec32d2221ac0735ec24b960ab0c2ac454737ad4"
+  },
+  {
+   "name": "signTypedData string 0xabcd (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"string\" should sign \"0xabcd\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0xabcd\"}}",
+   "ethSigUtil": {
+    "signature": "0xd38dab443bd26748336d36f2b454ca334217fc02f11378bc94cc224af6b481da4311389dd3798b20880292e9076e9cb512e1262825b81e2b09a1e391e81e78ec1c"
+   },
+   "v4": "same",
+   "digest": "e08eac2bc64a3c6a875f9621b7f51e87c364592be812272bb6a844776afc73e0"
+  },
+  {
+   "name": "signTypedData string 0xabcde (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"string\" should sign \"0xabcde\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0xabcde\"}}",
+   "ethSigUtil": {
+    "signature": "0x950099e38a3348de4527879d2a8cc46962ca8f151cc618e0bce599aa8a80f29e0b110da7af3cad9a00fd480da48a1788539594c1f7cc05dca35860bb86977fdf1c"
+   },
+   "v4": "same",
+   "digest": "077fc920fc5df5e9dac65bcb11364be69e85ee1badfabd3261c1d1794ab7ecf0"
+  },
+  {
+   "name": "signTypedData string 😁 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"string\" should sign \"😁\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"😁\"}}",
+   "ethSigUtil": {
+    "signature": "0x64f99af2821e76b485ad87edfe6d82d52f8951304a83595ffa7fa4e4a79e96dd344108d1f5bb5b09b24b59ee13d4e67b2f2083e5f258d8553aa301d59cb51d761c"
+   },
+   "v4": "same",
+   "digest": "5888910f381c7ce7ed438936ed16fcf704765c712edf8407b7425e10094ef9e2"
+  },
+  {
+   "name": "signTypedData string 10 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"string\" should sign \"10\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":10}}",
+   "ethSigUtil": {
+    "signature": "0xf2c859f1a71eb5abc85cdf960eacf752311e434a985113cbbb150f024790119973fcadf5c60fc068935ecc5e587138678912a654e8f8bec1cb58bafd498bd9e01c"
+   },
+   "v4": "refused",
+   "why": "a string that is not text"
+  },
+  {
+   "name": "signTypedData string 0x1fffffffffffff (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"string\" should sign \"0x1fffffffffffff\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff\"}}",
+   "ethSigUtil": {
+    "signature": "0x99d1a502349fc8c9d9d15cc700b95ab45addd59d73dfb5e48c5546e94f12ef1b6d5711bafe5d7a1654aa6cc617f068a5c2159178dfb0199bd3957016cd04942e1b"
+   },
+   "v4": "same",
+   "digest": "19b8d57a4881918dd5572e0ee7a972366380e0ce2ec79aa1df6d43a6fb1623f4"
+  },
+  {
+   "name": "signTypedData string 0x1fffffffffffff1 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"string\" should sign \"0x1fffffffffffff1\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff1\"}}",
+   "ethSigUtil": {
+    "signature": "0xa0115250ade38055a8c8bcaab184e84ad9b69aa1f9573d6170bf5ee21760e14977b698fd84637af47840dea9f2d76aa53224db9757cddf4adb3f4ebecfad6d2e1c"
+   },
+   "v4": "same",
+   "digest": "95f0a0ecb087656f62d16dd5446db150cdbfbd41777026b07398e134a9a3f1fd"
+  },
+  {
+   "name": "signTypedData string[] of every example",
+   "source": "src/sign-typed-data.test.ts:5905; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"string\" should sign array of all string example data 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[\"Hello!\",\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\",\"0xabcd\",\"0xabcde\",\"😁\",10,\"0x1fffffffffffff\",\"0x1fffffffffffff1\"]}}",
+   "ethSigUtil": {
+    "signature": "0xb056c6a78b02cf36d5904f0021db77b0ff727d27f914a938818736b8ebb3837136b47bf164c96d2ef3bcc783aaeced6cb0f97018e2e7d203d5ec68e9f90620591b"
+   },
+   "v4": "refused",
+   "why": "a string that is not text"
+  },
+  {
+   "name": "signTypedData address 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"address\" should sign \"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"}}",
+   "ethSigUtil": {
+    "signature": "0x9dfeb4cb581e1cc8ef7f1192dbbaa05a67545116c1ecb951b8aa5e7e2167e1ca463e8260231fe82395a38a597c90537f3282f6197c17b7e04baf52c5250fa3831b"
+   },
+   "v4": "same",
+   "digest": "1cfb198a708d4b4d88ffceed173209238fa95575e1535e1b4a67674a091e33a7"
+  },
+  {
+   "name": "signTypedData address 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"address\" should sign \"0x0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "signature": "0xe73f6e0860ebb2660c79396142325bd00033405615b608c757901a928f81533d78441e8c323c832e72c96bf6f95d874848336537f30081b5de518a26e9fae1891c"
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex of whole bytes"
+  },
+  {
+   "name": "signTypedData address 0x10 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"address\" should sign \"0x10\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x10\"}}",
+   "ethSigUtil": {
+    "signature": "0x2e8ec0d59c8e6cc60f2ce5ab70d604ead4add78d89aff00b1280ac684dea73ee411e5bdd670b00469c46d3a26a051d5453fad78ff28a9b7a4e25bdefd59d4c151b"
+   },
+   "v4": "refused",
+   "why": "bytes of the wrong length"
+  },
+  {
+   "name": "signTypedData address 10 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"address\" should sign \"10\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":10}}",
+   "ethSigUtil": {
+    "signature": "0xf43bcd9160bb4ca67d86daa0f8fe9ff06f95cc0b5e402b86cc8f9ac869be11ab4ff17fde422f95ae92d12a7394afd7ca8e72ccb262dfe3d47083933d9d2f6dd21c"
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "signTypedData address bBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"address\" should sign \"bBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"bBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"}}",
+   "ethSigUtil": {
+    "signature": "0x47ad9b795affe960475274f8b067225cff2451eada53b0ccf9bebd4336674b4b35b9ac6bad764f197435c7d53b6992a6d5f835796346a6ee4fd2313f8dd5b8991b"
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "signTypedData address 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"address\" should sign \"9007199254740991\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "signature": "0xd27fb914606ad217b3a238d24e86dd73499806fd45f6b229f50e242ec8eefe4b6325b3bcc8dc310c851379bc55d41b928d8b2828565f892819daccba3aeba0381b"
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "signTypedData address 0x1fffffffffffff (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"address\" should sign \"0x1fffffffffffff\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff\"}}",
+   "ethSigUtil": {
+    "signature": "0xd27fb914606ad217b3a238d24e86dd73499806fd45f6b229f50e242ec8eefe4b6325b3bcc8dc310c851379bc55d41b928d8b2828565f892819daccba3aeba0381b"
+   },
+   "v4": "refused",
+   "why": "bytes of the wrong length"
+  },
+  {
+   "name": "signTypedData address 0x1fffffffffffff1 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"address\" should sign \"0x1fffffffffffff1\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff1\"}}",
+   "ethSigUtil": {
+    "signature": "0x678e9fc8c29ad71f0e946f7eaf4c2dc58a3d0efa301a5a9aa414d9dab96ec47826f68af1f35371834bb142f77d20aeaca5dc4a381ac96965b88ea7c9bacb00141b"
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex of whole bytes"
+  },
+  {
+   "name": "signTypedData address 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB0 (string) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB0\"}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid address value. Expected address to be 20 bytes long, but received 21 bytes."
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex of whole bytes"
+  },
+  {
+   "name": "signTypedData address[] of every example",
+   "source": "src/sign-typed-data.test.ts:5905; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"address\" should sign array of all address example data 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"address[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\",\"0x0\",\"0x10\",10,\"bBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\",9007199254740991,\"0x1fffffffffffff\",\"0x1fffffffffffff1\"]}}",
+   "ethSigUtil": {
+    "signature": "0x4a47328b668266b3bdaa67d9c1ac201a4a2245ed185f9b81adb4acb6eb1231fe58e08ef8dd8ed85b4a264219d297e8275b761216688c8ed9bb7b367e9b99435b1c"
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex of whole bytes"
+  },
+  {
+   "name": "signTypedData bool true (boolean)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bool\" should sign \"true\" (type \"boolean\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":true}}",
+   "ethSigUtil": {
+    "signature": "0x5266f7fdc7b8d6552656609f7160760f323a4b37ba80e41b33fdb5637349538c123e338354fd3c0fa0741725c3a273a3857d9a2f490b7ebd612b83d10b2246a11b"
+   },
+   "v4": "same",
+   "digest": "22d3e3d9e76a1032c4f45547612d5503f3d05f46af611bfbe27752f05cdbab6b"
+  },
+  {
+   "name": "signTypedData bool false (boolean)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bool\" should sign \"false\" (type \"boolean\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":false}}",
+   "ethSigUtil": {
+    "signature": "0xf61ac8da1b7c663c7a7d16d1fefc75ffa739cd5a7af7b165405df3f616f899fa205e73f6f885b7fb6a4f0a5ec14c715c8642d4f59cb88abd361c8a1590cd70071b"
+   },
+   "v4": "same",
+   "digest": "1de3488c13bed54059ddf7aeb6f03dbfb157fbac047ce4a9407e44ff936d8926"
+  },
+  {
+   "name": "signTypedData bool true (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bool\" should sign \"true\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"true\"}}",
+   "ethSigUtil": {
+    "signature": "0x5266f7fdc7b8d6552656609f7160760f323a4b37ba80e41b33fdb5637349538c123e338354fd3c0fa0741725c3a273a3857d9a2f490b7ebd612b83d10b2246a11b"
+   },
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "signTypedData bool false (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bool\" should sign \"false\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"false\"}}",
+   "ethSigUtil": {
+    "signature": "0xf61ac8da1b7c663c7a7d16d1fefc75ffa739cd5a7af7b165405df3f616f899fa205e73f6f885b7fb6a4f0a5ec14c715c8642d4f59cb88abd361c8a1590cd70071b"
+   },
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "signTypedData bool 0 (number) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"0\"."
+   },
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "signTypedData bool 1 (number) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":1}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"1\"."
+   },
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "signTypedData bool -1 (number) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"-1\"."
+   },
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "signTypedData bool 9007199254740991 (number) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"9007199254740991\"."
+   },
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "signTypedData bool[] of every example",
+   "source": "src/sign-typed-data.test.ts:5905; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bool\" should sign array of all bool example data 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[true,false,\"true\",\"false\"]}}",
+   "ethSigUtil": {
+    "signature": "0x6d51666200732ed7ce5e8840f2163cd94273d44b9075e552ed72efe38300ffbe1baca486c24a8d2d3383b5029cff4a5a85db8d4ba54d289d20d1e06d930cea301c"
+   },
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "signTypedData bytes1 0x10 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes1\" should sign \"0x10\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x10\"}}",
+   "ethSigUtil": {
+    "signature": "0xf11b3b9780d816c741a8902eec2e3b1d40225283c273d5aef4dc776045cfcf9b626ea06c50e5d6180cb9bc7583f2ffa8ddc5c99641b954830539bf7faf3e90041b"
+   },
+   "v4": "same",
+   "digest": "a75c23b2f6946a3e769015fcabe3ec5c978fa1590d4cb4607d7dcfbf24249d63"
+  },
+  {
+   "name": "signTypedData bytes1 0x101 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes1\" should sign \"0x101\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x101\"}}",
+   "ethSigUtil": {
+    "signature": "0xa7ae2aedcaedfed7c567a30773a9d53105e03a3b36a96269051b2e20ba283a1d65dbf79b2c932d11e9902c9ca9e3e842ddab6426604c82ae31c78fcb5798e61d1b"
+   },
+   "v4": "refused",
+   "why": "bytes of the wrong length"
+  },
+  {
+   "name": "signTypedData bytes1 10 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes1\" should sign \"10\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":10}}",
+   "ethSigUtil": {
+    "signature": "0x35d17bc5a60f14a6ec63cc8a6e7b1e91e394fbaa82b196e8cfe12599190db025717854d809dc1b3884a25b99dc72654f36061436c72adf58e03487d2053564e51c"
+   },
+   "v4": "refused",
+   "why": "a number in place of bytes, other than 0 or 1"
+  },
+  {
+   "name": "signTypedData bytes1 0 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes1\" should sign \"0\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "signature": "0xc15ab20b7c3b2756ea60a4298039ece7225cccfe8e5d6f3fbf66ccd0fbfbe5c13b158ac2dce6003c9102b73cb1a58c65f21c8dc94b6d70bfb0cbabad550c76731b"
+   },
+   "v4": "same",
+   "digest": "2c4602c99a2ace15fd962bceade400080ca75621578146d8cdd53a9e846e2759"
+  },
+  {
+   "name": "signTypedData bytes1 1 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes1\" should sign \"1\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":1}}",
+   "ethSigUtil": {
+    "signature": "0x2a6edb8421b95a3180febf0363013a3f2db8dd86cab32cb14e8b114b9007ac7c6f61ab367597538b73da7dfd47d5aff950271f2dec056c8b0799e1423b65e6951b"
+   },
+   "v4": "same",
+   "digest": "2be7fda3823fb6e3555feb505516dc8f544e33137efa5be235f0daecd66fc4bb"
+  },
+  {
+   "name": "signTypedData bytes1 -1 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes1\" should sign \"-1\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "signature": "0xc15ab20b7c3b2756ea60a4298039ece7225cccfe8e5d6f3fbf66ccd0fbfbe5c13b158ac2dce6003c9102b73cb1a58c65f21c8dc94b6d70bfb0cbabad550c76731b"
+   },
+   "v4": "refused",
+   "why": "a number in place of bytes, other than 0 or 1"
+  },
+  {
+   "name": "signTypedData bytes1 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes1\" should sign \"9007199254740991\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "signature": "0x5f4f40ddbf9e075eb6606463ff6f943f81093b4bfd435e9ff7b2439c973e456126662c2373f7c1e1ec14f051438f3a3e80ff24b9b2a8e89ccf723f89f3eb3f831c"
+   },
+   "v4": "refused",
+   "why": "a number in place of bytes, other than 0 or 1"
+  },
+  {
+   "name": "signTypedData bytes1 0x1fffffffffffff (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes1\" should sign \"0x1fffffffffffff\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff\"}}",
+   "ethSigUtil": {
+    "signature": "0x5f4f40ddbf9e075eb6606463ff6f943f81093b4bfd435e9ff7b2439c973e456126662c2373f7c1e1ec14f051438f3a3e80ff24b9b2a8e89ccf723f89f3eb3f831c"
+   },
+   "v4": "refused",
+   "why": "bytes of the wrong length"
+  },
+  {
+   "name": "signTypedData bytes1 0x1fffffffffffff1 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes1\" should sign \"0x1fffffffffffff1\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff1\"}}",
+   "ethSigUtil": {
+    "signature": "0x46661b79695cfabc0ff41021988f7a6affe29d0bcb7e19848fd1754cb2102c1769564aff54e68a6f0e892f49ed6c30860bfab8aa293023081e5d4a7b83959c231b"
+   },
+   "v4": "refused",
+   "why": "bytes of the wrong length"
+  },
+  {
+   "name": "signTypedData bytes1 a (string) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"a\"}}",
+   "ethSigUtil": {
+    "throws": "An unexpected error occurred: Expected a bytes-like value, got \"a\"."
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "signTypedData bytes1 test (string) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes1\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"test\"}}",
+   "ethSigUtil": {
+    "throws": "An unexpected error occurred: Expected a bytes-like value, got \"test\"."
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "signTypedData bytes32 0x10 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes32\" should sign \"0x10\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x10\"}}",
+   "ethSigUtil": {
+    "signature": "0xaff4369700fffca0a2b22d522271a19224335faec5477f95b62cfd5b474e785f56918ee1f349f797fbc8990395f701b1c2a5d5830b91677c663fd0bd481011e81b"
+   },
+   "v4": "same",
+   "digest": "acf95dab6ffd696507d9bb351b531ea6b7b23abd20856662da841fa1b57aa54a"
+  },
+  {
+   "name": "signTypedData bytes32 0x101 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes32\" should sign \"0x101\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x101\"}}",
+   "ethSigUtil": {
+    "signature": "0x7773a01449eda49d700fb3e19fe2b94ff164ee32b1b87fdcf105c3e8d72f1c1e241f75e04f9bf672ee91f76d5f9e6118cf8d8d5523b78e8030a7df3d53eea6f01b"
+   },
+   "v4": "same",
+   "digest": "16f33cc07b22646a8f657e1f4f88cb136399bbc2065821a953c5f14fd2e4878c"
+  },
+  {
+   "name": "signTypedData bytes32 10 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes32\" should sign \"10\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":10}}",
+   "ethSigUtil": {
+    "signature": "0xc5a0a2c7b01f6c6c946b677fe909b49e61a4d7f940a9720b68fa903bf2d9d6f5007d7b8d40bbef56787c352386479c83c0f79703f43b2aa00facd05a6ec911941b"
+   },
+   "v4": "refused",
+   "why": "a number in place of bytes, other than 0 or 1"
+  },
+  {
+   "name": "signTypedData bytes32 0 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes32\" should sign \"0\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "signature": "0xc5e2c5d5bda933ad6fae2fe43876fb07a4af675b6b5da2371de3ac21ec7628162fcb7162e67087a3ca677c081dc9acaf15854af1b417a97fe712ae08f42f05121c"
+   },
+   "v4": "same",
+   "digest": "679c17d60c823b98a0e808170ca18d02d1052b5c7d07c2be159d7cce0887a8d2"
+  },
+  {
+   "name": "signTypedData bytes32 1 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes32\" should sign \"1\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":1}}",
+   "ethSigUtil": {
+    "signature": "0x1cdd1d18ccf46819ec85d07f326d5cece9a38b5af5bb1417940b3962e3dbbaf019f72968def0748494903f8947f0c5d034bf386609b342bcdf85b793322b50541c"
+   },
+   "v4": "same",
+   "digest": "d2bf9d7ad4f8cad59a9d3a4f04979eab9d8a41655959e1919066e71b8eaca942"
+  },
+  {
+   "name": "signTypedData bytes32 -1 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes32\" should sign \"-1\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "signature": "0xc5e2c5d5bda933ad6fae2fe43876fb07a4af675b6b5da2371de3ac21ec7628162fcb7162e67087a3ca677c081dc9acaf15854af1b417a97fe712ae08f42f05121c"
+   },
+   "v4": "refused",
+   "why": "a number in place of bytes, other than 0 or 1"
+  },
+  {
+   "name": "signTypedData bytes32 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes32\" should sign \"9007199254740991\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "signature": "0xec7910b30e4b6d821bf45f5d1ebd306c89195bc4c147ef8ae626616ce27ccf886abfdc4f1d4c2bba41e044726c2c33f82d560aa926821a765d4ee111ab7d2e321c"
+   },
+   "v4": "refused",
+   "why": "a number in place of bytes, other than 0 or 1"
+  },
+  {
+   "name": "signTypedData bytes32 0x1fffffffffffff (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes32\" should sign \"0x1fffffffffffff\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff\"}}",
+   "ethSigUtil": {
+    "signature": "0xec7910b30e4b6d821bf45f5d1ebd306c89195bc4c147ef8ae626616ce27ccf886abfdc4f1d4c2bba41e044726c2c33f82d560aa926821a765d4ee111ab7d2e321c"
+   },
+   "v4": "same",
+   "digest": "e331cd1aebff7a2ac2858f33f0fdb71c631cb1fed8bd4a9d620045c16e44ae5c"
+  },
+  {
+   "name": "signTypedData bytes32 0x1fffffffffffff1 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"bytes32\" should sign \"0x1fffffffffffff1\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x1fffffffffffff1\"}}",
+   "ethSigUtil": {
+    "signature": "0x01dca7a73a53e3d3662ac0481303c81e46ee23a1b8eda2fc7f5c26a7fe741258533fcd529b0ec7cb0dbceb4fa52a68de614c9c8054005fa137b43c67aeb835d11c"
+   },
+   "v4": "same",
+   "digest": "3042d023dd1aad49041826c9c0818287314a9338b85068bc65c8db427dad43e6"
+  },
+  {
+   "name": "signTypedData bytes32 a (string) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"a\"}}",
+   "ethSigUtil": {
+    "throws": "An unexpected error occurred: Expected a bytes-like value, got \"a\"."
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "signTypedData bytes32 test (string) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bytes32\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"test\"}}",
+   "ethSigUtil": {
+    "throws": "An unexpected error occurred: Expected a bytes-like value, got \"test\"."
+   },
+   "v4": "refused",
+   "why": "bytes that are not 0x hex"
+  },
+  {
+   "name": "signTypedData int8 0 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int8\" should sign \"0\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "signature": "0x1316dd89e3828b6e3fb2a1b73f35e9914e5f13bd7e636a6ffc091e38d27d75dd450443e38024d88f7b856da9fccf4b27d508cb403e6206c618a03a912f68f4141b"
+   },
+   "v4": "same",
+   "digest": "2fbc7eada3e4c24b2fa47d0a87e204aebb9c7c065dc8bc323141557a7dc2bdc0"
+  },
+  {
+   "name": "signTypedData int8 0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int8\" should sign \"0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "signature": "0x1316dd89e3828b6e3fb2a1b73f35e9914e5f13bd7e636a6ffc091e38d27d75dd450443e38024d88f7b856da9fccf4b27d508cb403e6206c618a03a912f68f4141b"
+   },
+   "v4": "same",
+   "digest": "2fbc7eada3e4c24b2fa47d0a87e204aebb9c7c065dc8bc323141557a7dc2bdc0"
+  },
+  {
+   "name": "signTypedData int8 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int8\" should sign \"0x0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "signature": "0x1316dd89e3828b6e3fb2a1b73f35e9914e5f13bd7e636a6ffc091e38d27d75dd450443e38024d88f7b856da9fccf4b27d508cb403e6206c618a03a912f68f4141b"
+   },
+   "v4": "same",
+   "digest": "2fbc7eada3e4c24b2fa47d0a87e204aebb9c7c065dc8bc323141557a7dc2bdc0"
+  },
+  {
+   "name": "signTypedData int8 255 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int8\" should sign \"255\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":255}}",
+   "ethSigUtil": {
+    "signature": "0xefa01f8b611ed6e95b793055522e622a4b10537ffb5a184090e9eb77f8228fae26357a007a1fc367012e385d59674ebf0ebbbf4c4e053ea9af82d10d3fa703861c"
+   },
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "signTypedData int8 -255 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int8\" should sign \"-255\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-255}}",
+   "ethSigUtil": {
+    "signature": "0xb6d4b6c9310ebd6559dde32673f6631cf125a90acf0095dfc186b8ff5cd8c30d403e3948e086c70f6b2d2fa6342f8fed39fa2f9e74821e0f5b53fce6ef97aa491b"
+   },
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "signTypedData int8 256 (string) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"256\"}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Number \"256\" is out of range for type \"int8\"."
+   },
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "signTypedData int8[] of every example",
+   "source": "src/sign-typed-data.test.ts:5905; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int8\" should sign array of all int8 example data 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int8[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[0,\"0\",\"0x0\",255,-255]}}",
+   "ethSigUtil": {
+    "signature": "0xce1b91942464f4fcc7bd628da8aee47cda30d6ad160680db309f3288f56f83c64babf3112240b8cba22ed77a6b916b6a963f0d73e9ef394ad17d29324e19c9a41b"
+   },
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "signTypedData int256 0 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int256\" should sign \"0\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "signature": "0x0fe1dd3ecff08d997109758eb0840d08ace0ea609c9aaa6a6922d1d7b22b5dd8793641a43926881581c25c98bca175070a0979739d3c3358c22fb46aad7b97a41c"
+   },
+   "v4": "same",
+   "digest": "a5fe42122f20dfced3d8dd1f96173b97e6a49f9969538925fdf8043360b1cc8a"
+  },
+  {
+   "name": "signTypedData int256 0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int256\" should sign \"0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "signature": "0x0fe1dd3ecff08d997109758eb0840d08ace0ea609c9aaa6a6922d1d7b22b5dd8793641a43926881581c25c98bca175070a0979739d3c3358c22fb46aad7b97a41c"
+   },
+   "v4": "same",
+   "digest": "a5fe42122f20dfced3d8dd1f96173b97e6a49f9969538925fdf8043360b1cc8a"
+  },
+  {
+   "name": "signTypedData int256 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int256\" should sign \"0x0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "signature": "0x0fe1dd3ecff08d997109758eb0840d08ace0ea609c9aaa6a6922d1d7b22b5dd8793641a43926881581c25c98bca175070a0979739d3c3358c22fb46aad7b97a41c"
+   },
+   "v4": "same",
+   "digest": "a5fe42122f20dfced3d8dd1f96173b97e6a49f9969538925fdf8043360b1cc8a"
+  },
+  {
+   "name": "signTypedData int256 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int256\" should sign \"9007199254740991\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "signature": "0x1a6bca5f37a80a1646bf168077c06822c8166b5bf647f15dbafec05ec256e14f51e18d4f488999f3927e5f016d97ede1002980b5074390eb9299188d8c7120c01b"
+   },
+   "v4": "same",
+   "digest": "18fd257380823794d945d6e28ebc1558dd06775853a2cb21b5933c27453f8232"
+  },
+  {
+   "name": "signTypedData int256 -9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int256\" should sign \"-9007199254740991\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-9007199254740991}}",
+   "ethSigUtil": {
+    "signature": "0x3f27685a18b99b2a0964095574c35167bd34cd85b3a65862d88db43d92617cf670ac65add7b0cbe16f88b26c4b2dc5f81d921cede6dc7a728ff81daf85b337691b"
+   },
+   "v4": "same",
+   "digest": "00eca9a3fcdd5b02f7455973902f42aa6040a5ff69a934aadc48b173c0c28333"
+  },
+  {
+   "name": "signTypedData int256[] of every example",
+   "source": "src/sign-typed-data.test.ts:5905; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int256\" should sign array of all int256 example data 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int256[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[0,\"0\",\"0x0\",9007199254740991,-9007199254740991]}}",
+   "ethSigUtil": {
+    "signature": "0x43ed28e7b664ad41c7b04584452c6046d1ab9cd6b6f9e069d327e4b5717b3cf821d37bdbabd9d66a5ebb32001570ae8e39dec978d863b6c6f33204cf11b71c5c1c"
+   },
+   "v4": "same",
+   "digest": "2453aa09256c9ce45d36c3dcd2e6224abbf7fa7abf15f4c0e32e1643471d0ede"
+  },
+  {
+   "name": "signTypedData uint8 0 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint8\" should sign \"0\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "signature": "0x2e2308e1018ab9e53138698c7171f11eed668a06735a0b61ef8ca6aaa9ce0f9949d8955bd03d151451d91a2230ba60e4d70a42a360de9612aee826b0b1ecf5c71c"
+   },
+   "v4": "same",
+   "digest": "d106335c6cdee251d73d8f7a3b74e65138809ae1306117612ed64a62c8219944"
+  },
+  {
+   "name": "signTypedData uint8 0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint8\" should sign \"0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "signature": "0x2e2308e1018ab9e53138698c7171f11eed668a06735a0b61ef8ca6aaa9ce0f9949d8955bd03d151451d91a2230ba60e4d70a42a360de9612aee826b0b1ecf5c71c"
+   },
+   "v4": "same",
+   "digest": "d106335c6cdee251d73d8f7a3b74e65138809ae1306117612ed64a62c8219944"
+  },
+  {
+   "name": "signTypedData uint8 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint8\" should sign \"0x0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "signature": "0x2e2308e1018ab9e53138698c7171f11eed668a06735a0b61ef8ca6aaa9ce0f9949d8955bd03d151451d91a2230ba60e4d70a42a360de9612aee826b0b1ecf5c71c"
+   },
+   "v4": "same",
+   "digest": "d106335c6cdee251d73d8f7a3b74e65138809ae1306117612ed64a62c8219944"
+  },
+  {
+   "name": "signTypedData uint8 255 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint8\" should sign \"255\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":255}}",
+   "ethSigUtil": {
+    "signature": "0x07a0c3566cff100c5861355d1aeddb437269f05f6413498c32be63a7383152123e6a794d4fbfae20a512303ed5b7462d9fbb38cd581b890d3a54817576ef5fe91b"
+   },
+   "v4": "same",
+   "digest": "62082794b5cc2b81e0b59c955878b1631f74c103cdfb89e73003e1c368f651e3"
+  },
+  {
+   "name": "signTypedData uint8 -1 (number) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint8\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "throws": "Value must be a non-negative bigint."
+   },
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "signTypedData uint8[] of every example",
+   "source": "src/sign-typed-data.test.ts:5905; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint8\" should sign array of all uint8 example data 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint8[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[0,\"0\",\"0x0\",255]}}",
+   "ethSigUtil": {
+    "signature": "0x0466b76f5405629eac6b15b559dd020a360ca0d5b7ebc879524cf37677e15baf079c1696188d1e6fd391d138cba5473c3e876ba5674693ee881fe28fed32ae011c"
+   },
+   "v4": "same",
+   "digest": "188132d88ad8abd5128219b7faec2a14010e71ba428d3c179f8d096da68b8a16"
+  },
+  {
+   "name": "signTypedData uint256 0 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint256\" should sign \"0\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "signature": "0xa3a1c673befacff9a67c4a6e7b22cf379f40ff2e7887e34ccb2d4bafe86d974f6f476a773c658a417453e2c492659b722064f794e75f821ca4515fbf3e4148011c"
+   },
+   "v4": "same",
+   "digest": "eb0ebb91b30fd35ebeae0763926e9786a70d5ae6b9546f7e5430035e453c8da2"
+  },
+  {
+   "name": "signTypedData uint256 0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint256\" should sign \"0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "signature": "0xa3a1c673befacff9a67c4a6e7b22cf379f40ff2e7887e34ccb2d4bafe86d974f6f476a773c658a417453e2c492659b722064f794e75f821ca4515fbf3e4148011c"
+   },
+   "v4": "same",
+   "digest": "eb0ebb91b30fd35ebeae0763926e9786a70d5ae6b9546f7e5430035e453c8da2"
+  },
+  {
+   "name": "signTypedData uint256 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint256\" should sign \"0x0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "signature": "0xa3a1c673befacff9a67c4a6e7b22cf379f40ff2e7887e34ccb2d4bafe86d974f6f476a773c658a417453e2c492659b722064f794e75f821ca4515fbf3e4148011c"
+   },
+   "v4": "same",
+   "digest": "eb0ebb91b30fd35ebeae0763926e9786a70d5ae6b9546f7e5430035e453c8da2"
+  },
+  {
+   "name": "signTypedData uint256 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint256\" should sign \"9007199254740991\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "signature": "0x6a871571b479e3cfd3c71e44d9e81fc169bf648e672404b062fdb6248c4efd0f0d82c40b312190135421a05746ed106c008ff0a45a2db04c5efe59e5b65312f51c"
+   },
+   "v4": "same",
+   "digest": "9d2d8ea16c46e7aec70addfff637e52a8c1608fd9821e7eb39db1ed4ca431fff"
+  },
+  {
+   "name": "signTypedData uint256 -1 (number) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint256\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "throws": "Value must be a non-negative bigint."
+   },
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "signTypedData uint256[] of every example",
+   "source": "src/sign-typed-data.test.ts:5905; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint256\" should sign array of all uint256 example data 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint256[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[0,\"0\",\"0x0\",9007199254740991]}}",
+   "ethSigUtil": {
+    "signature": "0x48d5cfcf02360720a54aa2755fd11ae1957a878745b26b6666227e9cb9464d8f056792506f5de051d7e35a3cbef3114e8374ac46623b4aac7a21325ab455c2781b"
+   },
+   "v4": "same",
+   "digest": "6ef24dff191481788932f68f35731e72efe5c301308deb7b8d9f3549af9e77fd"
+  },
+  {
+   "name": "signTypedData int 0 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int\" should sign \"0\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "signature": "0xdd409db970cab27303fc5d09b7b97787724cb3b4c3bc702a50cc14aa3105df83129123f4e10ef9f1962d5ef2f4976dd2d25c63580a2421d4d2f37819c76313681b"
+   },
+   "v4": "same",
+   "digest": "568805c7c1dfba0456f71db9fdf1cd4fd9533e35ad4a2fa9991f72f51835ecec"
+  },
+  {
+   "name": "signTypedData int 0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int\" should sign \"0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "signature": "0xdd409db970cab27303fc5d09b7b97787724cb3b4c3bc702a50cc14aa3105df83129123f4e10ef9f1962d5ef2f4976dd2d25c63580a2421d4d2f37819c76313681b"
+   },
+   "v4": "same",
+   "digest": "568805c7c1dfba0456f71db9fdf1cd4fd9533e35ad4a2fa9991f72f51835ecec"
+  },
+  {
+   "name": "signTypedData int 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int\" should sign \"0x0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "signature": "0xdd409db970cab27303fc5d09b7b97787724cb3b4c3bc702a50cc14aa3105df83129123f4e10ef9f1962d5ef2f4976dd2d25c63580a2421d4d2f37819c76313681b"
+   },
+   "v4": "same",
+   "digest": "568805c7c1dfba0456f71db9fdf1cd4fd9533e35ad4a2fa9991f72f51835ecec"
+  },
+  {
+   "name": "signTypedData int 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int\" should sign \"9007199254740991\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "signature": "0x8189a5ff41daf78340d0590eff0d567e230d159276bffe9b7fd471213a49a45831c3f27eb34eef73321b9df64792b494f12e8553c1d6f6976833b3f46319c2301b"
+   },
+   "v4": "same",
+   "digest": "cb95a2a4f27ac580a1bf1fb3f45d2be6c7970628a2b07e1ab87574663e774bfb"
+  },
+  {
+   "name": "signTypedData int -9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int\" should sign \"-9007199254740991\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-9007199254740991}}",
+   "ethSigUtil": {
+    "signature": "0xa6c3a7fe6d30fea7b7cb53c6b7e06bd2c84f1b8f08997117ed54ac84f0fca14501409d2a4874a257b18979e4c7a7138dd78a798ea1be74038323148bf02506911b"
+   },
+   "v4": "same",
+   "digest": "86560cb1ab660692e7ee701bd0b33943f944ab4ae89d2c6fcae604a461b963bd"
+  },
+  {
+   "name": "signTypedData int[] of every example",
+   "source": "src/sign-typed-data.test.ts:5905; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"int\" should sign array of all int example data 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"int[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[0,\"0\",\"0x0\",9007199254740991,-9007199254740991]}}",
+   "ethSigUtil": {
+    "signature": "0x9b81e7c4ae04c72bf1f5377a8b26ee3d4ee66350b27739979e573aadd56967d04a784dcf0dce36fb1a6e7401c47ca3e53f2bcb392321f795a6794c061654e40a1c"
+   },
+   "v4": "same",
+   "digest": "f4b1d4b5fc8b7160202dfc098df6dbed567a58a41116a090aae0fb28ad8ad37d"
+  },
+  {
+   "name": "signTypedData uint 0 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint\" should sign \"0\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "signature": "0xd6d0b9b316f88918183ee25189a415bcb8c090cfd9fcce595b26536554aad47f09d7a4852c92cd4b139e8f0df5128e7d0216eb2042342a4ec9bd5de83ce4ce501b"
+   },
+   "v4": "same",
+   "digest": "87f6ab1bdef9709887644e33a6d8f182f8142ffffbcb86adc475f08091230d2b"
+  },
+  {
+   "name": "signTypedData uint 0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint\" should sign \"0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "signature": "0xd6d0b9b316f88918183ee25189a415bcb8c090cfd9fcce595b26536554aad47f09d7a4852c92cd4b139e8f0df5128e7d0216eb2042342a4ec9bd5de83ce4ce501b"
+   },
+   "v4": "same",
+   "digest": "87f6ab1bdef9709887644e33a6d8f182f8142ffffbcb86adc475f08091230d2b"
+  },
+  {
+   "name": "signTypedData uint 0x0 (string)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint\" should sign \"0x0\" (type \"string\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0x0\"}}",
+   "ethSigUtil": {
+    "signature": "0xd6d0b9b316f88918183ee25189a415bcb8c090cfd9fcce595b26536554aad47f09d7a4852c92cd4b139e8f0df5128e7d0216eb2042342a4ec9bd5de83ce4ce501b"
+   },
+   "v4": "same",
+   "digest": "87f6ab1bdef9709887644e33a6d8f182f8142ffffbcb86adc475f08091230d2b"
+  },
+  {
+   "name": "signTypedData uint 9007199254740991 (number)",
+   "source": "src/sign-typed-data.test.ts:5853; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint\" should sign \"9007199254740991\" (type \"number\") 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":9007199254740991}}",
+   "ethSigUtil": {
+    "signature": "0x53ac6b18696c9ef1eb82e260aee09adef15d3434bdf96223d0fdbe94f208dd0b69283474f3c46477f46e550fc1581f99145ede1946e7781922f240ecac6217011b"
+   },
+   "v4": "same",
+   "digest": "b18269d75687e38d57e24b93a8b5b384b6002ea173e0044d20a281c9eff32e72"
+  },
+  {
+   "name": "signTypedData uint -1 (number) fails",
+   "source": "src/sign-typed-data.test.ts:5882",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "throws": "Value must be a non-negative bigint."
+   },
+   "v4": "refused",
+   "why": "a number out of its type's range"
+  },
+  {
+   "name": "signTypedData uint[] of every example",
+   "source": "src/sign-typed-data.test.ts:5905; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 example data type \"uint\" should sign array of all uint example data 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"uint[]\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":[0,\"0\",\"0x0\",9007199254740991]}}",
+   "ethSigUtil": {
+    "signature": "0x99fb8010d8b14617ae76b74c413c9ce9038ba97d47d13af4fbb742a5a5fa511342c7f3386ac463259567e492543e274b91e8aebedf14217907c01e9a501faa551b"
+   },
+   "v4": "same",
+   "digest": "babda5f97132c34f661d6dd91d9e7d2fa8e770011771bd90aaf3130b0d661d3b"
+  },
+  {
+   "name": "signTypedData Mail",
+   "source": "src/sign-typed-data.test.ts:5929; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 should sign data with custom type 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":\"Hello, Bob!\"}}",
+   "ethSigUtil": {
+    "signature": "0x22ee0cb3a379f3a122f7b59456ebcf404ca139320a0723560abde49cc95f4a2f69774bf94c4e776f1a9c8c8a67e9e2bdda131e04bde935f73fae376ee788920d1c"
+   },
+   "v4": "same",
+   "digest": "25c3d40a39e639a4d0b6e4d2ace5e1281e039c88494d97d8d08f99a6ea75d775"
+  },
+  {
+   "name": "signTypedData Mail with a replyTo Mail",
+   "source": "src/sign-typed-data.test.ts:5969; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 should sign data with a recursive data type 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"},{\"name\":\"replyTo\",\"type\":\"Mail\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":\"Hello, Bob!\",\"replyTo\":{\"to\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"from\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":\"Hello!\"}}}",
+   "ethSigUtil": {
+    "signature": "0x8f549ddc5ce19505b8ae0d262db4640c7b1410dec5ee037d65c2225d53c845bd38265565378b7e7a53e08499dcfdb70e885ed9207f67d7bc34278b81b39b93d11b"
+   },
+   "v4": "same",
+   "digest": "0808c17abba0aef844b0470b77df9c994bc0fa3e244dc718afd66a3901c4bd7b"
+  },
+  {
+   "name": "signTypedData Mail with Person[] and address[]",
+   "source": "src/sign-typed-data.test.ts:6021; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 should sign data with a custom data type array 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address[]\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person[]\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":[\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\",\"0xDD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"]},\"to\":[{\"name\":\"Bob\",\"wallet\":[\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"]}],\"contents\":\"Hello, Bob!\"}}",
+   "ethSigUtil": {
+    "signature": "0x17c484deba479e3e9f821a6d5defc0179ddf52195c0cd75895c936b3ab4d217c6ba7f1f164a3ac9701e1694a04a13f421fb67ec44cd316846326a98b0d5838a01c"
+   },
+   "v4": "same",
+   "digest": "80a3aeb51161cfc47884ddf8eac0d2343d6ae640efe78b6a69be65e3045c1321"
+  },
+  {
+   "name": "signTypedData Mail with an extra message property",
+   "source": "src/sign-typed-data.test.ts:6066 (asserts equality with the custom-type case)",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":\"Hello, Bob!\",\"foo\":\"bar\"}}",
+   "ethSigUtil": {
+    "signature": "0x22ee0cb3a379f3a122f7b59456ebcf404ca139320a0723560abde49cc95f4a2f69774bf94c4e776f1a9c8c8a67e9e2bdda131e04bde935f73fae376ee788920d1c"
+   },
+   "v4": "same",
+   "digest": "25c3d40a39e639a4d0b6e4d2ace5e1281e039c88494d97d8d08f99a6ea75d775"
+  },
+  {
+   "name": "signTypedData an int32 set to null",
+   "source": "src/sign-typed-data.test.ts:6117",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"},{\"name\":\"length\",\"type\":\"int32\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":\"Hello!\",\"length\":null}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid number. Expected a valid number value, but received \"null\"."
+   },
+   "v4": "refused",
+   "why": "null where a value is due"
+  },
+  {
+   "name": "signTypedData an int32 left out (undefined)",
+   "source": "src/sign-typed-data.test.ts:6161",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"},{\"name\":\"length\",\"type\":\"int32\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":\"Hello!\"}}",
+   "ethSigUtil": {
+    "throws": "missing value for field length of type int32"
+   },
+   "v4": "refused",
+   "why": "a field left out"
+  },
+  {
+   "name": "signTypedData a string set to null",
+   "source": "src/sign-typed-data.test.ts:6203; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 should sign data with a dynamic property set to null 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"},\"contents\":null}}",
+   "ethSigUtil": {
+    "signature": "0xe18d18885acf2acf1af426a60c4d8d1345de64c741900d6c6c47a5ad434c1d9b357d1480f1ecf152f88bd3f4f5226720b2636e39059166d1fbdb568ab5211ed81c"
+   },
+   "v4": "refused",
+   "why": "null where a value is due"
+  },
+  {
+   "name": "signTypedData a string left out (undefined)",
+   "source": "src/sign-typed-data.test.ts:6243",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"to\":{\"name\":\"Bob\",\"wallet\":\"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"}}}",
+   "ethSigUtil": {
+    "throws": "missing value for field contents of type string"
+   },
+   "v4": "refused",
+   "why": "a field left out"
+  },
+  {
+   "name": "signTypedData a struct set to null",
+   "source": "src/sign-typed-data.test.ts:6283; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 should sign data with a custom type property set to null 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"to\":null,\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"contents\":\"Hello, Bob!\"}}",
+   "ethSigUtil": {
+    "signature": "0xc24daccba3391e6f6c3c07c8d62b8c83f7bb4e370613cb2d9ece63a4897d2d044e77e613091a496d8f337854c09ee139e4bca87839d3562ba16a850daa60185a1c"
+   },
+   "v4": "same",
+   "digest": "1383de13b7485eeee4f17b34010c52e6fa3beda6cf2fa108eb01df508ee392da"
+  },
+  {
+   "name": "signTypedData a struct left out (undefined)",
+   "source": "src/sign-typed-data.test.ts:6320; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 should sign data with a custom type property set to undefined 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":{\"name\":\"Cow\",\"wallet\":\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"},\"contents\":\"Hello, Bob!\"}}",
+   "ethSigUtil": {
+    "signature": "0xc24daccba3391e6f6c3c07c8d62b8c83f7bb4e370613cb2d9ece63a4897d2d044e77e613091a496d8f337854c09ee139e4bca87839d3562ba16a850daa60185a1c"
+   },
+   "v4": "same",
+   "digest": "1383de13b7485eeee4f17b34010c52e6fa3beda6cf2fa108eb01df508ee392da"
+  },
+  {
+   "name": "signTypedData a function",
+   "source": "src/sign-typed-data.test.ts:6357",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"function\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"test\"}}",
+   "ethSigUtil": {
+    "throws": "Unsupported or invalid type: \"function\""
+   },
+   "v4": "refused",
+   "why": "an undefined type"
+  },
+  {
+   "name": "signTypedData a primary type with no definition",
+   "source": "src/sign-typed-data.test.ts:6379",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"test\"}}",
+   "ethSigUtil": {
+    "throws": "No type definition specified: Message"
+   },
+   "v4": "refused",
+   "why": "the primary type is not defined"
+  },
+  {
+   "name": "signTypedData an unrecognised type",
+   "source": "src/sign-typed-data.test.ts:6400",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"foo\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"test\"}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: The type \"foo\" is not supported."
+   },
+   "v4": "refused",
+   "why": "an undefined type"
+  },
+  {
+   "name": "signTypedData extraneous types",
+   "source": "src/sign-typed-data.test.ts:6422; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 should sign data when given extraneous types 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}],\"Extra\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"Hello!\"}}",
+   "ethSigUtil": {
+    "signature": "0x9809571f17ee150687932fb7b993f4437b05caf9c8e64818ab4356b33992f3796636c18e88ba9c6dc140f39f95d8ae5770ad2f17070af208690c82d33f3bc8701c"
+   },
+   "v4": "same",
+   "digest": "7b1563126d74808124cc8d7bde5183024f2274f0bacd7858ba1524489709ef78"
+  },
+  {
+   "name": "signTypedData the minimal message (primary type EIP712Domain)",
+   "source": "src/sign-typed-data.test.ts:5576; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 should sign a minimal valid typed message 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[]},\"primaryType\":\"EIP712Domain\",\"domain\":{},\"message\":{}}",
+   "ethSigUtil": {
+    "signature": "0x24367b495e5d9f1fabc6e66abaaf0f3e5fe6fd984d5870a72523a1add3f3efdd41005bceba75e7c3ee96c233a5c7b4fe5642a58966eb46de25f111f541b272b31b"
+   },
+   "v4": "refused",
+   "why": "the domain as the primary type"
+  },
+  {
+   "name": "signTypedData a domain with every field (primary type EIP712Domain)",
+   "source": "src/sign-typed-data.test.ts:5654; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 should sign a typed message with a domain separator that uses all fields 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"},{\"name\":\"salt\",\"type\":\"bytes32\"}]},\"primaryType\":\"EIP712Domain\",\"domain\":{\"name\":\"example.metamask.io\",\"version\":\"1\",\"chainId\":1,\"verifyingContract\":\"0x0000000000000000000000000000000000000000\",\"salt\":\"0x010203\"},\"message\":{}}",
+   "ethSigUtil": {
+    "signature": "0xf040a7c2d6af769217af11d4344329079314b55cfb7f449f946adf6706a9c57a4b88b2b50565d41f5b288e10de4547924210e3096b5eec8fa7573933cb068f0b1b"
+   },
+   "v4": "refused",
+   "why": "the domain as the primary type"
+  },
+  {
+   "name": "signTypedData a domain with an extra field (primary type EIP712Domain)",
+   "source": "src/sign-typed-data.test.ts:5698; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 should sign a typed message with extra domain seperator fields 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"},{\"name\":\"salt\",\"type\":\"bytes32\"},{\"name\":\"extraField\",\"type\":\"string\"}]},\"primaryType\":\"EIP712Domain\",\"domain\":{\"name\":\"example.metamask.io\",\"version\":\"1\",\"chainId\":1,\"verifyingContract\":\"0x0000000000000000000000000000000000000000\",\"salt\":\"0x010203\",\"extraField\":\"stuff\"},\"message\":{}}",
+   "ethSigUtil": {
+    "signature": "0x8ee10dccf694bce51a20752181940f12686da8ec8fa8eba0aac2ea7cc31ad5024be6bfe9ac492ae75bc594e3925c0e7de33509daf4ed3725278a3180b526313c1c"
+   },
+   "v4": "refused",
+   "why": "the domain as the primary type"
+  },
+  {
+   "name": "signTypedData a domain of custom fields only (primary type EIP712Domain)",
+   "source": "src/sign-typed-data.test.ts:5747; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 should sign a typed message with only custom domain seperator fields 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[{\"name\":\"customName\",\"type\":\"string\"},{\"name\":\"customVersion\",\"type\":\"string\"},{\"name\":\"customChainId\",\"type\":\"uint256\"},{\"name\":\"customVerifyingContract\",\"type\":\"address\"},{\"name\":\"customSalt\",\"type\":\"bytes32\"},{\"name\":\"extraField\",\"type\":\"string\"}]},\"primaryType\":\"EIP712Domain\",\"domain\":{\"customName\":\"example.metamask.io\",\"customVersion\":\"1\",\"customChainId\":1,\"customVerifyingContract\":\"0x0000000000000000000000000000000000000000\",\"customSalt\":\"0x010203\",\"extraField\":\"stuff\"},\"message\":{}}",
+   "ethSigUtil": {
+    "signature": "0x3b863232a4522d03c07ad317001becca5e39dad8adcc2562b34423ac914cdad2162c59c848c45a59b00028143c4524365f382b8565d83363cde52c2b448d9c591c"
+   },
+   "v4": "refused",
+   "why": "the domain as the primary type"
+  },
+  {
+   "name": "signTypedData a message with a 3-byte salt in its domain",
+   "source": "src/sign-typed-data.test.ts:5797; src/__snapshots__/sign-typed-data.test.ts.snap `signTypedData V4 should sign a typed message with data 1`",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"},{\"name\":\"salt\",\"type\":\"bytes32\"}],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{\"name\":\"example.metamask.io\",\"version\":\"1\",\"chainId\":1,\"verifyingContract\":\"0x0000000000000000000000000000000000000000\",\"salt\":\"0x010203\"},\"message\":{\"data\":\"Hello!\"}}",
+   "ethSigUtil": {
+    "signature": "0x6d670a14c801041d1e54e0565df65327c462aef1083766b93b9a523f8fff449c114bc223ff59eba0c8cddfa7396008c1291096cf39e494ef041af1e43b382d1a1b"
+   },
+   "v4": "same",
+   "digest": "d2669f23b7849020ad41bcbff5b51372793f91320e0f901641945568ed7322be"
+  },
+  {
+   "name": "eip712Hash the minimal message (primary type EIP712Domain)",
+   "source": "src/sign-typed-data.test.ts:3901; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.eip712Hash V4 should hash a minimal valid typed message 1`",
+   "check": "eip712Hash",
+   "typedData": "{\"types\":{\"EIP712Domain\":[]},\"primaryType\":\"EIP712Domain\",\"domain\":{},\"message\":{}}",
+   "ethSigUtil": {
+    "eip712Hash": "8d4a3f4082945b7879e2b55f181c31a77c8c0a464b70669458abbaaf99de4c38"
+   },
+   "v4": "refused",
+   "why": "the domain as the primary type"
+  },
+  {
+   "name": "eip712Hash a domain with every field (primary type EIP712Domain)",
+   "source": "src/sign-typed-data.test.ts:3978; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.eip712Hash V4 should hash a typed message with a domain separator that uses all fields. 1`",
+   "check": "eip712Hash",
+   "typedData": "{\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"},{\"name\":\"salt\",\"type\":\"bytes32\"}]},\"primaryType\":\"EIP712Domain\",\"domain\":{\"name\":\"example.metamask.io\",\"version\":\"1\",\"chainId\":1,\"verifyingContract\":\"0x0000000000000000000000000000000000000000\",\"salt\":\"0x010203\"},\"message\":{}}",
+   "ethSigUtil": {
+    "eip712Hash": "54ffed5209a17ac210ef3823740b3852ee9cd518b84ee39f0a3fa7f2f9b4205b"
+   },
+   "v4": "refused",
+   "why": "the domain as the primary type"
+  },
+  {
+   "name": "eip712Hash a domain with an extra field (primary type EIP712Domain)",
+   "source": "src/sign-typed-data.test.ts:4021; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.eip712Hash V4 should hash a typed message with extra domain seperator fields 1`",
+   "check": "eip712Hash",
+   "typedData": "{\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"},{\"name\":\"salt\",\"type\":\"bytes32\"},{\"name\":\"extraField\",\"type\":\"string\"}]},\"primaryType\":\"EIP712Domain\",\"domain\":{\"name\":\"example.metamask.io\",\"version\":\"1\",\"chainId\":1,\"verifyingContract\":\"0x0000000000000000000000000000000000000000\",\"salt\":\"0x010203\",\"extraField\":\"stuff\"},\"message\":{}}",
+   "ethSigUtil": {
+    "eip712Hash": "2323c742c20093ee44c2a0abef2b950062a3d70b3453ef4995a072dba9e47d7d"
+   },
+   "v4": "refused",
+   "why": "the domain as the primary type"
+  },
+  {
+   "name": "eip712Hash a domain of custom fields only (primary type EIP712Domain)",
+   "source": "src/sign-typed-data.test.ts:4069; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.eip712Hash V4 should hash a typed message with only custom domain seperator fields 1`",
+   "check": "eip712Hash",
+   "typedData": "{\"types\":{\"EIP712Domain\":[{\"name\":\"customName\",\"type\":\"string\"},{\"name\":\"customVersion\",\"type\":\"string\"},{\"name\":\"customChainId\",\"type\":\"uint256\"},{\"name\":\"customVerifyingContract\",\"type\":\"address\"},{\"name\":\"customSalt\",\"type\":\"bytes32\"},{\"name\":\"extraField\",\"type\":\"string\"}]},\"primaryType\":\"EIP712Domain\",\"domain\":{\"customName\":\"example.metamask.io\",\"customVersion\":\"1\",\"customChainId\":1,\"customVerifyingContract\":\"0x0000000000000000000000000000000000000000\",\"customSalt\":\"0x010203\",\"extraField\":\"stuff\"},\"message\":{}}",
+   "ethSigUtil": {
+    "eip712Hash": "3efa3ef0305f56ba5bba62000500e29fe82c5314bca2f958c64e31b2498560f8"
+   },
+   "v4": "refused",
+   "why": "the domain as the primary type"
+  },
+  {
+   "name": "eip712Hash a message with a 3-byte salt in its domain",
+   "source": "src/sign-typed-data.test.ts:4118; src/__snapshots__/sign-typed-data.test.ts.snap `TypedDataUtils.eip712Hash V4 should hash a typed message with data 1`",
+   "check": "eip712Hash",
+   "typedData": "{\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"},{\"name\":\"salt\",\"type\":\"bytes32\"}],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{\"name\":\"example.metamask.io\",\"version\":\"1\",\"chainId\":1,\"verifyingContract\":\"0x0000000000000000000000000000000000000000\",\"salt\":\"0x010203\"},\"message\":{\"data\":\"Hello!\"}}",
+   "ethSigUtil": {
+    "eip712Hash": "d2669f23b7849020ad41bcbff5b51372793f91320e0f901641945568ed7322be"
+   },
+   "v4": "same"
+  },
+  {
+   "name": "eip712Hash the minimal message with types, domain and message left out",
+   "source": "src/sign-typed-data.test.ts:3920 (asserts equality with the minimal message)",
+   "check": "eip712Hash",
+   "typedData": "{\"types\":{},\"primaryType\":\"EIP712Domain\"}",
+   "ethSigUtil": {
+    "eip712Hash": "8d4a3f4082945b7879e2b55f181c31a77c8c0a464b70669458abbaaf99de4c38"
+   },
+   "v4": "refused",
+   "why": "needs types, primaryType, domain and message"
+  },
+  {
+   "name": "recoverTypedSignature the example signature",
+   "source": "src/sign-typed-data.test.ts:6610",
+   "check": "signTypedData",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"test\"}}",
+   "ethSigUtil": {
+    "signature": "0xf6cda8eaf5137e8cc15d48d03a002b0512446e2a7acbc576c01cfbe40ad9345663ccda8884520d98dece9a8bfe38102851bdae7f69b3d8612b9808e6337801601b"
+   },
+   "v4": "same",
+   "digest": "db1e257f42232aee5d38ee5c6e1edc097011c0c242365b063ea863ce11364c1a"
+  },
+  {
+   "name": "encodeType simple",
+   "source": "src/sign-typed-data.test.ts:3139",
+   "check": "encodeType",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"}]},\"primaryType\":\"Person\",\"domain\":{},\"message\":{\"name\":\"\"}}",
+   "ethSigUtil": {
+    "encodeType": "Person(string name)"
+   },
+   "encodeTypeOf": "Person",
+   "v4": "same"
+  },
+  {
+   "name": "encodeType complex",
+   "source": "src/sign-typed-data.test.ts:3150",
+   "check": "encodeType",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person[]\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":null,\"to\":[],\"contents\":\"\"}}",
+   "ethSigUtil": {
+    "encodeType": "Mail(Person from,Person[] to,string contents)Person(string name,address wallet)"
+   },
+   "encodeTypeOf": "Mail",
+   "v4": "same"
+  },
+  {
+   "name": "encodeType recursive",
+   "source": "src/sign-typed-data.test.ts:3169",
+   "check": "encodeType",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"},{\"name\":\"replyTo\",\"type\":\"Mail\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":null,\"to\":null,\"contents\":\"\",\"replyTo\":null}}",
+   "ethSigUtil": {
+    "encodeType": "Mail(Person from,Person to,string contents,Mail replyTo)Person(string name,address wallet)"
+   },
+   "encodeTypeOf": "Mail",
+   "v4": "same"
+  },
+  {
+   "name": "encodeType unrecognised non-primary types",
+   "source": "src/sign-typed-data.test.ts:3189",
+   "check": "encodeType",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Mail\":[{\"name\":\"from\",\"type\":\"Person\"},{\"name\":\"to\",\"type\":\"Person\"},{\"name\":\"contents\",\"type\":\"string\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{\"from\":null,\"to\":null,\"contents\":\"\"}}",
+   "ethSigUtil": {
+    "encodeType": "Mail(Person from,Person to,string contents)"
+   },
+   "encodeTypeOf": "Mail",
+   "v4": "same"
+  },
+  {
+   "name": "encodeType a missing primary type",
+   "source": "src/sign-typed-data.test.ts:3204",
+   "check": "encodeType",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Person\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"wallet\",\"type\":\"address\"}]},\"primaryType\":\"Mail\",\"domain\":{},\"message\":{}}",
+   "ethSigUtil": {
+    "throws": "No type definition specified: Mail"
+   },
+   "encodeTypeOf": "Mail",
+   "v4": "refused",
+   "why": "the type is not defined"
+  },
+  {
+   "name": "encodeType called unbound",
+   "source": "src/sign-typed-data.test.ts:3218",
+   "check": "encodeType",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"string\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"\"}}",
+   "ethSigUtil": {
+    "encodeType": "Message(string data)"
+   },
+   "encodeTypeOf": "Message",
+   "v4": "same"
+  },
+  {
+   "name": "bool rejects 0 (number)",
+   "source": "src/sign-typed-data.test.ts:4466",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":0}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"0\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "bool rejects 1 (number)",
+   "source": "src/sign-typed-data.test.ts:4466",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":1}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"1\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "bool rejects -1 (number)",
+   "source": "src/sign-typed-data.test.ts:4466",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":-1}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"-1\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "bool rejects \"0\" (string)",
+   "source": "src/sign-typed-data.test.ts:4466",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"0\"}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"0\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "bool rejects \"1\" (string)",
+   "source": "src/sign-typed-data.test.ts:4466",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"1\"}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"1\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "bool rejects \"\" (string)",
+   "source": "src/sign-typed-data.test.ts:4466",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"\"}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "bool rejects \"no\" (string)",
+   "source": "src/sign-typed-data.test.ts:4466",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"no\"}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"no\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "bool rejects \"False\" (string)",
+   "source": "src/sign-typed-data.test.ts:4466",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"False\"}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"False\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  },
+  {
+   "name": "bool rejects \"TRUE\" (string)",
+   "source": "src/sign-typed-data.test.ts:4466",
+   "check": "hashStruct",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"Message\":[{\"name\":\"data\",\"type\":\"bool\"}]},\"primaryType\":\"Message\",\"domain\":{},\"message\":{\"data\":\"TRUE\"}}",
+   "ethSigUtil": {
+    "throws": "Unable to encode value: Invalid bool. Expected a boolean or the string \"true\" or \"false\", but received \"TRUE\"."
+   },
+   "wrapped": "hashStruct of the message, inside a document with \"EIP712Domain\": [] and domain {} added",
+   "v4": "refused",
+   "why": "a bool that is not true or false"
+  }
+ ]
+}

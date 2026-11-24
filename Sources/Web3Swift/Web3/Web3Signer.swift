@@ -93,6 +93,10 @@ public struct Web3Signer {
 
     /// Parse EIP-712 typed-data JSON, sign, and return `0x`-prefixed 65-byte hex
     /// with `v` normalised to `{27, 28}`.
+    ///
+    /// The digest is `EIP712Document`'s with the `signTypedDataV4` reading (what
+    /// MetaMask's eth-sig-util V4 signs); typed data that reading refuses throws
+    /// before the key is read.
     public static func signTypedDataV4(
         _ typedDataJSON: String,
         keystore: AbstractKeystore,

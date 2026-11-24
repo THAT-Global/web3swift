@@ -1,0 +1,657 @@
+{
+ "source": {
+  "what": "Digests computed on 25 Nov 2026 by implementations that share nothing with this package, for the 29 vectors of typed-data-vectors.json and for rows of the phone-key reading (EIP712Document.Reading.signTypedDataV4).",
+  "implementations": [
+   "@metamask/eth-sig-util 4.0.1: TypedDataUtils.eip712Hash(JSON.parse(text), \"V4\"), the copy installed under ~/Developer/uniswap-widgets/node_modules",
+   "ethers 6.17.0: TypedDataEncoder.hash(domain, the types the primary type reaches, message), the copy installed under ~/Developer/THAT/that-website/node_modules/.pnpm",
+   "node v26.9.0; nothing was downloaded or installed"
+  ],
+  "ethSigUtil9Emulated": "eth-sig-util at the commit of eth-sig-util-v4-vectors.json, emulated by that file's checker (it reproduces all 248 recorded values)",
+  "rows": "A row the phone-key reading reads has \"reference\": eth-sig-util 4.0.1's digest of its \"twin\" (the same value written as every reader takes it) where it has one, else of the row itself; the eth-sig-util 9 emulation gives the same digest for the row. eth-sig-util 4.0.1 predates version 9's number handling: it refuses 10^18 as a JSON number and reads \"\\t0x10\\n\" as decimal text, where 9 and the old web3swift read both as their values. A refused row records why."
+ },
+ "vectors": [
+  {
+   "name": "the EIP-712 Mail example",
+   "ethSigUtil401": "be609aee343fb3c4b28e1df9e632fca64fcfaede20f02e86244efddf30957bd2",
+   "ethers617": "be609aee343fb3c4b28e1df9e632fca64fcfaede20f02e86244efddf30957bd2"
+  },
+  {
+   "name": "arrays, nested structs, negative and large numbers",
+   "ethSigUtil401": "1860ea6df0029933d43427f3d0952a8ca1d2227ce3013fe460e172e209894185",
+   "ethers617": "1860ea6df0029933d43427f3d0952a8ca1d2227ce3013fe460e172e209894185"
+  },
+  {
+   "name": "an ERC-2612 permit",
+   "ethSigUtil401": "31fe2e504392de6c70555a593dc4e44e718e51d2b7823b7c8b3fce9a87b4c5ae",
+   "ethers617": "31fe2e504392de6c70555a593dc4e44e718e51d2b7823b7c8b3fce9a87b4c5ae"
+  },
+  {
+   "name": "a string array with an empty entry",
+   "ethSigUtil401": "bd521cc54a79a3250a91bd83edc9b569844764aa41294fae6b227988e57001e0",
+   "ethers617": "bd521cc54a79a3250a91bd83edc9b569844764aa41294fae6b227988e57001e0"
+  },
+  {
+   "name": "an array of structs",
+   "ethSigUtil401": "edc8bf40e4cdc117d82df9f36e9f84c39204b332111b924ec721709655768a21",
+   "ethers617": "edc8bf40e4cdc117d82df9f36e9f84c39204b332111b924ec721709655768a21"
+  },
+  {
+   "name": "an empty array of structs",
+   "ethSigUtil401": "5a4d5258135045fba69f6254a472764d3e5889a55e4fb6abe0eaed86a046126c",
+   "ethers617": "5a4d5258135045fba69f6254a472764d3e5889a55e4fb6abe0eaed86a046126c"
+  },
+  {
+   "name": "an empty array of numbers",
+   "ethSigUtil401": "098891dd70301905725e1f2f22abfbf0525b640728b956c77f1b04220edc6000",
+   "ethers617": "098891dd70301905725e1f2f22abfbf0525b640728b956c77f1b04220edc6000"
+  },
+  {
+   "name": "a fixed array of booleans",
+   "ethSigUtil401": "20b9c87d590149f947c5d3f56d8ded251c6ce3d6831b416c35e3730be69367a6",
+   "ethers617": "20b9c87d590149f947c5d3f56d8ded251c6ce3d6831b416c35e3730be69367a6"
+  },
+  {
+   "name": "an array of arrays",
+   "ethSigUtil401": "f65fbcaa7aade49021d73715fadbbf29710e2c54bd7223d68535c0b902769475",
+   "ethers617": "f65fbcaa7aade49021d73715fadbbf29710e2c54bd7223d68535c0b902769475"
+  },
+  {
+   "name": "an array of addresses",
+   "ethSigUtil401": "875db99de81f76b1252324d4146181f68e49ab48d46f70befac5b6630d2fb43d",
+   "ethers617": "875db99de81f76b1252324d4146181f68e49ab48d46f70befac5b6630d2fb43d"
+  },
+  {
+   "name": "an array of byte strings",
+   "ethSigUtil401": "df36bb3be52a471fb8bf1a1dc47c589dddf10b4e7bba010adb185888df956646",
+   "ethers617": "df36bb3be52a471fb8bf1a1dc47c589dddf10b4e7bba010adb185888df956646"
+  },
+  {
+   "name": "the lowest int256",
+   "ethSigUtil401": "0295f764fe45558c8a8ff693a402b5168eadd0dbcf3af320280ae373aab2690f",
+   "ethers617": "0295f764fe45558c8a8ff693a402b5168eadd0dbcf3af320280ae373aab2690f"
+  },
+  {
+   "name": "a negative int8 written as a number",
+   "ethSigUtil401": "219667f693b6b05379aba18855b25927cd23be8d52178b8125c47e1ae0db0549",
+   "ethers617": "219667f693b6b05379aba18855b25927cd23be8d52178b8125c47e1ae0db0549"
+  },
+  {
+   "name": "int16 128, whose one byte has its top bit set",
+   "ethSigUtil401": "dd99677b3f067b89ae76d81a988283a9a70a5142b67f5289fd456302e7c3455d",
+   "ethers617": "dd99677b3f067b89ae76d81a988283a9a70a5142b67f5289fd456302e7c3455d"
+  },
+  {
+   "name": "int16 -128",
+   "ethSigUtil401": "8f550c708db740f5aca4d4e5c1b17dba9acc7425bffabb4342cff58b6187b901",
+   "ethers617": "8f550c708db740f5aca4d4e5c1b17dba9acc7425bffabb4342cff58b6187b901"
+  },
+  {
+   "name": "int16 -32768",
+   "ethSigUtil401": "62ebf8596c6271aeac866c673b7fca55611083d5303e45b4eef9237140fc5d52",
+   "ethers617": "62ebf8596c6271aeac866c673b7fca55611083d5303e45b4eef9237140fc5d52"
+  },
+  {
+   "name": "a uint256 written in hex",
+   "ethSigUtil401": "a7bb222e5b7b57bcebae7c6dca469a850e37a51725b092d5b3ac6cdf98bc1a11",
+   "ethers617": "a7bb222e5b7b57bcebae7c6dca469a850e37a51725b092d5b3ac6cdf98bc1a11"
+  },
+  {
+   "name": "a uint64 written as a number",
+   "ethSigUtil401": "cb4a75772eac7a8e4b3bfb5e410ee7129fe609d866fabffe442f0985bfd7ada1",
+   "ethers617": "cb4a75772eac7a8e4b3bfb5e410ee7129fe609d866fabffe442f0985bfd7ada1"
+  },
+  {
+   "name": "a bytes32",
+   "ethSigUtil401": "cb5fada76c58be0abc3f54c52c65129c8629e0476995df683da117aabc32d06c",
+   "ethers617": "cb5fada76c58be0abc3f54c52c65129c8629e0476995df683da117aabc32d06c"
+  },
+  {
+   "name": "a bytes4",
+   "ethSigUtil401": "23c1f9211864bbb63ecd263b73ba2b84dde6eec1e773d261f12d614d9bc00e66",
+   "ethers617": "23c1f9211864bbb63ecd263b73ba2b84dde6eec1e773d261f12d614d9bc00e66"
+  },
+  {
+   "name": "a string outside ASCII",
+   "ethSigUtil401": "e88313f01d53fd7521af88d17b99f1981f21b4d4c4b246224e81e7b825d209ed",
+   "ethers617": "e88313f01d53fd7521af88d17b99f1981f21b4d4c4b246224e81e7b825d209ed"
+  },
+  {
+   "name": "dynamic bytes",
+   "ethSigUtil401": "c37804a662bdde8e1fc5574c3508c67b2f2b5b4508d604baeba9a9cade26a539",
+   "ethers617": "c37804a662bdde8e1fc5574c3508c67b2f2b5b4508d604baeba9a9cade26a539"
+  },
+  {
+   "name": "empty dynamic bytes and an empty string",
+   "ethSigUtil401": "f5dc3a5f7ba54aecb90056256b8cf1eb800e23dfaa476a2a6ae2e9d29e89175a",
+   "ethers617": "f5dc3a5f7ba54aecb90056256b8cf1eb800e23dfaa476a2a6ae2e9d29e89175a"
+  },
+  {
+   "name": "a nested struct",
+   "ethSigUtil401": "ceeb0df5a6fb553c1b5df93aa8079b50b3d4c6f11a78c3de0cc1f156d48e7510",
+   "ethers617": "ceeb0df5a6fb553c1b5df93aa8079b50b3d4c6f11a78c3de0cc1f156d48e7510"
+  },
+  {
+   "name": "a domain with a salt and no contract",
+   "ethSigUtil401": "014faceda959d4e8a0a910658d4134982eced407fa1a8e2fc864971cf4298c64",
+   "ethers617": "014faceda959d4e8a0a910658d4134982eced407fa1a8e2fc864971cf4298c64"
+  },
+  {
+   "name": "a struct reached only through another, whose name sorts first",
+   "ethSigUtil401": "1ca5733c2fd59143cf3a849dde912af4dfca3b72c0fe298da9b1b7e0f76ea10a",
+   "ethers617": "1ca5733c2fd59143cf3a849dde912af4dfca3b72c0fe298da9b1b7e0f76ea10a"
+  },
+  {
+   "name": "a struct reached by two ways",
+   "ethSigUtil401": "3f0083a1ebdebc6e69e17db800ac542f6a1543b6cd1f8e9936ae4e63f7257409",
+   "ethers617": "3f0083a1ebdebc6e69e17db800ac542f6a1543b6cd1f8e9936ae4e63f7257409"
+  },
+  {
+   "name": "a fixed array of structs",
+   "ethSigUtil401": "d0e4ce77a4c6c8a7bc965d627a0bc1a3c850a783e865f4017b8ce6edefcb43f2",
+   "ethers617": "d0e4ce77a4c6c8a7bc965d627a0bc1a3c850a783e865f4017b8ce6edefcb43f2"
+  },
+  {
+   "name": "a domain type the JSON leaves out",
+   "ethSigUtil401": "f57a36c7873f1730fd47cb131d2f28f3365ca302dd578842b86fb6ccf7e7adb2",
+   "ethers617": "08600098a09db7daa3dfc2642e0c36d2fb19c5e1a3d97dad19329128e8b792d4"
+  }
+ ],
+ "rows": [
+  {
+   "name": "uint256 10^18 as a JSON number",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":1000000000000000000}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": {
+    "error": "Assertion failed"
+   },
+   "ethers617": {
+    "error": "overflow (argument=\"value\", value=1000000000000000000, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "5e392102d4b5f039916b8230561144c9709d9e4e461efc4ccedafb7918c13754",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"1000000000000000000\"}}",
+   "twinEthSigUtil401": "5e392102d4b5f039916b8230561144c9709d9e4e461efc4ccedafb7918c13754",
+   "digest": "5e392102d4b5f039916b8230561144c9709d9e4e461efc4ccedafb7918c13754",
+   "reference": "5e392102d4b5f039916b8230561144c9709d9e4e461efc4ccedafb7918c13754"
+  },
+  {
+   "name": "uint256 1e18",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":1e18}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": {
+    "error": "Assertion failed"
+   },
+   "ethers617": {
+    "error": "overflow (argument=\"value\", value=1000000000000000000, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "5e392102d4b5f039916b8230561144c9709d9e4e461efc4ccedafb7918c13754",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"1000000000000000000\"}}",
+   "twinEthSigUtil401": "5e392102d4b5f039916b8230561144c9709d9e4e461efc4ccedafb7918c13754",
+   "digest": "5e392102d4b5f039916b8230561144c9709d9e4e461efc4ccedafb7918c13754",
+   "reference": "5e392102d4b5f039916b8230561144c9709d9e4e461efc4ccedafb7918c13754"
+  },
+  {
+   "name": "uint256 1.0",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":1.0}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "ethers617": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "ethSigUtil9Emulated": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"1\"}}",
+   "twinEthSigUtil401": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "digest": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "reference": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb"
+  },
+  {
+   "name": "uint256 1E3",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":1E3}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "d6bde18b6009ba93e4307fcb45a1ca4810a9d5902a05b9292b81a1ec44bda6c1",
+   "ethers617": "d6bde18b6009ba93e4307fcb45a1ca4810a9d5902a05b9292b81a1ec44bda6c1",
+   "ethSigUtil9Emulated": "d6bde18b6009ba93e4307fcb45a1ca4810a9d5902a05b9292b81a1ec44bda6c1",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"1000\"}}",
+   "twinEthSigUtil401": "d6bde18b6009ba93e4307fcb45a1ca4810a9d5902a05b9292b81a1ec44bda6c1",
+   "digest": "d6bde18b6009ba93e4307fcb45a1ca4810a9d5902a05b9292b81a1ec44bda6c1",
+   "reference": "d6bde18b6009ba93e4307fcb45a1ca4810a9d5902a05b9292b81a1ec44bda6c1"
+  },
+  {
+   "name": "uint256 12.0e0",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":12.0e0}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "ethers617": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "ethSigUtil9Emulated": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"12\"}}",
+   "twinEthSigUtil401": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "digest": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "reference": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93"
+  },
+  {
+   "name": "uint256 1e+21",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":1e+21}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": {
+    "error": "Assertion failed"
+   },
+   "ethers617": {
+    "error": "overflow (argument=\"value\", value=1e+21, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "8d034e4125284ec76a568e259d981a70690c4bca69e53f813c95a1bd065f7045",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"1000000000000000000000\"}}",
+   "twinEthSigUtil401": "8d034e4125284ec76a568e259d981a70690c4bca69e53f813c95a1bd065f7045",
+   "digest": "8d034e4125284ec76a568e259d981a70690c4bca69e53f813c95a1bd065f7045",
+   "reference": "8d034e4125284ec76a568e259d981a70690c4bca69e53f813c95a1bd065f7045"
+  },
+  {
+   "name": "uint256 2^53 as a JSON number",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":9007199254740992}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": {
+    "error": "Assertion failed"
+   },
+   "ethers617": {
+    "error": "overflow (argument=\"value\", value=9007199254740992, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "dae071b02c0b6bcdc496ea2260bd3e75f263be20c63b9ffef3d6a42c3c8b9657",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"9007199254740992\"}}",
+   "twinEthSigUtil401": "dae071b02c0b6bcdc496ea2260bd3e75f263be20c63b9ffef3d6a42c3c8b9657",
+   "digest": "dae071b02c0b6bcdc496ea2260bd3e75f263be20c63b9ffef3d6a42c3c8b9657",
+   "reference": "dae071b02c0b6bcdc496ea2260bd3e75f263be20c63b9ffef3d6a42c3c8b9657"
+  },
+  {
+   "name": "uint256 2^64 as a JSON number",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":18446744073709551616}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": {
+    "error": "Assertion failed"
+   },
+   "ethers617": {
+    "error": "overflow (argument=\"value\", value=18446744073709552000, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "098bd9608ed3dba233edb9351a2acccc24e73253412a83490a2404ef5d89bbf7",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"18446744073709551616\"}}",
+   "twinEthSigUtil401": "098bd9608ed3dba233edb9351a2acccc24e73253412a83490a2404ef5d89bbf7",
+   "digest": "098bd9608ed3dba233edb9351a2acccc24e73253412a83490a2404ef5d89bbf7",
+   "reference": "098bd9608ed3dba233edb9351a2acccc24e73253412a83490a2404ef5d89bbf7"
+  },
+  {
+   "name": "int8 -5.0",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"int8\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":-5.0}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "df5cf8d8cef041cae75439d4fc6409c3b17d9769225f0587797aae089e53302e",
+   "ethers617": "df5cf8d8cef041cae75439d4fc6409c3b17d9769225f0587797aae089e53302e",
+   "ethSigUtil9Emulated": "df5cf8d8cef041cae75439d4fc6409c3b17d9769225f0587797aae089e53302e",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"int8\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"-5\"}}",
+   "twinEthSigUtil401": "df5cf8d8cef041cae75439d4fc6409c3b17d9769225f0587797aae089e53302e",
+   "digest": "df5cf8d8cef041cae75439d4fc6409c3b17d9769225f0587797aae089e53302e",
+   "reference": "df5cf8d8cef041cae75439d4fc6409c3b17d9769225f0587797aae089e53302e"
+  },
+  {
+   "name": "a domain chainId of 137.0",
+   "typedData": "{\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"}],\"T\":[{\"name\":\"a\",\"type\":\"uint8\"}]},\"primaryType\":\"T\",\"domain\":{\"name\":\"N\",\"chainId\":137.0},\"message\":{\"a\":1}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "3044ab2953441e185c7b7cfdebcbc37683473408ca149c96c9f79c30a94c7e83",
+   "ethers617": "3044ab2953441e185c7b7cfdebcbc37683473408ca149c96c9f79c30a94c7e83",
+   "ethSigUtil9Emulated": "3044ab2953441e185c7b7cfdebcbc37683473408ca149c96c9f79c30a94c7e83",
+   "twin": "{\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"}],\"T\":[{\"name\":\"a\",\"type\":\"uint8\"}]},\"primaryType\":\"T\",\"domain\":{\"name\":\"N\",\"chainId\":\"137\"},\"message\":{\"a\":1}}",
+   "twinEthSigUtil401": "3044ab2953441e185c7b7cfdebcbc37683473408ca149c96c9f79c30a94c7e83",
+   "digest": "3044ab2953441e185c7b7cfdebcbc37683473408ca149c96c9f79c30a94c7e83",
+   "reference": "3044ab2953441e185c7b7cfdebcbc37683473408ca149c96c9f79c30a94c7e83"
+  },
+  {
+   "name": "uint256 1.5",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":1.5}}",
+   "phoneKeyReading": "refused: a JSON number that is not a whole number",
+   "ethSigUtil401": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "ethers617": {
+    "error": "underflow (argument=\"value\", value=1.5, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": {
+    "error": "fraction"
+   }
+  },
+  {
+   "name": "uint256 0.1e1",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":0.1e1}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "ethers617": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "ethSigUtil9Emulated": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"1\"}}",
+   "twinEthSigUtil401": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "digest": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "reference": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb"
+  },
+  {
+   "name": "uint256 1e-1",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":1e-1}}",
+   "phoneKeyReading": "refused: a JSON number that is not a whole number",
+   "ethSigUtil401": "d7aab0cbe6fa80f9b0ffa281b317357bcea1d67e9345047eaab3fa11b036f500",
+   "ethers617": {
+    "error": "underflow (argument=\"value\", value=0.1, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": {
+    "error": "fraction"
+   }
+  },
+  {
+   "name": "uint256 12345678901234567890",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":12345678901234567890}}",
+   "phoneKeyReading": "refused: a JSON number JavaScript cannot hold exactly",
+   "ethSigUtil401": {
+    "error": "Assertion failed"
+   },
+   "ethers617": {
+    "error": "overflow (argument=\"value\", value=12345678901234567000, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "356ea4706bac783c855919ccda170c888cd4e8effb1bf5a135fa4f32d491b1c2"
+  },
+  {
+   "name": "uint256 2^53 + 1",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":9007199254740993}}",
+   "phoneKeyReading": "refused: a JSON number JavaScript cannot hold exactly",
+   "ethSigUtil401": {
+    "error": "Assertion failed"
+   },
+   "ethers617": {
+    "error": "overflow (argument=\"value\", value=9007199254740992, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "dae071b02c0b6bcdc496ea2260bd3e75f263be20c63b9ffef3d6a42c3c8b9657"
+  },
+  {
+   "name": "uint256 1e23 (no double holds it)",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":1e23}}",
+   "phoneKeyReading": "refused: a JSON number JavaScript cannot hold exactly",
+   "ethSigUtil401": {
+    "error": "Assertion failed"
+   },
+   "ethers617": {
+    "error": "overflow (argument=\"value\", value=1e+23, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "eb302b19928ab3ed956c71f910428390223fd60555ed4640fe661cc06f74c02e"
+  },
+  {
+   "name": "uint256 \" 12 \"",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\" 12 \"}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "ethers617": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "ethSigUtil9Emulated": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"12\"}}",
+   "twinEthSigUtil401": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "digest": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "reference": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93"
+  },
+  {
+   "name": "uint256 \"\\t0x10\\n\"",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"\\t0x10\\n\"}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "cda6f4d5a3bd1c1c341861854ec05df8bc01de4d6e0632cad36d24ea64db649e",
+   "ethers617": "5894c88c00e42851a2b1e235071d24f8117db5cd975c475d81c6ea9e770954e2",
+   "ethSigUtil9Emulated": "5894c88c00e42851a2b1e235071d24f8117db5cd975c475d81c6ea9e770954e2",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x10\"}}",
+   "twinEthSigUtil401": "5894c88c00e42851a2b1e235071d24f8117db5cd975c475d81c6ea9e770954e2",
+   "digest": "5894c88c00e42851a2b1e235071d24f8117db5cd975c475d81c6ea9e770954e2",
+   "reference": "5894c88c00e42851a2b1e235071d24f8117db5cd975c475d81c6ea9e770954e2"
+  },
+  {
+   "name": "uint256 NBSP 12",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"\\u00a012\"}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "ethers617": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "ethSigUtil9Emulated": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"12\"}}",
+   "twinEthSigUtil401": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "digest": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93",
+   "reference": "ff340e6837347a66d5f502e93c3b4243c494e1d2cfb92fd4c768c93205dc4f93"
+  },
+  {
+   "name": "int256 \"+5\"",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"int256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"+5\"}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "cc23b1c45ebca0ff345915904df7dd69efa21bf5223260b2ba7f1b29becbe8ae",
+   "ethers617": "9ba5d3f1fac7cd42f821faf6ae17938bd6cd1bcde35f2f6b7b92666893bbb20a",
+   "ethSigUtil9Emulated": "9ba5d3f1fac7cd42f821faf6ae17938bd6cd1bcde35f2f6b7b92666893bbb20a",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"int256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"5\"}}",
+   "twinEthSigUtil401": "9ba5d3f1fac7cd42f821faf6ae17938bd6cd1bcde35f2f6b7b92666893bbb20a",
+   "digest": "9ba5d3f1fac7cd42f821faf6ae17938bd6cd1bcde35f2f6b7b92666893bbb20a",
+   "reference": "9ba5d3f1fac7cd42f821faf6ae17938bd6cd1bcde35f2f6b7b92666893bbb20a"
+  },
+  {
+   "name": "uint256 \"+0x5\"",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"+0x5\"}}",
+   "phoneKeyReading": "refused: a number written neither in decimal nor as 0x hex",
+   "ethSigUtil401": {
+    "error": "Supplied uint is negative"
+   },
+   "ethers617": {
+    "error": "invalid BigNumberish string: Cannot convert +0x5 to a BigInt (argument=\"value\", value=\"+0x5\", code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": {
+    "error": "not a number: '+0x5'"
+   }
+  },
+  {
+   "name": "uint256 \"0x\" and 70 leading zeros",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x00000000000000000000000000000000000000000000000000000000000000000000001\"}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "ethers617": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "ethSigUtil9Emulated": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint256\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"1\"}}",
+   "twinEthSigUtil401": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "digest": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb",
+   "reference": "26ecf798a19999ec9eb6bba316a119a04e9d1e3512b387d3cde1b6446bb2dbdb"
+  },
+  {
+   "name": "bytes32 \"0x10\"",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes32\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x10\"}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "4c7f4428182e20242422711b39166875ccd67c4dec9663e08a93f34a86afa86d",
+   "ethers617": {
+    "error": "invalid length for bytes32 (argument=\"value\", value=\"0x10\", code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "4c7f4428182e20242422711b39166875ccd67c4dec9663e08a93f34a86afa86d",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes32\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x1000000000000000000000000000000000000000000000000000000000000000\"}}",
+   "twinEthSigUtil401": "4c7f4428182e20242422711b39166875ccd67c4dec9663e08a93f34a86afa86d",
+   "digest": "4c7f4428182e20242422711b39166875ccd67c4dec9663e08a93f34a86afa86d",
+   "reference": "4c7f4428182e20242422711b39166875ccd67c4dec9663e08a93f34a86afa86d"
+  },
+  {
+   "name": "bytes4 \"0x12\"",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes4\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x12\"}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "348a305e5cb698c05cfe8f1d3191a6f15195c7ec1ced7b98d9ea996852f2fe11",
+   "ethers617": {
+    "error": "invalid length for bytes4 (argument=\"value\", value=\"0x12\", code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "348a305e5cb698c05cfe8f1d3191a6f15195c7ec1ced7b98d9ea996852f2fe11",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes4\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x12000000\"}}",
+   "twinEthSigUtil401": "348a305e5cb698c05cfe8f1d3191a6f15195c7ec1ced7b98d9ea996852f2fe11",
+   "digest": "348a305e5cb698c05cfe8f1d3191a6f15195c7ec1ced7b98d9ea996852f2fe11",
+   "reference": "348a305e5cb698c05cfe8f1d3191a6f15195c7ec1ced7b98d9ea996852f2fe11"
+  },
+  {
+   "name": "bytes32 \"0x\"",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes32\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x\"}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e",
+   "ethers617": {
+    "error": "invalid length for bytes32 (argument=\"value\", value=\"0x\", code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes32\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x0000000000000000000000000000000000000000000000000000000000000000\"}}",
+   "twinEthSigUtil401": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e",
+   "digest": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e",
+   "reference": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e"
+  },
+  {
+   "name": "a 3-byte salt",
+   "typedData": "{\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"salt\",\"type\":\"bytes32\"}],\"T\":[{\"name\":\"a\",\"type\":\"uint8\"}]},\"primaryType\":\"T\",\"domain\":{\"name\":\"N\",\"salt\":\"0x010203\"},\"message\":{\"a\":1}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "c14dc5c2f4bd589ca6fcce355cc903e17dec5c48ef729a098a9d64ebf500095e",
+   "ethers617": {
+    "error": "invalid length for bytes32 (argument=\"value\", value=\"0x010203\", code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "c14dc5c2f4bd589ca6fcce355cc903e17dec5c48ef729a098a9d64ebf500095e",
+   "twin": "{\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"salt\",\"type\":\"bytes32\"}],\"T\":[{\"name\":\"a\",\"type\":\"uint8\"}]},\"primaryType\":\"T\",\"domain\":{\"name\":\"N\",\"salt\":\"0x0102030000000000000000000000000000000000000000000000000000000000\"},\"message\":{\"a\":1}}",
+   "twinEthSigUtil401": "c14dc5c2f4bd589ca6fcce355cc903e17dec5c48ef729a098a9d64ebf500095e",
+   "digest": "c14dc5c2f4bd589ca6fcce355cc903e17dec5c48ef729a098a9d64ebf500095e",
+   "reference": "c14dc5c2f4bd589ca6fcce355cc903e17dec5c48ef729a098a9d64ebf500095e"
+  },
+  {
+   "name": "bytes32 \"0x101\" (odd)",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes32\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x101\"}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "21fd356b73394b389df532466d35b5ecde6536982effba5700535af01f4c46cb",
+   "ethers617": {
+    "error": "invalid BytesLike value (argument=\"value\", value=\"0x101\", code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "21fd356b73394b389df532466d35b5ecde6536982effba5700535af01f4c46cb",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes32\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x0101000000000000000000000000000000000000000000000000000000000000\"}}",
+   "twinEthSigUtil401": "21fd356b73394b389df532466d35b5ecde6536982effba5700535af01f4c46cb",
+   "digest": "21fd356b73394b389df532466d35b5ecde6536982effba5700535af01f4c46cb",
+   "reference": "21fd356b73394b389df532466d35b5ecde6536982effba5700535af01f4c46cb"
+  },
+  {
+   "name": "bytes \"0x5\" (odd)",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x5\"}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "2994af12c5c7b42f40d667f1d19888ad4d60f134a159f02d124a4defc0e95d88",
+   "ethers617": {
+    "error": "invalid BytesLike value (argument=\"data\", value=\"0x5\", code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "2994af12c5c7b42f40d667f1d19888ad4d60f134a159f02d124a4defc0e95d88",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x05\"}}",
+   "twinEthSigUtil401": "2994af12c5c7b42f40d667f1d19888ad4d60f134a159f02d124a4defc0e95d88",
+   "digest": "2994af12c5c7b42f40d667f1d19888ad4d60f134a159f02d124a4defc0e95d88",
+   "reference": "2994af12c5c7b42f40d667f1d19888ad4d60f134a159f02d124a4defc0e95d88"
+  },
+  {
+   "name": "bytes1 1 as a JSON number",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes1\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":1}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "758b2e5902b19f0ef980c6547f9fa53eb469738686bf8c20ce7fac3e2823effb",
+   "ethers617": {
+    "error": "invalid BytesLike value (argument=\"value\", value=1, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "758b2e5902b19f0ef980c6547f9fa53eb469738686bf8c20ce7fac3e2823effb",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes1\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x01\"}}",
+   "twinEthSigUtil401": "758b2e5902b19f0ef980c6547f9fa53eb469738686bf8c20ce7fac3e2823effb",
+   "digest": "758b2e5902b19f0ef980c6547f9fa53eb469738686bf8c20ce7fac3e2823effb",
+   "reference": "758b2e5902b19f0ef980c6547f9fa53eb469738686bf8c20ce7fac3e2823effb"
+  },
+  {
+   "name": "bytes32 0 as a JSON number",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes32\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":0}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e",
+   "ethers617": {
+    "error": "invalid BytesLike value (argument=\"value\", value=0, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e",
+   "twin": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes32\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x0000000000000000000000000000000000000000000000000000000000000000\"}}",
+   "twinEthSigUtil401": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e",
+   "digest": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e",
+   "reference": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e"
+  },
+  {
+   "name": "bytes4 five bytes",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes4\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":\"0x0102030405\"}}",
+   "phoneKeyReading": "refused: bytes of the wrong length",
+   "ethSigUtil401": "3ba8ccf45ba924cdff8d187449837d4db6162c2bd4b7a16129e6108e3759b99c",
+   "ethers617": {
+    "error": "invalid length for bytes4 (argument=\"value\", value=\"0x0102030405\", code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "3ba8ccf45ba924cdff8d187449837d4db6162c2bd4b7a16129e6108e3759b99c"
+  },
+  {
+   "name": "bytes1 10 as a JSON number",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes1\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":10}}",
+   "phoneKeyReading": "refused: a number in place of bytes, other than 0 or 1",
+   "ethSigUtil401": "6d8e57de903b48cf572f244404b384838e85a80066caf0437796d0884c98291c",
+   "ethers617": {
+    "error": "invalid BytesLike value (argument=\"value\", value=10, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "6d8e57de903b48cf572f244404b384838e85a80066caf0437796d0884c98291c"
+  },
+  {
+   "name": "bytes32 -1 as a JSON number",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bytes32\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":-1}}",
+   "phoneKeyReading": "refused: a number in place of bytes, other than 0 or 1",
+   "ethSigUtil401": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e",
+   "ethers617": {
+    "error": "invalid BytesLike value (argument=\"value\", value=-1, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "cac417d8eb2e65e96e9b1aa2d1dc281176bf185bd5e247b1b4eba5543365f15e"
+  },
+  {
+   "name": "uint 5 (an alias)",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":5}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "08f7f210b996d1b8209114d003cf59b76289488357ad9c54a639f351eafd9e44",
+   "ethers617": "21984713cdd741a4785cd4158e710c36c27dbcf4c23d1c1d5cef6ec42d578ec0",
+   "ethSigUtil9Emulated": "08f7f210b996d1b8209114d003cf59b76289488357ad9c54a639f351eafd9e44",
+   "digest": "08f7f210b996d1b8209114d003cf59b76289488357ad9c54a639f351eafd9e44",
+   "reference": "08f7f210b996d1b8209114d003cf59b76289488357ad9c54a639f351eafd9e44"
+  },
+  {
+   "name": "int -5 (an alias)",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"int\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":-5}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "f84282d81222f254427bd3ef1c63b36e048a632fde54e891ddf499466d1d5fcb",
+   "ethers617": "f72165032608176eab3d38816b75b0df0e8604bb2dffecfb8810f2e529436e05",
+   "ethSigUtil9Emulated": "f84282d81222f254427bd3ef1c63b36e048a632fde54e891ddf499466d1d5fcb",
+   "digest": "f84282d81222f254427bd3ef1c63b36e048a632fde54e891ddf499466d1d5fcb",
+   "reference": "f84282d81222f254427bd3ef1c63b36e048a632fde54e891ddf499466d1d5fcb"
+  },
+  {
+   "name": "uint[] [1, \"2\"] (an alias)",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint[]\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":[1,\"2\"]}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "bb18b56445400af8f83613663ef9c740503f15a365d70f861a14104c1a9e0cf2",
+   "ethers617": "181983ac37d0d318b4aa4e2d5a33c32d0bc83d4908d3f6e358f2c22aae9616c0",
+   "ethSigUtil9Emulated": "bb18b56445400af8f83613663ef9c740503f15a365d70f861a14104c1a9e0cf2",
+   "digest": "bb18b56445400af8f83613663ef9c740503f15a365d70f861a14104c1a9e0cf2",
+   "reference": "bb18b56445400af8f83613663ef9c740503f15a365d70f861a14104c1a9e0cf2"
+  },
+  {
+   "name": "bool 1",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"bool\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":1}}",
+   "phoneKeyReading": "refused: a bool that is not true or false",
+   "ethSigUtil401": "14255652679bf515afc44c8b47d5a155fcfbe971c0b90a52347ae63168c1cf09",
+   "ethers617": "14255652679bf515afc44c8b47d5a155fcfbe971c0b90a52347ae63168c1cf09",
+   "ethSigUtil9Emulated": {
+    "error": "bool"
+   }
+  },
+  {
+   "name": "int8 255",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"int8\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":255}}",
+   "phoneKeyReading": "refused: a number out of its type's range",
+   "ethSigUtil401": "ac804c6e55a2bd8f2a907262711fdc4db3b5b13b69cb9c76abc59fe871efc07b",
+   "ethers617": {
+    "error": "value out-of-bounds for int8 (argument=\"value\", value=255, code=INVALID_ARGUMENT, version=6.17.0)"
+   },
+   "ethSigUtil9Emulated": "ac804c6e55a2bd8f2a907262711fdc4db3b5b13b69cb9c76abc59fe871efc07b"
+  },
+  {
+   "name": "a repeated key with equal values",
+   "typedData": "{\"types\":{\"EIP712Domain\":[],\"T\":[{\"name\":\"a\",\"type\":\"uint8\"}]},\"primaryType\":\"T\",\"domain\":{},\"message\":{\"a\":1,\"a\":1}}",
+   "phoneKeyReading": "refused: a repeated key",
+   "ethSigUtil401": "a0017655e6978f8befdad65c578e2f57efd8fb882ab8129e6c31bbf531b33655",
+   "ethers617": "a0017655e6978f8befdad65c578e2f57efd8fb882ab8129e6c31bbf531b33655",
+   "ethSigUtil9Emulated": "a0017655e6978f8befdad65c578e2f57efd8fb882ab8129e6c31bbf531b33655"
+  },
+  {
+   "name": "an escaped surrogate pair",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}], \"T\": [{\"name\": \"a\", \"type\": \"string\"}]}, \"primaryType\": \"T\", \"domain\": {\"name\": \"N\"}, \"message\": {\"a\": \"\\ud83d\\ude01\"}}",
+   "phoneKeyReading": "read",
+   "ethSigUtil401": "c57f773fb91b695fff328a49a21e4b2c296d8c76187f052b641c1fad0dd930a8",
+   "ethers617": "c57f773fb91b695fff328a49a21e4b2c296d8c76187f052b641c1fad0dd930a8",
+   "ethSigUtil9Emulated": "c57f773fb91b695fff328a49a21e4b2c296d8c76187f052b641c1fad0dd930a8",
+   "digest": "c57f773fb91b695fff328a49a21e4b2c296d8c76187f052b641c1fad0dd930a8",
+   "reference": "c57f773fb91b695fff328a49a21e4b2c296d8c76187f052b641c1fad0dd930a8"
+  }
+ ]
+}

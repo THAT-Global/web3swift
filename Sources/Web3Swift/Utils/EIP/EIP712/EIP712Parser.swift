@@ -3,12 +3,20 @@
 //
 //  Created by JeneaVranceanu on 17.10.2023.
 //
+//  THAT fork (5.1.0): the hashing is Web3Core's `EIP712Document`, read from the JSON text. The encoder this file had
+//  read only a `[]` suffix as an array (so `bool[2]` was encoded in place and `Leg[2]` threw) and built `encodeType`
+//  from each child's whole subtree, sorting only direct children (so a struct reached only through another, or two
+//  ways, got the wrong type hash). Its digest is never used again: what the document refuses throws.
+//
 
 import Foundation
 import Web3Core
 
-/// The only purpose of this class is to parse raw JSON and output an EIP712 hash ready for signing.
-/// Example of a payload that is received via `eth_signTypedData` for signing:
+/// Parses `eth_signTypedData` JSON and outputs the EIP-712 hash ready for signing.
+///
+/// The JSON is read by ``EIP712Document`` with the ``EIP712Document/Reading/signTypedDataV4`` reading unless another
+/// is named: the digest MetaMask's eth-sig-util V4 gives, or a thrown ``Web3Error/inputError(desc:)`` saying why not.
+/// Example of a payload that is received via `eth_signTypedData_v4` for signing:
 /// ```
 /// {
 ///    "types":{
@@ -87,39 +95,34 @@ import Web3Core
 ///         password: password)
 /// ```
 public class EIP712Parser {
-    
-    static func toData(_ json: String) throws -> Data {
-        guard let json = json.data(using: .utf8) else {
-            throw Web3Error.inputError(desc: "EIP712Parser. Failed to parse EIP712 payload. Given string is not valid UTF8 string.")
-        }
-        return json
-    }
-    
-    public static func parse(_ rawJson: String) throws -> EIP712TypedData {
-        try parse(try toData(rawJson))
-    }
-    
-    public static func parse(_ rawJson: Data) throws -> EIP712TypedData {
-        let decoder = JSONDecoder()
-        let types = try decoder.decode(EIP712TypeArray.self, from: rawJson).types
-        guard let json = try rawJson.asJsonDictionary() else {
-            throw Web3Error.inputError(desc: "EIP712Parser. Cannot decode given JSON as it cannot be represented as a Dictionary. Is it valid JSON?")
-        }
-        guard let primaryType = json["primaryType"] as? String else {
-            throw Web3Error.inputError(desc: "EIP712Parser. Top-level string field 'primaryType' missing.")
-        }
-        guard let domain = json["domain"] as? [String : AnyObject] else {
-            throw Web3Error.inputError(desc: "EIP712Parser. Top-level object field 'domain' missing.")
-        }
-        guard let message = json["message"] as? [String : AnyObject] else {
-            throw Web3Error.inputError(desc: "EIP712Parser. Top-level object field 'message' missing.")
-        }
-        return try EIP712TypedData(types: types, primaryType: primaryType, domain: domain, message: message)
-    }
-}
 
-internal struct EIP712TypeArray: Codable {
-    public let types: [String : [EIP712TypeProperty]]
+    /// Reads `eth_signTypedData_v4` JSON for a key on the phone (``EIP712Document/Reading/signTypedDataV4``).
+    public static func parse(_ rawJson: String) throws -> EIP712TypedData {
+        try parse(Data(rawJson.utf8), reading: .signTypedDataV4)
+    }
+
+    /// Reads typed-data JSON with the reading named.
+    public static func parse(_ rawJson: String, reading: EIP712Document.Reading) throws -> EIP712TypedData {
+        try parse(Data(rawJson.utf8), reading: reading)
+    }
+
+    /// Reads `eth_signTypedData_v4` JSON, as UTF-8 bytes, for a key on the phone.
+    public static func parse(_ rawJson: Data) throws -> EIP712TypedData {
+        try parse(rawJson, reading: .signTypedDataV4)
+    }
+
+    /// Reads typed-data JSON, as UTF-8 bytes, with the reading named.
+    ///
+    /// - Throws: ``Web3Error/inputError(desc:)`` with the reason, for JSON the reading refuses.
+    public static func parse(_ rawJson: Data, reading: EIP712Document.Reading) throws -> EIP712TypedData {
+        let document: EIP712Document
+        do {
+            document = try EIP712Document(jsonData: rawJson, reading: reading)
+        } catch let error as EIP712DocumentError {
+            throw Web3Error.inputError(desc: "EIP712Parser. \(error.description)")
+        }
+        return try EIP712TypedData(document: document, json: rawJson)
+    }
 }
 
 public struct EIP712TypeProperty: Codable {
@@ -127,26 +130,29 @@ public struct EIP712TypeProperty: Codable {
     public let name: String
     /// Property type. A type that's ABI encodable or a custom type from ``EIP712TypedData/types``.
     public let type: String
-    /// Stripped of brackets ([] - denoting an array).
-    /// If ``type`` is an array of then ``coreType`` will return the type of the array.
+    /// For an array, its entry type: the type with its LAST bracket removed (`uint8[2][]` holds `uint8[2]`s; `Leg[2]`
+    /// holds `Leg`s). Otherwise the type itself.
     public let coreType: String
-    
+    /// Whether ``type`` is an array: `T[]` or `T[n]`, at any depth.
     public let isArray: Bool
-    
+
+    /// Trims whitespace from `name` and `type`, as this initialiser always has. A property read by ``EIP712Parser``
+    /// is the JSON's, untrimmed.
     public init(name: String, type: String) {
-        self.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.type = type.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        var _coreType = self.type
-        if _coreType.hasSuffix("[]") {
-            _coreType.removeLast(2)
-            isArray = true
-        } else {
-            isArray = false
-        }
-        self.coreType = _coreType
+        self.init(exactName: name.trimmingCharacters(in: .whitespacesAndNewlines),
+                  exactType: type.trimmingCharacters(in: .whitespacesAndNewlines))
     }
-    
+
+    init(exactName name: String, exactType type: String) {
+        self.name = name
+        self.type = type
+        if let element = EIP712Document.FieldType(parsing: type).elementType {
+            (coreType, isArray) = (element.text, true)
+        } else {
+            (coreType, isArray) = (type, false)
+        }
+    }
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let name = try container.decode(String.self, forKey: .name)
@@ -159,11 +165,20 @@ public struct EIP712TypedData {
     public let types: [String: [EIP712TypeProperty]]
     /// A name of one of the types from `types`.
     public let primaryType: String
-    /// A JSON object as a string
+    /// The domain, as Foundation reads the JSON (for display; nothing is hashed from it).
     public let domain: [String : AnyObject]
-    /// A JSON object as a string
+    /// The message, as Foundation reads the JSON (for display; nothing is hashed from it).
     public let message: [String : AnyObject]
-    
+    /// The typed data as read from its JSON text: every hash below is this document's. Nil for a value made by the
+    /// dictionary initialiser, whose hashes throw.
+    public let document: EIP712Document?
+
+    /// A value with no JSON text behind it.
+    ///
+    /// Its ``encodeType(_:)`` and ``typeHash(_:)`` are EIP-712's over `types`; its ``encodeData()``,
+    /// ``encodeData(_:data:)``, ``structHash()``, ``structHash(_:data:)`` and ``signHash()`` throw, because
+    /// dictionaries do not keep a number's digits or tell a reading what the JSON said.
+    @available(*, deprecated, message: "A value made from dictionaries has no JSON text, so it is never hashed: signHash(), structHash() and encodeData() throw on it. Read typed data with EIP712Parser.parse(_:), or Web3Core's EIP712Document(json:reading:).")
     public init(types: [String : [EIP712TypeProperty]],
                 primaryType: String,
                 domain: [String : AnyObject],
@@ -172,133 +187,98 @@ public struct EIP712TypedData {
         self.primaryType = primaryType.trimmingCharacters(in: .whitespacesAndNewlines)
         self.domain = domain
         self.message = message
+        self.document = nil
     }
-    
-    public func encodeType(_ type: String) throws -> String {
-        guard let typeData = types[type] else {
-            throw Web3Error.processingError(desc: "EIP712Parser. Attempting to encode type that doesn't exist in this payload. Given type: \(type). Available types: \(types.keys).")
+
+    /// What ``EIP712Parser`` makes: the document, and the JSON read by Foundation for the dictionaries.
+    init(document: EIP712Document, json: Data) throws {
+        guard let object = try json.asJsonDictionary(),
+              let domain = object["domain"] as? [String: AnyObject],
+              let message = object["message"] as? [String: AnyObject]
+        else {
+            throw Web3Error.inputError(desc: "EIP712Parser. Cannot read the domain and message as dictionaries.")
         }
-        return try encodeType(type, typeData)
+        self.types = Dictionary(
+            document.types.map { ($0.name, $0.fields.map { EIP712TypeProperty(exactName: $0.name, exactType: $0.type.text) }) },
+            uniquingKeysWith: { first, _ in first })
+        self.primaryType = document.primaryType
+        self.domain = domain
+        self.message = message
+        self.document = document
     }
-    
+
+    private func readDocument() throws -> EIP712Document {
+        guard let document else {
+            throw Web3Error.processingError(desc: "EIP712Parser. Typed data made from dictionaries has no JSON text to hash. Read it with EIP712Parser.parse(_:).")
+        }
+        return document
+    }
+
+    private func mapped<T>(_ work: () throws -> T) throws -> T {
+        do {
+            return try work()
+        } catch let error as EIP712DocumentError {
+            throw Web3Error.processingError(desc: "EIP712Parser. \(error.description)")
+        }
+    }
+
+    /// EIP-712's `encodeType`: `type`, then every struct it reaches at any depth, each once, by name.
+    public func encodeType(_ type: String) throws -> String {
+        try mapped {
+            if let document { return try document.encodeType(of: type) }
+            let definitions = types.map { name, properties in
+                EIP712Document.StructDefinition(name: name, fields: properties.map {
+                    EIP712Document.Field(name: $0.name, type: EIP712Document.FieldType(parsing: $0.type))
+                })
+            }
+            return try EIP712Document.encodeType(of: type, in: definitions)
+        }
+    }
+
     public func typeHash(_ type: String) throws -> String {
         try encodeType(type).sha3(.keccak256).addHexPrefix()
     }
-    
-    internal func encodeType(_ type: String, _ typeData: [EIP712TypeProperty], typesCovered: [String] = []) throws -> String {
-        var typesCovered = typesCovered
-        var encodedSubtypes: [String : String] = [:]
-        let parameters = try typeData.map { attributeType in
-            if let innerTypes = types[attributeType.coreType], !typesCovered.contains(attributeType.coreType) {
-                typesCovered.append(attributeType.coreType)
-                if attributeType.coreType != type {
-                    encodedSubtypes[attributeType.coreType] = try encodeType(attributeType.coreType, innerTypes)
-                }
-            }
-            return "\(attributeType.type) \(attributeType.name)"
-        }
-        return type + "(" + parameters.joined(separator: ",") + ")" + encodedSubtypes.sorted { lhs, rhs in
-            return lhs.key < rhs.key
-        }
-        .map { $0.value }
-        .joined(separator: "")
-    }
-    
-    /// Convenience function for ``encodeData(_:data:)`` that uses ``primaryType`` and ``message`` as values.
+
+    /// Convenience function for ``encodeData(_:data:)`` that uses ``primaryType`` and ``message`` as values: the
+    /// document's own message, as read from the JSON.
     /// - Returns: encoded data based on ``primaryType`` and ``message``.
     public func encodeData() throws -> Data {
-        try encodeData(primaryType, data: message)
+        let document = try readDocument()
+        return try mapped { try document.encodeData(of: document.message) }
     }
-    
+
+    /// EIP-712's `encodeData` of `data` as a value of `type`, with the document's types.
+    ///
+    /// `data` is written back to JSON and read with the ``EIP712Document/Reading/signTypedDataV4`` reading whatever
+    /// the document's: Foundation holds a number past 38 digits rounded (2^128 comes back ending `…211450`), and that
+    /// reading refuses every number a double does not hold exactly, so a rounded number is refused, never hashed. A
+    /// value JSON cannot carry (`Data`, `BigUInt`) is refused too. A rounded number that was an exact double is never
+    /// one again (the rounding is far finer than the spacing of doubles at its size); one that was not can only come
+    /// from a document read with the strict reading, so for such a document this refuses outright.
     public func encodeData(_ type: String, data: [String : AnyObject]) throws -> Data {
-        // Adding typehash
-        var encTypes: [ABI.Element.ParameterType] = [.bytes(length: 32)]
-        var encValues: [Any] = [try typeHash(type)]
-        
-        guard let typeData = types[type] else {
-            throw Web3Error.processingError(desc: "EIP712Parser. Attempting to encode data for type that doesn't exist in this payload. Given type: \(type). Available types: \(types.keys).")
+        let document = try readDocument()
+        guard document.reading == .signTypedDataV4 else {
+            throw Web3Error.processingError(desc: "EIP712Parser. A strictly read document's dictionaries may hold rounded numbers; read the value with EIP712Document.value(ofStruct:json:).")
         }
-        
-        func encodeField(_ field: EIP712TypeProperty,
-                         value: AnyObject?) throws -> (encTypes: [ABI.Element.ParameterType], encValues: [Any]) {
-            var encTypes: [ABI.Element.ParameterType] = []
-            var encValues: [Any] = []
-            if field.type == "string" {
-                guard let value = value as? String else {
-                    throw Web3Error.processingError(desc: "EIP712Parser. Type metadata of '\(field)' and actual value '\(String(describing: value))' type doesn't match. Cannot cast value to String. Parent object type: \(type).")
-                }
-                encTypes.append(.bytes(length: 32))
-                encValues.append(value.sha3(.keccak256).addHexPrefix())
-            } else if field.type == "bytes"{
-                let _value: Data?
-                if let value = value as? String,
-                   let data = Data.fromHex(value) {
-                    _value = data
-                } else {
-                    _value = value as? Data
-                }
-                guard let value = _value else {
-                    throw Web3Error.processingError(desc: "EIP712Parser. Type metadata '\(field)' and actual value '\(String(describing: value))' type doesn't match. Cannot cast/parse value to Data. Parent object type: \(type).")
-                }
-                encTypes.append(.bytes(length: 32))
-                encValues.append(value.sha3(.keccak256))
-            } else if field.isArray {
-                guard let values = value as? [AnyObject] else {
-                    throw Web3Error.processingError(desc: "EIP712Parser. Custom type metadata '\(field)' and actual value '\(String(describing: value))' type doesn't match. Cannot cast value to [AnyObject]. Parent object type: \(type)")
-                }
-                encTypes.append(.bytes(length: 32))
-                let subField = EIP712TypeProperty(name: field.name, type: field.coreType)
-                var encodedSubTypes: [ABI.Element.ParameterType] = []
-                var encodedSubValues: [Any] = []
-                try values.forEach { value in
-                    let encoded = try encodeField(subField, value: value)
-                    encodedSubTypes.append(contentsOf: encoded.encTypes)
-                    encodedSubValues.append(contentsOf: encoded.encValues)
-                }
-                
-                guard let encodedValue = ABIEncoder.encode(types: encodedSubTypes, values: encodedSubValues) else {
-                    throw Web3Error.processingError(desc: "EIP712Parser. Failed to encode an array of custom type. Field: '\(field)'; value: '\(String(describing: value))'. Parent object type: \(type)")
-                }
-                
-                encValues.append(encodedValue.sha3(.keccak256))
-            } else if types[field.coreType] != nil  {
-                encTypes.append(.bytes(length: 32))
-                if let value = value as? [String : AnyObject] {
-                    encValues.append(try encodeData(field.type, data: value).sha3(.keccak256))
-                } else {
-                    encValues.append(Data(count: 32))
-                }
-            } else {
-                encTypes.append(try ABITypeParser.parseTypeString(field.type))
-                encValues.append(value as Any)
-            }
-            return (encTypes, encValues)
+        guard JSONSerialization.isValidJSONObject(data) else {
+            throw Web3Error.inputError(desc: "EIP712Parser. The data for \(type) is not a JSON object.")
         }
-        
-        // Add field contents
-        for field in typeData {
-            let (_encTypes, _encValues) = try encodeField(field, value: data[field.name])
-            encTypes.append(contentsOf: _encTypes)
-            encValues.append(contentsOf: _encValues)
-        }
-        
-        guard let encodedData = ABIEncoder.encode(types: encTypes, values: encValues) else {
-            throw Web3Error.processingError(desc: "EIP712Parser. ABIEncoder.encode failed with the following types and values: \(encTypes); \(encValues)")
-        }
-        return encodedData
+        let json = String(decoding: try JSONSerialization.data(withJSONObject: data), as: UTF8.self)
+        return try mapped { try document.encodeData(of: document.value(ofStruct: type, json: json, reading: .signTypedDataV4)) }
     }
-    
+
     /// Convenience function for ``structHash(_:data:)`` that uses ``primaryType`` and ``message`` as values.
     /// - Returns: SH# keccak256 hash of encoded data based on ``primaryType`` and ``message``.
     public func structHash() throws -> Data {
-        try structHash(primaryType, data: message)
+        try readDocument().messageHash
     }
-    
+
     public func structHash(_ type: String, data: [String : AnyObject]) throws -> Data {
         try encodeData(type, data: data).sha3(.keccak256)
     }
-    
+
+    /// `keccak256(0x19 0x01 ‖ hashStruct(domain) ‖ hashStruct(message))`: the document's ``EIP712Document/signingDigest``.
     public func signHash() throws -> Data {
-        try (Data.fromHex("0x1901")! + structHash("EIP712Domain", data: domain) + structHash()).sha3(.keccak256)
+        try readDocument().signingDigest
     }
 }

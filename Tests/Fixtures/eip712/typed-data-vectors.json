@@ -1,0 +1,208 @@
+{
+ "source": "An independent EIP-712 hasher: pure Python with its own Keccak-256, written from the EIP's text. It reproduces the EIP's published Mail values (the first vector). The second vector's message hash is also what Ledger's Ethereum app showed for it in Speculos (692cf0f76017).",
+ "vectors": [
+  {
+   "name": "the EIP-712 Mail example",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Person\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"wallet\", \"type\": \"address\"}], \"Mail\": [{\"name\": \"from\", \"type\": \"Person\"}, {\"name\": \"to\", \"type\": \"Person\"}, {\"name\": \"contents\", \"type\": \"string\"}]}, \"primaryType\": \"Mail\", \"domain\": {\"name\": \"Ether Mail\", \"version\": \"1\", \"chainId\": 1, \"verifyingContract\": \"0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC\"}, \"message\": {\"from\": {\"name\": \"Cow\", \"wallet\": \"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\"}, \"to\": {\"name\": \"Bob\", \"wallet\": \"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB\"}, \"contents\": \"Hello, Bob!\"}}",
+   "domainHash": "f2cee375fa42b42143804025fc449deafd50cc031ca257e0b194a650a912090f",
+   "messageHash": "c52c0ee5d84264471806290a3f2c4cecfc5490626bf912d01f240d7a274b371e",
+   "digest": "be609aee343fb3c4b28e1df9e632fca64fcfaede20f02e86244efddf30957bd2"
+  },
+  {
+   "name": "arrays, nested structs, negative and large numbers",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Order\": [{\"name\": \"maker\", \"type\": \"Party\"}, {\"name\": \"legs\", \"type\": \"Leg[]\"}, {\"name\": \"flags\", \"type\": \"bool[2]\"}, {\"name\": \"delta\", \"type\": \"int256\"}, {\"name\": \"small\", \"type\": \"int8\"}, {\"name\": \"salt\", \"type\": \"bytes32\"}, {\"name\": \"note\", \"type\": \"string\"}, {\"name\": \"blob\", \"type\": \"bytes\"}, {\"name\": \"deadline\", \"type\": \"uint64\"}], \"Party\": [{\"name\": \"wallet\", \"type\": \"address\"}, {\"name\": \"tags\", \"type\": \"string[]\"}], \"Leg\": [{\"name\": \"token\", \"type\": \"address\"}, {\"name\": \"amount\", \"type\": \"uint256\"}]}, \"primaryType\": \"Order\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"maker\": {\"wallet\": \"0x2222222222222222222222222222222222222222\", \"tags\": [\"a\", \"bc\", \"\"]}, \"legs\": [{\"token\": \"0x3333333333333333333333333333333333333333\", \"amount\": \"115792089237316195423570985008687907853269984665640564039457584007913129639935\"}, {\"token\": \"0x4444444444444444444444444444444444444444\", \"amount\": \"0\"}], \"flags\": [true, false], \"delta\": \"-57896044618658097711785492504343953926634992332820282019728792003956564819968\", \"small\": -1, \"salt\": \"0x00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\", \"note\": \"héllo, wörld\", \"blob\": \"0xdeadbeef\", \"deadline\": 1893456000}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "27c5ac12f4087ff7c23db0a0a8e2aee20a3f4d6251403661ef78062d04bea426",
+   "digest": "1860ea6df0029933d43427f3d0952a8ca1d2227ce3013fe460e172e209894185"
+  },
+  {
+   "name": "an ERC-2612 permit",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Permit\": [{\"name\": \"owner\", \"type\": \"address\"}, {\"name\": \"spender\", \"type\": \"address\"}, {\"name\": \"value\", \"type\": \"uint256\"}, {\"name\": \"nonce\", \"type\": \"uint256\"}, {\"name\": \"deadline\", \"type\": \"uint256\"}]}, \"primaryType\": \"Permit\", \"domain\": {\"name\": \"USD Coin\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359\"}, \"message\": {\"owner\": \"0x2222222222222222222222222222222222222222\", \"spender\": \"0x3333333333333333333333333333333333333333\", \"value\": \"1000000\", \"nonce\": 0, \"deadline\": \"115792089237316195423570985008687907853269984665640564039457584007913129639935\"}}",
+   "domainHash": "caa2ce1a5703ccbe253a34eb3166df60a705c561b44b192061e28f2a985be2ca",
+   "messageHash": "bc9c8abbaa846b93b5f3fd2f73b8e434dd21b989f35c7e621290f5a6d2446472",
+   "digest": "31fe2e504392de6c70555a593dc4e44e718e51d2b7823b7c8b3fce9a87b4c5ae"
+  },
+  {
+   "name": "a string array with an empty entry",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"tags\", \"type\": \"string[]\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"tags\": [\"a\", \"bc\", \"\"]}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "7e9d898e51b0d190b1252cd3266163b716da1dc903ffbb9af94fa9a7b61a0d1e",
+   "digest": "bd521cc54a79a3250a91bd83edc9b569844764aa41294fae6b227988e57001e0"
+  },
+  {
+   "name": "an array of structs",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"legs\", \"type\": \"Leg[]\"}], \"Leg\": [{\"name\": \"token\", \"type\": \"address\"}, {\"name\": \"amount\", \"type\": \"uint256\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"legs\": [{\"token\": \"0x3333333333333333333333333333333333333333\", \"amount\": \"115792089237316195423570985008687907853269984665640564039457584007913129639935\"}, {\"token\": \"0x4444444444444444444444444444444444444444\", \"amount\": \"0\"}]}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "e8fc50afdbba71dfd69acb50f20fda8cb7c0704346adae2bd0f9ade937ed8b40",
+   "digest": "edc8bf40e4cdc117d82df9f36e9f84c39204b332111b924ec721709655768a21"
+  },
+  {
+   "name": "an empty array of structs",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"legs\", \"type\": \"Leg[]\"}], \"Leg\": [{\"name\": \"token\", \"type\": \"address\"}, {\"name\": \"amount\", \"type\": \"uint256\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"legs\": []}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "97042216b9e206b93c3dc0abfe645b2b13dc7c67c6cb46681a88c49e30ed7641",
+   "digest": "5a4d5258135045fba69f6254a472764d3e5889a55e4fb6abe0eaed86a046126c"
+  },
+  {
+   "name": "an empty array of numbers",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"items\", \"type\": \"uint256[]\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"items\": []}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "09496c21b3cd9af002823d806ad8fb9f5f6705d32f0c4a2c28d929341d27a3de",
+   "digest": "098891dd70301905725e1f2f22abfbf0525b640728b956c77f1b04220edc6000"
+  },
+  {
+   "name": "a fixed array of booleans",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"flags\", \"type\": \"bool[2]\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"flags\": [true, false]}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "4c30c62e8a6d9332cffdb053d93facf5d18c74cf9ada7ac1e39f1bc88fa48d66",
+   "digest": "20b9c87d590149f947c5d3f56d8ded251c6ce3d6831b416c35e3730be69367a6"
+  },
+  {
+   "name": "an array of arrays",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"grid\", \"type\": \"uint8[2][]\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"grid\": [[1, 2], [3, 4], [5, 6]]}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "1d8373ab21aa085b5729cc49769245af2ea3f3978df943ab5ae668128cf9ca80",
+   "digest": "f65fbcaa7aade49021d73715fadbbf29710e2c54bd7223d68535c0b902769475"
+  },
+  {
+   "name": "an array of addresses",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"who\", \"type\": \"address[]\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"who\": [\"0x2222222222222222222222222222222222222222\", \"0x3333333333333333333333333333333333333333\"]}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "630c518cf80ebe6e1ce3b475075b35aa021d51df691c36e402df6c313ea1d36c",
+   "digest": "875db99de81f76b1252324d4146181f68e49ab48d46f70befac5b6630d2fb43d"
+  },
+  {
+   "name": "an array of byte strings",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"blobs\", \"type\": \"bytes[]\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"blobs\": [\"0xdeadbeef\", \"0x\", \"0x00\"]}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "62ad096f513a4a1ed696c5dee3da56dc65535b0dca459e07c628fae3c42f329f",
+   "digest": "df36bb3be52a471fb8bf1a1dc47c589dddf10b4e7bba010adb185888df956646"
+  },
+  {
+   "name": "the lowest int256",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"delta\", \"type\": \"int256\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"delta\": \"-57896044618658097711785492504343953926634992332820282019728792003956564819968\"}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "dc878452d2f428b18cc9accdb5eaaac243e88a5dbab46746550ba97f5aeaaeb3",
+   "digest": "0295f764fe45558c8a8ff693a402b5168eadd0dbcf3af320280ae373aab2690f"
+  },
+  {
+   "name": "a negative int8 written as a number",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"small\", \"type\": \"int8\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"small\": -1}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "0d7d1f1c5ffd2ee14a892ebb1044e1c4097ff5ef71d302559a9083e160ab74ac",
+   "digest": "219667f693b6b05379aba18855b25927cd23be8d52178b8125c47e1ae0db0549"
+  },
+  {
+   "name": "int16 128, whose one byte has its top bit set",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"n\", \"type\": \"int16\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"n\": 128}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "7bb51a76636e088526ad5bfad90e03024fe81813b649596bd0f043f2fefcf8c8",
+   "digest": "dd99677b3f067b89ae76d81a988283a9a70a5142b67f5289fd456302e7c3455d"
+  },
+  {
+   "name": "int16 -128",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"n\", \"type\": \"int16\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"n\": -128}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "0a3db2a251bf6c3bf2f2c4eefc52272159043dbd4325ee67c6133e66c0ce1bad",
+   "digest": "8f550c708db740f5aca4d4e5c1b17dba9acc7425bffabb4342cff58b6187b901"
+  },
+  {
+   "name": "int16 -32768",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"n\", \"type\": \"int16\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"n\": \"-32768\"}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "b355aba9482a6310580f6594aa482f165c32eed24a6549a1b6720f19fa9ae6bf",
+   "digest": "62ebf8596c6271aeac866c673b7fca55611083d5303e45b4eef9237140fc5d52"
+  },
+  {
+   "name": "a uint256 written in hex",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"n\", \"type\": \"uint256\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"n\": \"0x00ff\"}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "25338b22d719b74dee127f59651006d344d61dda5886a5659877cafa1fcbc37f",
+   "digest": "a7bb222e5b7b57bcebae7c6dca469a850e37a51725b092d5b3ac6cdf98bc1a11"
+  },
+  {
+   "name": "a uint64 written as a number",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"deadline\", \"type\": \"uint64\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"deadline\": 1893456000}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "96ef82a12c411893685cbab318e694985f01db9c01a73fe607ce0ed48ae30034",
+   "digest": "cb4a75772eac7a8e4b3bfb5e410ee7129fe609d866fabffe442f0985bfd7ada1"
+  },
+  {
+   "name": "a bytes32",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"salt\", \"type\": \"bytes32\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"salt\": \"0x00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\"}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "6e96b9b6fdf21df8339e797e7a62f86b29e1237b69e149e5a4fa28e612c16215",
+   "digest": "cb5fada76c58be0abc3f54c52c65129c8629e0476995df683da117aabc32d06c"
+  },
+  {
+   "name": "a bytes4",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"selector\", \"type\": \"bytes4\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"selector\": \"0xa9059cbb\"}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "3258ffc8a38147f9f5e8dab5ad214c40553c16fdf091e7be1c0b8eab7e315559",
+   "digest": "23c1f9211864bbb63ecd263b73ba2b84dde6eec1e773d261f12d614d9bc00e66"
+  },
+  {
+   "name": "a string outside ASCII",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"note\", \"type\": \"string\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"note\": \"héllo, wörld\"}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "02706c05c2626bfac39dbda85ff87ed7bc2a1e3f5e0b72821e524d2ec2138a68",
+   "digest": "e88313f01d53fd7521af88d17b99f1981f21b4d4c4b246224e81e7b825d209ed"
+  },
+  {
+   "name": "dynamic bytes",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"blob\", \"type\": \"bytes\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"blob\": \"0xdeadbeef\"}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "a802b1481f6739ccb37fcae7de1eab6e8d8f09e07c6fcb855db8ea644f299149",
+   "digest": "c37804a662bdde8e1fc5574c3508c67b2f2b5b4508d604baeba9a9cade26a539"
+  },
+  {
+   "name": "empty dynamic bytes and an empty string",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"blob\", \"type\": \"bytes\"}, {\"name\": \"note\", \"type\": \"string\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"blob\": \"0x\", \"note\": \"\"}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "5d56a4ab1f57990611c5d6232ee1172c665a35bf9948ade375452ed870e8490c",
+   "digest": "f5dc3a5f7ba54aecb90056256b8cf1eb800e23dfaa476a2a6ae2e9d29e89175a"
+  },
+  {
+   "name": "a nested struct",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"maker\", \"type\": \"Party\"}, {\"name\": \"taker\", \"type\": \"Party\"}], \"Party\": [{\"name\": \"wallet\", \"type\": \"address\"}, {\"name\": \"tags\", \"type\": \"string[]\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"maker\": {\"wallet\": \"0x2222222222222222222222222222222222222222\", \"tags\": [\"x\"]}, \"taker\": {\"wallet\": \"0x3333333333333333333333333333333333333333\", \"tags\": []}}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "c4e5690ced59487338d76599da1df9467fca6a45181a05734088df02724d9417",
+   "digest": "ceeb0df5a6fb553c1b5df93aa8079b50b3d4c6f11a78c3de0cc1f156d48e7510"
+  },
+  {
+   "name": "a domain with a salt and no contract",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"salt\", \"type\": \"bytes32\"}], \"Probe\": [{\"name\": \"n\", \"type\": \"uint8\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"Salted\", \"chainId\": \"0x89\", \"salt\": \"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\"}, \"message\": {\"n\": 7}}",
+   "domainHash": "e76e3d93ed159407ca5e45d977714abd7715e4a04e917cd4a95b40d904722f21",
+   "messageHash": "de870b2dea027d805b35405a31359f9a157f32fde251f98558acc8e071dbce3b",
+   "digest": "014faceda959d4e8a0a910658d4134982eced407fa1a8e2fc864971cf4298c64"
+  },
+  {
+   "name": "a struct reached only through another, whose name sorts first",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"m\", \"type\": \"Middle\"}], \"Middle\": [{\"name\": \"a\", \"type\": \"Alpha\"}, {\"name\": \"n\", \"type\": \"uint8\"}], \"Alpha\": [{\"name\": \"v\", \"type\": \"bytes4\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"m\": {\"a\": {\"v\": \"0x01020304\"}, \"n\": 5}}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "dc9d12e7d214feacf8a40fe96c44087669d887302f88171ef69b61a8545a0d95",
+   "digest": "1ca5733c2fd59143cf3a849dde912af4dfca3b72c0fe298da9b1b7e0f76ea10a"
+  },
+  {
+   "name": "a struct reached by two ways",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"m\", \"type\": \"Middle\"}, {\"name\": \"a\", \"type\": \"Alpha\"}], \"Middle\": [{\"name\": \"a\", \"type\": \"Alpha[]\"}], \"Alpha\": [{\"name\": \"v\", \"type\": \"bytes4\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"m\": {\"a\": [{\"v\": \"0x01020304\"}, {\"v\": \"0xffffffff\"}]}, \"a\": {\"v\": \"0x00000000\"}}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "412da8556fc80ce6d2bcf893f817813c9f14dd1f9467bfb7ff4364346d812181",
+   "digest": "3f0083a1ebdebc6e69e17db800ac542f6a1543b6cd1f8e9936ae4e63f7257409"
+  },
+  {
+   "name": "a fixed array of structs",
+   "typedData": "{\"types\": {\"EIP712Domain\": [{\"name\": \"name\", \"type\": \"string\"}, {\"name\": \"version\", \"type\": \"string\"}, {\"name\": \"chainId\", \"type\": \"uint256\"}, {\"name\": \"verifyingContract\", \"type\": \"address\"}], \"Probe\": [{\"name\": \"legs\", \"type\": \"Leg[2]\"}], \"Leg\": [{\"name\": \"token\", \"type\": \"address\"}, {\"name\": \"amount\", \"type\": \"uint256\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"legs\": [{\"token\": \"0x3333333333333333333333333333333333333333\", \"amount\": \"1\"}, {\"token\": \"0x4444444444444444444444444444444444444444\", \"amount\": \"2\"}]}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "2f6646d347305e25b14b076c19a6a9bec748b02690e5686d9cb5564852fab566",
+   "digest": "d0e4ce77a4c6c8a7bc965d627a0bc1a3c850a783e865f4017b8ce6edefcb43f2"
+  },
+  {
+   "name": "a domain type the JSON leaves out",
+   "typedData": "{\"types\": {\"Probe\": [{\"name\": \"n\", \"type\": \"uint8\"}]}, \"primaryType\": \"Probe\", \"domain\": {\"name\": \"THAT Test\", \"version\": \"2\", \"chainId\": 137, \"verifyingContract\": \"0x1111111111111111111111111111111111111111\"}, \"message\": {\"n\": 7}}",
+   "domainHash": "a3e9d9046a43abb9046b679eed2f77afc6989475f509a25de6dd3e0b9cf00b9b",
+   "messageHash": "de870b2dea027d805b35405a31359f9a157f32fde251f98558acc8e071dbce3b",
+   "digest": "08600098a09db7daa3dfc2642e0c36d2fb19c5e1a3d97dad19329128e8b792d4"
+  }
+ ]
+}
